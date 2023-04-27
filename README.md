@@ -22,6 +22,14 @@ See [ARCHITECTURE.md](./docs/ARCHITECTURE.md) for details about the solution arc
 - [jq](https://stedolan.github.io/jq/)
 - [docker](https://www.docker.com/)
 
+```
+The installation instructions documented here were tested using the following versions:
+- Backstage v1.10.1
+- node v18.12
+- npm 8.19
+- cdk v2.59
+```
+
 ## Installation
 
 After cloning this repository, change directory to the repository location and perform the following steps to deploy the complete solution:

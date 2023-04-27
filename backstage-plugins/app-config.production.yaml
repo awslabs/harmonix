@@ -85,13 +85,13 @@ catalog:
   locations:
 
     - type: url
-      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-config/-/blob/main/catalog/all-environments.yaml
+      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/catalog/all-environments.yaml
 
     - type: url
-      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-config/-/blob/main/catalog/all-environment-providers.yaml
+      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/catalog/all-environment-providers.yaml
 
     # AWS templates
     - type: url
-      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-config/-/blob/main/templates/all-templates.yaml
+      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/templates/all-templates.yaml
       rules:
         - allow: [Location, Template]

@@ -133,7 +133,6 @@ return createRouter({
   import { Entity } from '@backstage/catalog-model';
   import {
   AwsAppPage,
-  EntityCustomGitlabContent,
   EntityAppStateCard,
   EntityAppStateCardCloudFormation,
   EntityGeneralInfoCard,
@@ -288,6 +287,43 @@ apiRouter.use('/gitlab', await gitlab(gitlabEnv));
 apiRouter.use('/aws-apps-backend', await awsApps(awsAppsEnv));
 ```
 
+5. Create plugins reference files - `awsApps.ts`, `gitlab.ts` under `backstage/packages/backend/src/plugins`
+
+```ts
+//awsApps.ts
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
+import {createRouter} from '@internal/plugin-aws-apps-backend'
+import { Router } from 'express';
+import { PluginEnvironment } from '../types';
+export default async function createPlugin(env: PluginEnvironment): Promise<Router> {
+  // Here is where you will add all of the required initialization code that
+  // your backend plugin needs to be able to start!
+  // The env contains a lot of goodies, but our router currently only
+  // needs a logger
+  //   env.identity.getIdentity()
+  return await createRouter({
+    logger: env.logger,
+    userIdentity: env.identity,
+  });
+}
+
+//gitlab.ts
+import { PluginEnvironment } from '../types';
+import { Router } from 'express-serve-static-core';
+import { createRouter } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
+
+export default async function createPlugin(
+    env: PluginEnvironment
+): Promise<Router> {
+    return createRouter({
+        logger: env.logger,
+        config: env.config,
+    });
+}
+
+```
 
 
 ### 2. Deploy Infrastructure Prereq

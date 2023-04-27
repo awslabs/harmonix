@@ -40,7 +40,7 @@ eval $(grep "GITLAB_HOSTNAME" ${SCRIPT_DIR}/../config/.env)
 # ############################################
 echo_ok "\nChecking for repositories owned by the '${GITLAB_USER_NAME}' user at ${GITLAB_HOSTNAME}"
 GITLAB_USER_ID=$(curl -s --request GET --header "PRIVATE-TOKEN: ${GITLAB_ADMIN_TOKEN}" "https://${GITLAB_HOSTNAME}/api/v4/users/" | jq ".[] | select(.username == \"${GITLAB_USER_NAME}\") | .id")
-REPOS=($(curl -s --request GET --header "PRIVATE-TOKEN: ${GITLAB_ADMIN_TOKEN}" "https://${GITLAB_HOSTNAME}/api/v4/users/${GITLAB_USER_ID}/projects" | jq -r '.[].name' | grep --invert-match "backstage-config" ) )
+REPOS=($(curl -s --request GET --header "PRIVATE-TOKEN: ${GITLAB_ADMIN_TOKEN}" "https://${GITLAB_HOSTNAME}/api/v4/users/${GITLAB_USER_ID}/projects" | jq -r '.[].name' | grep --invert-match "backstage-reference" ) )
 if (( ${#REPOS[@]} == 0 )); then
   echo "\tNo repositories found"
 else
@@ -58,8 +58,8 @@ fi
 # ############################################
 echo_ok "\nChecking for repositories owned by the '${GITLAB_GROUP_NAME}' group"
 GITLAB_GROUP_ID=$(curl -s --request GET --header "PRIVATE-TOKEN: ${GITLAB_ADMIN_TOKEN}" "https://${GITLAB_HOSTNAME}/api/v4/groups" | jq -r ".[] | select(.name == \"${GITLAB_GROUP_NAME}\") | .id")
-REPOS=($(curl -s --request GET --header "PRIVATE-TOKEN: ${GITLAB_ADMIN_TOKEN}" "https://${GITLAB_HOSTNAME}/api/v4/groups/${GITLAB_GROUP_ID}/projects" | jq -r '.[].name | select(. != "backstage-config")'))
-# REPOS=("${(@f)$(curl -s --request GET --header "PRIVATE-TOKEN: ${GITLAB_ADMIN_TOKEN}" "https://${GITLAB_HOSTNAME}/api/v4/groups/${GITLAB_GROUP_ID}/projects" | jq -r '.[].name' | grep --invert-match "backstage-config")}")
+REPOS=($(curl -s --request GET --header "PRIVATE-TOKEN: ${GITLAB_ADMIN_TOKEN}" "https://${GITLAB_HOSTNAME}/api/v4/groups/${GITLAB_GROUP_ID}/projects" | jq -r '.[].name | select(. != "backstage-reference")'))
+# REPOS=("${(@f)$(curl -s --request GET --header "PRIVATE-TOKEN: ${GITLAB_ADMIN_TOKEN}" "https://${GITLAB_HOSTNAME}/api/v4/groups/${GITLAB_GROUP_ID}/projects" | jq -r '.[].name' | grep --invert-match "backstage-reference")}")
 echo_ok "\tDeleting ${#REPOS[@]} repositories in group ${GITLAB_GROUP_NAME}"
 if (( ${#REPOS[@]} == 0 )); then
   echo "\tNo repositories found"

@@ -3,7 +3,7 @@
 
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { getAWScreds, AwsAppsApi, createAuditRecord } from '@internal/plugin-aws-apps-backend';
-import { EnvironmentProvider, } from '../get-env-providers';
+import { EnvironmentProvider, } from '../../types';
 
 export function createS3BucketAction() {
   return createTemplateAction<{

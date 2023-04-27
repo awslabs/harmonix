@@ -6,7 +6,7 @@ The AWS Backend is composed of three-steps/stacks installation. The reason for t
 
 ### 1. Prerequisites
 
-1. Edit `infrastructure/config.yaml`
+1. Navigate to `infrastructure` and edit `config.yaml`
     - AppPrefix - a prefix name that will be added to the created cloud artifacts
     - Account - the account to deploy the solution
     - Region - the region to deploy the solution
@@ -21,13 +21,17 @@ The AWS Backend is composed of three-steps/stacks installation. The reason for t
 2. CDK bootstrap - make sure the account, region, and replica region are all bootstrapped before continuing to the next steps. You can bootstrap the account by simply running the command below:
 
 ```sh
+npm install
 cdk bootstrap aws://$ACCOUNT_ID/$AWS_PRIMARY_REGION
 cdk bootstrap aws://$ACCOUNT_ID/$AWS_SECONDARY_REGION
 ```
-
-3. Run the prereq stack deployment 
+* ignore warrnings such as 'xxx is declared but its value is never read'.
+* Make sure docker is installed and running
+  
+1. Run the prereq stack deployment 
 
 ```sh
+cd ..
 make deploy-prereq
 ```
 
@@ -60,16 +64,16 @@ Before continuing, make sure you have a Backstage directory at the root of the r
 * Make sure you have Docker installed
 * Make sure Docker is running
 
-run the command below:
+run the command below on the repository root:
 
 ```sh
-make build-and-deploy-Backstage-image
+make build-and-deploy-backstage-image
 ```
 
 ### 3. Deploy the solution stack
 
 Before executing the command below, make sure you follow the prerequisite steps, Backstage image build and deploy, and that the config.yaml is up to date.
-run the command below:
+run the command below on the repository root:
 ```sh
 make deploy-solution
 ```
@@ -103,7 +107,7 @@ The reference repo will contain:
 3. /common → our cdk stack sets that are used by the templates
 
 ```sh
-make create-Backstage-reference-repo
+make push-backstage-reference-repo
 ```
 
 ### 7. Restart the Backstage ECS service

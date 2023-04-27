@@ -120,14 +120,14 @@ export class ProvisioningPipelineConstruct extends Construct {
           build: {
             commands: [
               "echo ====== START Clone Repo =======",
-              "git clone https://oauth2:${GITLAB_TOKEN}@git.${HOST_NAME}/baws-admin/backstage-config.git",
+              "git clone https://oauth2:${GITLAB_TOKEN}@git.${HOST_NAME}/baws-admin/bbackstage-reference.git",
               "echo 'Finished Pulling reference repo.'",
             ],
           },
         },
         artifacts: {
           files: ["**/*"],
-          "base-directory": "backstage-config/common/$REPOSITORY",
+          "base-directory": "backstage-reference/common/$REPOSITORY",
           name: "$REPOSITORY.zip",
         },
       }),

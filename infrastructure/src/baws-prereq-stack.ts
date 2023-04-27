@@ -43,8 +43,7 @@ export class BAWSPrereqStack extends cdk.Stack {
     });
 
     //Create Gitlab Admins Secret
-    const gitlabAdminSecret = new secretsmanager.Secret(this, `${props.config.AppPrefix}-key-gitlab-admin-secrets`, {
-      secretName: `${props.config.AppPrefix}-admin-gitlab-secrets`,
+    new secretsmanager.Secret(this, `${props.config.AppPrefix}-key-gitlab-admin-secrets`, {      secretName: `${props.config.AppPrefix}-admin-gitlab-secrets`,
       secretObjectValue: {
         username: cdk.SecretValue.unsafePlainText("baws-admin"),
         password: cdk.SecretValue.unsafePlainText(""),

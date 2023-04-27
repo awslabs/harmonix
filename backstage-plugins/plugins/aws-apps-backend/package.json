@@ -28,6 +28,7 @@
     "@aws-sdk/client-ecs": "^3.290.0",
     "@aws-sdk/client-resource-groups": "^3.296.0",
     "@aws-sdk/client-secrets-manager": "^3.290.0",
+    "@aws-sdk/client-cloudformation": "^3.290.0",
     "@aws-sdk/types": "^3.290.0",
     "@internal/plugin-aws-apps-common": "^0.1.0",
     "@backstage/backend-common": "^0.18.2",

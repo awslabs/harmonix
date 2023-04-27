@@ -1,6 +1,6 @@
 File structure:
 
-backstage-config/
+backstage-reference/
 ├── boilerplates/
 │   ├── boilerplate1/
 │   │   ├── buildspec.yaml

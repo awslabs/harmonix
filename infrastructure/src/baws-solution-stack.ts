@@ -52,11 +52,11 @@ export class BAWSStack extends cdk.Stack {
     // Create an S3 bucket to use for network logs
     const accessLogBucket = new s3.Bucket(this, `${props.config.AppPrefix}-log-bucket`, {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
+      objectOwnership: s3.ObjectOwnership.OBJECT_WRITER,
       autoDeleteObjects: true,
       versioned: true,
       enforceSSL: true,
       encryption: s3.BucketEncryption.S3_MANAGED,
-      blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
       serverAccessLogsPrefix: 'serverAccessLogs',
     });
 

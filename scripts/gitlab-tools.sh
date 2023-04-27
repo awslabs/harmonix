@@ -1,6 +1,6 @@
 ###########
 # This file will attempt to create a repo and if it can't it will still 
-# push backstage-config to your gitlab repo
+# push backstage-reference to your gitlab repo
 ###########
 
 set -o pipefail # FAIL FAST
@@ -27,13 +27,13 @@ GITLAB_TOKEN=$(echo $GITLAB_SECRET_VALUE | jq -r '.apiToken')
 echo GITLAB_USERNAME=$GITLAB_USERNAME
 
 # Try to create a new project if one doesn't exist (will fail through)
-curl -H "Content-Type:application/json" https://git.$HOSTED_ZONE/api/v4/projects?private_token=$GITLAB_TOKEN -d "{ \"name\": \"backstage-config\" }"
+curl -H "Content-Type:application/json" https://git.$HOSTED_ZONE/api/v4/projects?private_token=$GITLAB_TOKEN -d "{ \"name\": \"backstage-reference\" }"
 
 # Make tmp directory to add files tha twill be comitted to repo
 mkdir -p git-temp
-git -C git-temp clone https://oauth2:$GITLAB_TOKEN@git.$HOSTED_ZONE/baws-admin/backstage-config.git
-cp -R backstage-config/* git-temp/backstage-config
-cd git-temp/backstage-config;
+git -C git-temp clone https://oauth2:$GITLAB_TOKEN@git.$HOSTED_ZONE/baws-admin/backstage-reference.git
+cp -R backstage-reference/* git-temp/backstage-reference
+cd git-temp/backstage-reference;
 
 # Replace variables with env specific information
 find . -type f -name *.yaml -exec sed -i "" "s/{{ *gitlab_hostname *}}/git.$HOSTED_ZONE/g" {} +; 

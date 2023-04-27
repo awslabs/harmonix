@@ -1,0 +1,22 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+    name: template-data
+    description: Approved templates for Backstage for AWS
+spec:
+    targets:
+        # Node.js example template
+        - ./example-nodejs/template.yaml
+        # Node.js with RDS example template
+        - ./example-nodejs-rds/template.yaml
+        # Node.js with ESF example template
+        - ./example-nodejs-efs/template.yaml
+        # Simple python app template
+        - ./example-python-flask/template.yaml
+        # Springboot template
+        - ./example-springboot/template.yaml
+        # API Gateway & Lambda Serverless REST API template
+        - ./example-serverless-rest-api/template.yaml
+    rules:
+        - allow: [Template]
+

@@ -1,0 +1,49 @@
+image: docker:20.10.16
+variables:
+  AWS_ACCOUNT: "${{ values.aws_account }}"
+  AWS_DEFAULT_REGION: "${{ values.aws_region }}"
+  ECR_REPO: "${{ values.component_id }}"
+  ECR_REGISTRY: "${{ values.aws_account }}.dkr.ecr.${{ values.aws_region }}.amazonaws.com"
+  # When you use the dind service, you must instruct Docker to talk with
+  # the daemon started inside of the service. The daemon is available
+  # with a network connection instead of the default
+  # /var/run/docker.sock socket. Docker 19.03 does this automatically
+  # by setting the DOCKER_HOST in
+  # https://github.com/docker-library/docker/blob/d45051476babc297257df490d22cbd806f1b11e4/19.03/docker-entrypoint.sh#L23-L29
+  #
+  # The 'docker' hostname is the alias of the service container as described at
+  # https://docs.gitlab.com/ee/ci/services/#accessing-the-services.
+  #
+  # Specify to Docker where to create the certificates. Docker
+  # creates them automatically on boot, and creates
+  # `/certs/client` to share between the service and job
+  # container, thanks to volume mount from config.toml
+  DOCKER_TLS_CERTDIR: "/certs"
+services:
+  - docker:20.10.16-dind
+stages:
+  - build
+build-deploy-image:
+  stage: build
+  before_script:
+    - cat /etc/os-release
+    - docker info
+    - apk update
+    - apk add aws-cli
+    - aws --version
+    - aws sts get-caller-identity
+    - aws ecr get-login-password --region ${{ values.aws_region }} | docker login --username AWS --password-stdin $ECR_REGISTRY
+    - echo Successfully logged in to ECR!
+    - apk add curl
+    - apk add tar
+    - apk add openjdk17
+    - apk add maven
+  script:
+    # - (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.28.0/pack-v0.28.0-linux.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack)
+    - TAG=$(date +%m-%d-%Y_%H-%M-%S)
+    - mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$ECR_REPO:$TAG
+    # - pack build $ECR_REPO -t $ECR_REPO:$TAG --builder paketobuildpacks/builder:base
+    - docker tag $ECR_REPO:$TAG $ECR_REGISTRY/$ECR_REPO:$TAG
+    - docker tag $ECR_REPO:$TAG $ECR_REGISTRY/$ECR_REPO:latest
+    - echo Pushing Docker image to ECR...
+    - docker push $ECR_REGISTRY/$ECR_REPO --all-tags

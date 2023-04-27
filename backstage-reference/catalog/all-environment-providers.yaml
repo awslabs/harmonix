@@ -1,0 +1,13 @@
+apiVersion: backstage.io/v1alpha1
+kind: Location
+metadata:
+  name: aws-environment-providers-data
+  description: A collection of all AWS environment providers
+spec:
+  targets:
+    - ./environment-providers/aws-dev-pub-env-prov.yaml
+    - ./environment-providers/aws-dev-pr-env-prov.yaml
+    - ./environment-providers/aws-test-pub-env-prov.yaml
+    - ./environment-providers/aws-test-pr-env-prov.yaml
+    - ./environment-providers/aws-prod-pub-env-prov.yaml
+    - ./environment-providers/aws-prod-pr-env-prov.yaml

@@ -1,0 +1,140 @@
+openapi: 3.0.3
+
+info:
+  title: My Sports Equipment API
+  description: API operations for cataloging my sports equipment
+  version: v1.0
+
+x-amazon-apigateway-request-validators:
+  all:
+    validateRequestBody: true
+    validateRequestParameters: true
+  params:
+    validateRequestBody: true
+    validateRequestParameters: true
+  body:
+    validateRequestBody: true
+    validateRequestParameters: false
+
+paths:
+  /equipment:
+    get:
+      summary: List all my sports equipment
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Item"
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::Sub: ${ApiRole.Arn}
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GetEquipmentFunction.Arn}/invocations
+        timeoutInMillis: 3000
+        type: "aws_proxy"
+
+    post:
+      summary: Add a new equipment item to the catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Item"
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid request
+      x-amazon-apigateway-request-validator: body
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::Sub: ${ApiRole.Arn}
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PersistDataFunction.Arn}/invocations
+        timeoutInMillis: 3000
+        type: "aws_proxy"
+
+  /equipment/{itemID}:
+    parameters:
+      - name: itemID
+        in: path
+        description: ID of equipment item
+        required: true
+        schema:
+          type: integer
+          format: int64
+    put:
+      summary: Update an equipment item to the catalog
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemData"
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid request
+        "404":
+          description: Not Found
+      x-amazon-apigateway-request-validator: body
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::Sub: ${ApiRole.Arn}
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PersistDataFunction.Arn}/invocations
+        timeoutInMillis: 3000
+        type: "aws_proxy"
+
+    delete:
+      summary: Delete an equipment item from the catalog
+      responses:
+        "200":
+          description: Successful operation
+        "404":
+          description: Not Found
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::Sub: ${ApiRole.Arn}
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${PersistDataFunction.Arn}/invocations
+        timeoutInMillis: 3000
+        type: "aws_proxy"
+
+components:
+  schemas:
+    ItemData:
+      type: object
+      required:
+        - name
+        - condition
+        - price
+      properties:
+        name:
+          type: string
+          example: rubber basketball
+        condition:
+          type: string
+          example: good
+        price:
+          type: number
+          format: currency
+          example: 5.99
+    Item:
+      allOf:
+        - type: object
+          required:
+            - id
+          properties:
+            id:
+              type: string
+              example: 1
+        - $ref: "#/components/schemas/ItemData"

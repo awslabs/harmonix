@@ -1,0 +1,9 @@
+*.js
+!jest.config.js
+*.d.ts
+node_modules
+.nvmrc
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out

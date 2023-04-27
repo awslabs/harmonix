@@ -1,0 +1,29 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.component_id | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - nodejs
+  annotations:
+    aws.amazon.com/aws-stepfunctions-pipeline-arn: ${{ values.aws_pipeline_arn | dump }}
+    aws.amazon.com/baws-repo-secret-arn: ${{ values.aws_secret_repo_arn | dump }}
+    {%- for name, value in values.aws_bp_outputs %}
+    aws.amazon.com/${{ name }}: ${{ value | dump }}
+    {%- endfor %}
+  links:
+    - title: AWS provisioning pipeline
+      url: https://${{ values.aws_region }}.console.aws.amazon.com/states/home?region=${{ values.aws_region }}#/v2/executions/details/${{ values.aws_pipeline_arn }}
+    - title: ${{ values.component_id}} endpoint
+      url: ${{ values.aws_bp_outputs["baws-alb-endpoint"] | dump }}
+  labels:
+    aws-iacType: cdk
+spec:
+  type: aws-app
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn:
+    - ${{ values.aws_environment }}

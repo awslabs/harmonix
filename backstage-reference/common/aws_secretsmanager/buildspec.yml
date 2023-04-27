@@ -1,0 +1,30 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - echo "==== Starting the install phase - $(date -u +%Y%m%d-%H%M) ===="
+      - apt-get update -y
+      - echo "Node version $(node --version)"
+      - npm install -g aws-cdk
+      - echo "AWS CDK version $(cdk --version)"
+  pre_build:
+    commands:
+      - echo "==== Starting the pre_build phase $(date -u +%Y%m%d-%H%M) ===="
+      - npm install
+      - npm ls
+  build:
+    commands:
+      - echo "==== Starting the build phase $(date -u +%Y%m%d-%H%M) ===="
+      - cdk deploy --no-color --require-approval never --method direct --tags "backstage-iac=aws_secretsmanager" --outputs-file "output/cdk-output.json"
+  post_build:
+    commands:
+      - echo "==== Starting the post_build phase $(date -u +%Y%m%d-%H%M) ===="
+      # perform clean up actions and any notifications
+
+artifacts:
+  files:
+    - 'cdk-output.json'
+  base-directory: output

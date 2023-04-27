@@ -1,0 +1,153 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: example-springboot-template
+  title: Spring Boot REST service
+  description: >-
+    Create a starter service using the Java-based Spring Boot framework
+  tags:
+    - java
+    - springboot
+    - aws
+spec:
+  owner: group:admins
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Provide some basic service information
+      required:
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+          default: springboot-service-name
+        description:
+          title: Description
+          type: string
+          description: Help others understand what this service is for
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+    - title: Provide environment information for the application
+      required:
+        - environment
+      properties:
+        greetee:
+          title: Default Greetee
+          type: string
+          description: Who do you want to say hello to?
+          default: World
+        environment:
+          title: AWS Environment
+          type: string
+          description: The AWS Environment where the service and database are deployed
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AWSEnvironment
+    - title: Choose a git repository location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-app
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    # Each step executes an action, in this case one templates files into the working directory.
+    - id: bawsDeployECSBoilerplate
+      name: Deploy BAWS Boilerplate
+      action: baws:deploy-boilerplate
+      input:
+        boilerplateRepositories:
+          # - aws_rds
+          - aws_ecs
+        inputParameters:
+          APP_SHORT_NAME: ${{ parameters.component_id}}
+          APP_ENV_PLAINTEXT:
+            PORT: "8081"
+        environmentRef: ${{ parameters.environment }}
+        actionType: "Create App"
+    - id: createSecretManager
+      name: Create a Secret
+      action: baws:create-secret
+      input:
+        secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
+        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+        description: "Gitlab repo access token"
+        tags:
+          - Key: "aws-apps:${{ parameters.component_id }}"
+            Value: ${{ parameters.component_id }}
+    - id: fetchBase
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          greetee: ${{ parameters.greetee }}
+          port: "8081"
+          component_id: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          owner: ${{ parameters.owner }}
+          aws_environment: ${{ parameters.environment }}
+          aws_region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+          aws_account: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+          aws_pipeline_arn: ${{ steps['bawsDeployECSBoilerplate'].output.executionArn }}
+          aws_bp_outputs: ${{ steps['bawsDeployECSBoilerplate'].output.cfnOutputs }}
+          aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+    # This step publishes the contents of the working directory to GitLab.
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        description: This is ${{ parameters.component_id }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        repoVisibility: internal
+    - id: createRepoToken
+      name: Create Repo Access Token
+      action: baws:createRepoAccessToken:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        projectId: ${{ steps['publish'].output.projectId}}
+        secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+    # The final step is to register our new component in the catalog.
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

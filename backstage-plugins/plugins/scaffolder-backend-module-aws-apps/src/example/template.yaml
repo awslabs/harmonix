@@ -1,0 +1,151 @@
+---
+# This is a sample Software Template yaml file demonstrating how the aws-apps
+# scaffolder actions can be used in the larger context of creating a new application
+# in Backstage
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: example-awsapp-template
+  title: Example AWS Application
+spec:
+  owner: group:developers
+  type: website
+  parameters:
+    # Get information about the Backstage component name and ownership
+    - title: Provide basic component information
+      required:
+        - component_id
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+    # Get the AWS Environment where the user would like to deploy new AWS resources
+    - title: Provide AWS environment information for the application
+      required:
+        - environment
+      properties:
+        environment:
+          title: AWS Environment
+          type: string
+          description: The AWS Environment where the database is created
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AWSEnvironment  
+    # Get the Gitlab repository for source code management
+    - title: Choose a git repository location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - gitlab.mycompany.com
+            allowedOwners:
+              - dev-group
+  steps:
+    # Deploy the ESC resources to run the application.  
+    # Here, we invoke the `baws:deploy-boilerplate` action and specify 
+    # the 'ecs_resources' repository as the location of the boilerplate IaC code.  
+    - id: deployECSResources
+      name: Deploy AWS ECS Resources
+      action: baws:deploy-boilerplate
+      input:
+        boilerplateRepositories:
+          - ecs_resources
+        inputParameters:
+          APP_SHORT_NAME: ${{ parameters.component_id}}
+          APP_ENV_PLAINTEXT:
+            PORT: "3001"
+          # Example for adding tags to resources created via the boilerplate
+          AWS_RESOURCE_TAGS:
+            - Key: CostCenter
+              Value: HR-1234
+        environmentRef: ${{ parameters.environment }}
+        actionType: "Create App"
+    # Create an empty Secrets Manager secret
+    # In this example, we're creating a new secret where a Gitlab
+    # repository access token string will be stored (this occurs in the
+    # subsequent createRepoAccessToken step).
+    # We leverage the output from the previous deployECSResources step
+    # to pass the account and region where we want the secret to be created.
+    # We also pass a tag Key/Value so that the new Secret is tagged with a 
+    # key starting with "aws-apps:" so that it is included in the resource
+    # group created to track AWS resources associated with the application.
+    - id: createSecretManager
+      name: Creates a Secret
+      action: baws:create-secret
+      input:
+        secretName: ${{ parameters.component_id }}-gitlab-access-token
+        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+        description: "Gitlab repo access token"
+        tags:
+          - Key: "aws-apps:${{ parameters.component_id }}"
+            Value: ${{ parameters.component_id }}
+    # Fetches the template code from the remote repo where this template resides
+    # In a real template, the input values which start with "aws_" would be used to 
+    # record AWS-specific annotations into the catalog.yaml file for the entity.
+    - id: fetchBase
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          component_id: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          pipeline_arn: ${{ steps['bawsDeployECSBoilerplate'].output.executionArn }}
+          aws_environment: ${{ parameters.environment }}
+          aws_region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+          aws_account: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+          aws_bp_outputs: ${{ steps['bawsDeployECSBoilerplate'].output.cfnOutputs }}
+          aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+    # Publishes the contents of the working directory to a new GitLab repo
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+    # Create a new Gitlab repository access token for the newly created repo
+    # and store the access token in the Secret that we created earlier
+    - id: createRepoToken
+      name: Create Repo Token
+      action: baws:createRepoAccessToken:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        projectId: ${{ steps['publish'].output.projectId }}
+        secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+    # The final step is to register our new component in the catalog.
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

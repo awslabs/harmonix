@@ -1,0 +1,24 @@
+---
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ${{ values.rds_resource_id | dump }}
+  {%- if values.rds_description %}
+  description: ${{ values.rds_description | dump }}
+  {%- endif %}
+  tags:
+    - aws
+    - rds
+  annotations:
+    {%- for name, value in values.aws_rds_bp_outputs %}
+    aws.amazon.com/${{ name }}: ${{ value | dump }}
+    {%- endfor %}
+  labels:
+    aws-iacType: cdk
+spec:
+  type: aws-resource
+  owner: ${{ values.owner | dump }}
+  dependencyOf:
+    - "component:${{ values.component_id }}"
+  dependsOn:
+    - ${{ values.aws_environment | dump }}

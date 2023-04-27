@@ -1,0 +1,65 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.10
+      nodejs: 16
+    commands:
+      - echo "==== Starting the install phase - $(date -u +%Y%m%d-%H%M) ===="
+      - apt-get update -y
+      - echo "Node version $(node --version)"
+      # - echo "python version $(python --version)"
+      - echo "--- Installing AWS CDK ---"
+      - npm install -g aws-cdk
+      - echo "AWS CDK version $(cdk --version)"
+  pre_build:
+    commands:
+      - echo "==== Starting the pre_build phase $(date -u +%Y%m%d-%H%M) ===="
+      - echo "--- Installing npm dependencies ---"
+      - npm install
+      # - echo "--- Installing python dependencies ---"
+      # - pip install -r requirements.txt
+  build:
+    commands:
+      - echo "==== Starting the build phase $(date -u +%Y%m%d-%H%M) ===="
+      # - echo "AWS caller identity information:"
+      - echo "Building and pushing the application docker image"
+      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+      - DATE_TAG=$(date -u +%Y%m%d-%H%M)
+      - docker build --tag ${REPO_NAME} .
+      - docker tag ${REPO_NAME}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:${DATE_TAG}
+      - docker tag ${REPO_NAME}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:latest
+      - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:${DATE_TAG}
+      - docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${REPO_NAME}:latest
+      - echo "Running cdk to deploy AWS infrastructure"
+      - cdk deploy --no-color --require-approval never --method direct --tags backstage-iac=${REPO_NAME}_resources
+  post_build:
+    commands:
+      - echo "==== Starting the post_build phase $(date -u +%Y%m%d-%H%M) ===="
+      # perform clean up actions and any notifications
+
+
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      nodejs: 16
+    commands:
+      - echo "==== Starting the install phase - $(date -u +%Y%m%d-%H%M) ===="
+      - apt-get update -y
+  pre_build:
+    commands:
+      - echo "==== Starting the pre_build phase $(date -u +%Y%m%d-%H%M) ===="
+      - npm install
+  build:
+    commands:
+      - echo "==== Starting the build phase $(date -u +%Y%m%d-%H%M) ===="
+      - echo "AWS caller identity information:"
+      - aws sts get-caller-identity --output table
+      - cdk deploy --no-color --require-approval never --method direct --parameters
+  post_build:
+    commands:
+      - echo "==== Starting the post_build phase $(date -u +%Y%m%d-%H%M) ===="
+      # perform clean up actions and any notifications

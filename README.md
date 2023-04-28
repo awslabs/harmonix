@@ -353,7 +353,7 @@ apiRouter.use('/gitlab', await gitlab(gitlabEnv));
 apiRouter.use('/aws-apps-backend', await awsApps(awsAppsEnv));
 ```
 
-5. Create plugins reference files - `awsApps.ts`, `gitlab.ts` under `backstage/packages/backend/src/plugins`
+6. Create plugins reference files - `awsApps.ts`, `gitlab.ts` under `backstage/packages/backend/src/plugins`
 
 ```ts
 //awsApps.ts
@@ -391,7 +391,7 @@ export default async function createPlugin(
 
 ```
 
-6. Edit `packages/app/src/components/Root/Root.tsx`
+7. Edit `packages/app/src/components/Root/Root.tsx`
 
 ```ts
 // import the below
@@ -419,7 +419,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
 
 ```
 
-7. Edit `packages/app/src/App.tsx`
+8. Edit `packages/app/src/App.tsx`
 ```diff
 // Add the import below
 + import { AppCatalogPage } from '@internal/plugin-aws-apps';
@@ -460,7 +460,7 @@ const routes = (
   </FlatRoutes>
 );
 ```
-8. Edit `packages/backend/src/plugins/auth.ts`
+9. Edit `packages/backend/src/plugins/auth.ts`
 ```ts
 // Add the below auth provider after the github provider
 

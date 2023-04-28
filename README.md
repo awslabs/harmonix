@@ -86,32 +86,41 @@ Configure Backstage to use the plugins:
   - [AWS Home page and theme demo](/backstage/plugins/aws-apps-demo/README.md)
 
 1. Edit the file `backstage/packages/backend/src/plugins/catalog.ts` with the below modifications:
-```ts 
+```diff
 //Add these imports
-import { OktaOrgEntityProvider } from '@roadiehq/catalog-backend-module-okta';
-import { GitlabFillerProcessor } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
-import { AWSEnvironmentEntitiesProcessor, AWSEnvironmentProviderEntitiesProcessor} from '@internal/plugin-aws-apps-backend';
++ import { OktaOrgEntityProvider } from '@roadiehq/catalog-backend-module-okta';
++ import { GitlabFillerProcessor } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
++ import { AWSEnvironmentEntitiesProcessor, AWSEnvironmentProviderEntitiesProcessor} from '@internal/plugin-aws-apps-backend';
 
+export default async function createPlugin(
+  env: PluginEnvironment,
+): Promise<Router> {
+   const builder = await CatalogBuilder.create(env);  
++  const orgProvider = OktaOrgEntityProvider.fromConfig(env.config, {
++    logger: env.logger,
++    userNamingStrategy: 'strip-domain-email',
++    groupNamingStrategy: 'kebab-case-name',
++  });
 
-// Add the providers after builder varible creation and before builder.build()
++  builder.addEntityProvider(orgProvider);
 
-  const orgProvider = OktaOrgEntityProvider.fromConfig(env.config, {
-    logger: env.logger,
-    userNamingStrategy: 'strip-domain-email',
-    groupNamingStrategy: 'kebab-case-name',
-  });
+   builder.addProcessor(new ScaffolderEntitiesProcessor());
 
-  builder.addEntityProvider(orgProvider);
++  // Custom processors
++  builder.addProcessor(new GitlabFillerProcessor(env.config));
++  builder.addProcessor(new AWSEnvironmentEntitiesProcessor());
++  builder.addProcessor(new AWSEnvironmentProviderEntitiesProcessor());
 
-  builder.addProcessor(new GitlabFillerProcessor(env.config));
+   const { processingEngine, router } = await builder.build();
++  orgProvider.run();
+   await processingEngine.start();
 
-  // Custom processors
-  builder.addProcessor(new AWSEnvironmentEntitiesProcessor());
-  builder.addProcessor(new AWSEnvironmentProviderEntitiesProcessor());
+   return router;
+}
 
 ```
 
-2. Add `gitlab.ts` file on `backstage/packages/backend/src/plugins` directory.
+1. Add `gitlab.ts` file on `backstage/packages/backend/src/plugins` directory.
    paste the content below:
 ```ts 
 import { PluginEnvironment } from '../types'; 

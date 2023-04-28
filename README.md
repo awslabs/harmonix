@@ -120,7 +120,64 @@ export default async function createPlugin(
 
 ```
 
-1. Add `gitlab.ts` file on `backstage/packages/backend/src/plugins` directory.
+1. Add scaffolder actions to the `scaffolder.ts` file
+
+```diff
+// backstage/packages/backend/src/plugins/scaffolder.ts
+
+import { CatalogClient } from '@backstage/catalog-client';
+import { createBuiltinActions, createRouter } from '@backstage/plugin-scaffolder-backend';
+import { Router } from 'express';
+import type { PluginEnvironment } from '../types';
+import { ScmIntegrations } from '@backstage/integration';
++ import {
++   createBawsDeployBoilerplateAction,
++   createRepoAccessTokenAction,
++   createSecretAction,
++   createS3BucketAction,
++   getEnvProvidersAction,
++   getComponentInfoAction,
++   getSsmParametersAction,
++ } from '@internal/backstage-plugin-scaffolder-backend-module-aws-apps';
+
+export default async function createPlugin(env: PluginEnvironment): Promise<Router> {
+  const catalogClient = new CatalogClient({
+    discoveryApi: env.discovery,
+  });
+
++  const integrations = ScmIntegrations.fromConfig(env.config);
+
++  const builtInActions = createBuiltinActions({
++    integrations,
++    catalogClient,
++    reader: env.reader,
++    config: env.config,
++  });
+
++  const actions = [
++     ...builtInActions,
++    createBawsDeployBoilerplateAction({ catalogClient }),
++    createRepoAccessTokenAction({ integrations }),
++    createS3BucketAction(),
++    createSecretAction(),
++    getEnvProvidersAction({ catalogClient }),
++    getComponentInfoAction(),
++    getSsmParametersAction(),
+  ];
+
+  return await createRouter({
+    logger: env.logger,
+    config: env.config,
+    database: env.database,
+    reader: env.reader,
+    catalogClient,
+    identity: env.identity,
++    actions,
+  });
+}
+```
+
+3. Add `gitlab.ts` file on `backstage/packages/backend/src/plugins` directory.
    paste the content below:
 ```ts 
 import { PluginEnvironment } from '../types'; 

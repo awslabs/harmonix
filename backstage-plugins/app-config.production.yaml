@@ -70,11 +70,11 @@ integrations:
       baseUrl: https://${GITLAB_HOSTNAME}
       token: ${GITLAB_ADMIN_TOKEN}
 
-scaffolder:
+# scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
-  defaultAuthor:
-    name: Backstage Scaffolder
-    email: fsi-pace-amer+backstage-admin@amazon.com
+  # defaultAuthor:
+  #   name: Backstage Scaffolder
+  #   email: backstage-scaffolder@mycompany.com
 
 catalog:
   # Overrides the default list locations from app-config.yaml as these contain example data.
@@ -95,3 +95,7 @@ catalog:
       target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/templates/all-templates.yaml
       rules:
         - allow: [Location, Template]
+  providers:
+    okta:
+      - orgUrl: ${OKTA_ORG_URL}
+        token: ${OKTA_API_TOKEN}

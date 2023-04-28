@@ -6,29 +6,33 @@ The AWS Backend is composed of three-steps/stacks installation. The reason for t
 
 ### 1. Prerequisites
 
-1. Navigate to `infrastructure` and edit `config.yaml`
+1. Edit infrastructure configuration - 
+   1.1. Navigate to `infrastructure`
+   1.2. Create a copy of the configuration file: `cp config.sample.yaml config.yaml`.  
+   1.3. Edit the new `config.yaml` file.  Most of the values in the file should be used as-is for this solution, except for the items shown in **bold** below.  These should be updated to reflect your own AWS account, hosted zone name and IP addressed to allow access to your Backstage instance.
     - AppPrefix - a prefix name that will be added to the created cloud artifacts
-    - Account - the account to deploy the solution
+    - **Account** - the account to deploy the solution
     - Region - the region to deploy the solution
     - ReplicaRegion - a replica region to deploy secrets replicas
     - OktaConfigSecret - the name of the secret for storing Okta configurations
     - DbConfigSecret - the name of the secret for storing database credentials used by the Backstage solution
     - GitLabSecret - the name of secret for storing GitLab credentials
     - GitLabAmi - the AMI for the GitLab EC2 image
-    - R53HostedZoneName - the hosted zone which will be used to deploy the solution along with its subdomains
-    - AllowedIPs - a list of CIDR blocks that will be allowed to access the solution externally
+    - **R53HostedZoneName** - the hosted zone which will be used to deploy the solution along with its subdomains.  See #4 below.
+    - **AllowedIPs** - a list of CIDR blocks that will be allowed to access the solution externally
 
-2. CDK bootstrap - make sure the account, region, and replica region are all bootstrapped before continuing to the next steps. You can bootstrap the account by simply running the command below:
+2. CDK bootstrap - make sure the account, region, and replica region are all bootstrapped before continuing to the next steps. You can bootstrap the account by simply running the commands below.
+Be sure to replace "\$ACCOUNT_ID" with your AWS account id and "\$AWS_PRIMARY_REGION" / "\$AWS_SECONDARY_REGION" with your desired regions (e.g. "us-east-1" and "us-west-2").
 
 ```sh
-npm install
+yarn install
 cdk bootstrap aws://$ACCOUNT_ID/$AWS_PRIMARY_REGION
 cdk bootstrap aws://$ACCOUNT_ID/$AWS_SECONDARY_REGION
 ```
-* ignore warrnings such as 'xxx is declared but its value is never read'.
+* ignore warnings such as 'xxx is declared but its value is never read'.
 * Make sure docker is installed and running
   
-1. Run the prereq stack deployment 
+3. Run the prereq stack deployment 
 
 ```sh
 cd ..
@@ -38,11 +42,8 @@ make deploy-prereq
 This command will deploy the pre-requisite stack which will create the following resources:
 
 - **ECR repository** to hold Backstage container images.
-
 - **KMS** key used for all data at rest encryption of Backstage platform resources.
-
 - **Okta Secret** that will hold Okta confiugration and credentails to be used as an authentication provider for Backstage.
-
 - **GitLab Secret** to store GitLab admin account credentials.
 
 4. Configure the hosted zone
@@ -55,11 +56,11 @@ You will need to update your Okta secrets in **Secrets Manager** with 3rd party 
 ![DeploymentArchitecture.png](../docs/images/DeploymentArchitecture.png)
 
 ### 2. Backstage image build and deploy
-You will need to build a container image of Backstage with our new configurations.  Prior to building the container image, ensure that you have completed all configuration changes to add the Backstage-plugins functionality to your Backstage application.  See [PLUGIN_INSTALL.md](../docs/PLUGIN_INSTALL.md) for details.
+You will need to build a container image of Backstage with our new configurations.
 
 **STOP HERE** 
 
-Before continuing, make sure you have a Backstage directory at the root of the repo with a copy of Backstage software along with the plugins and coniguration changes, Please make sure you follow the instructions [Here](../README.md)
+Before continuing, make sure you have a Backstage directory at the root of the repo with a copy of Backstage software along with the plugins and coniguration changes, Please make sure you follow the [Install and Configure Backstage instructions](../README.md#1-install-and-configure-backstage).
 
 * Make sure you have Docker installed
 * Make sure Docker is running

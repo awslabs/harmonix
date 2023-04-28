@@ -126,10 +126,11 @@ export default async function createPlugin(
 // backstage/packages/backend/src/plugins/scaffolder.ts
 
 import { CatalogClient } from '@backstage/catalog-client';
-import { createBuiltinActions, createRouter } from '@backstage/plugin-scaffolder-backend';
+import { createRouter } from '@backstage/plugin-scaffolder-backend';
++ import { createBuiltinActions } from '@backstage/plugin-scaffolder-backend';
 import { Router } from 'express';
 import type { PluginEnvironment } from '../types';
-import { ScmIntegrations } from '@backstage/integration';
++ import { ScmIntegrations } from '@backstage/integration';
 + import {
 +   createBawsDeployBoilerplateAction,
 +   createRepoAccessTokenAction,
@@ -163,7 +164,7 @@ export default async function createPlugin(env: PluginEnvironment): Promise<Rout
 +    getEnvProvidersAction({ catalogClient }),
 +    getComponentInfoAction(),
 +    getSsmParametersAction(),
-  ];
++  ];
 
   return await createRouter({
     logger: env.logger,
@@ -177,28 +178,48 @@ export default async function createPlugin(env: PluginEnvironment): Promise<Rout
 }
 ```
 
-3. Add `gitlab.ts` file on `backstage/packages/backend/src/plugins` directory.
+3. Add `gitlab.ts` file in `backstage/packages/backend/src/plugins` directory.
    paste the content below:
 ```ts 
-import { PluginEnvironment } from '../types'; 
-import { Router } from 'express-serve-static-core'; 
+//gitlab.ts
+import { PluginEnvironment } from '../types';
+import { Router } from 'express-serve-static-core';
 import { createRouter } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
 
 export default async function createPlugin(
-env: PluginEnvironment): Promise<Router> {
-return createRouter({
+  env: PluginEnvironment,
+): Promise<Router> {
+  return createRouter({
     logger: env.logger,
     config: env.config,
-});
-}   
+  });
+} 
 ```
 
-4. Edit `backstage/packages/app/src/components/cataog/EntitiyPage.tsx`   
+4. Add `awsApps.ts` file in the `backstage/packages/backend/src/plugins` directory.
+   Paste the content below:
+
 ```ts
-  // Add the below imports
-  import { Entity } from '@backstage/catalog-model';
-  import {
+// awsApps.ts
+import {createRouter} from '@internal/plugin-aws-apps-backend'
+import { Router } from 'express';
+import { PluginEnvironment } from '../types';
+
+export default async function createPlugin(env: PluginEnvironment): Promise<Router> {
+  return await createRouter({
+    logger: env.logger,
+    userIdentity: env.identity,
+  });
+}
+```
+
+5. Edit `backstage/packages/app/src/components/catalog/EntityPage.tsx`   
+```ts
+// Add the below imports
+import { Entity } from '@backstage/catalog-model';
+import {
   AwsAppPage,
+  EntityCustomGitlabContent,
   EntityAppStateCard,
   EntityAppStateCardCloudFormation,
   EntityGeneralInfoCard,
@@ -206,27 +227,38 @@ return createRouter({
   EntityInfrastructureInfoCard,
   EntityAppConfigCard,
   EntityAuditTable,
-  } from '@internal/plugin-aws-apps';
+} from '@internal/plugin-aws-apps';
+import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 
-  import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
+// Add the following const variables after the import statements
+const isCicdApplicable = (entity: Entity) => {
+  return isGitlabAvailable(entity) || isGithubActionsAvailable(entity);
+};
+export const isServerlessRestApi = (entity: Entity): boolean => {
+  const subType = entity?.metadata?.annotations?.['aws.amazon.com/baws-component-subtype'];
+  return 'serverless-rest-api' === subType;
+};
+export const isLogsAvailable = (entity: Entity): boolean => {
+  return !!entity?.metadata?.annotations?.['aws.amazon.com/baws-task-log-group'] ||
+  'serverless-rest-api' === entity?.metadata?.annotations?.['aws.amazon.com/baws-component-subtype'];
+};
 
-  // Add the lines below
+// Add the GitLab CI/CD content to the entity page
+const cicdContent = (
+  // This is an example of how you can implement your company's logic in entity page.
+  // You can for example enforce that all components of type 'service' should use GitHubActions
+  <EntitySwitch>
+    [... GitHub configuration ...]
+    
+    {/* Add a switch entity for GitLab here*/}
+    <EntitySwitch.Case if={isGitlabAvailable}>
+      <EntityCustomGitlabContent />
+    </EntitySwitch.Case>
+    
+    [... Remaining CI/CD configuration(s) ...]
+    
 
-  const isCicdApplicable = (entity: Entity) => {
-    return isGitlabAvailable(entity) || isGithubActionsAvailable(entity);
-  };
-
-  export const isServerlessRestApi = (entity: Entity): boolean => {
-    const subType = entity?.metadata?.annotations?.['aws.amazon.com/baws-component-subtype'];
-    return 'serverless-rest-api' === subType;
-  };
-  
-  export const isLogsAvailable = (entity: Entity): boolean => {
-    return !!entity?.metadata?.annotations?.['aws.amazon.com/baws-task-log-group'] ||
-    'serverless-rest-api' === entity?.metadata?.annotations?.['aws.amazon.com/baws-component-subtype'];
-  };
-
-// Add plugin UI cards andn page
+// Add plugin UI cards and page.  These should be added after the declaration of the 'entityWarningContent'
 const awsEcsAppViewContent = (
 <Grid container spacing={3} alignItems="stretch">
   {entityWarningContent}
@@ -270,7 +302,7 @@ const awsServerlessRestApiAppViewContent = (
     <EntityGeneralInfoCard />
   </Grid>
   <Grid item md={12} xs={12}>
-    <EntityAppStateCardCloudFormation> </EntityAppStateCardCloudFormation>
+    <EntityAppStateCardCloudFormation />
   </Grid>
   <Grid item md={12} xs={12}>
     <EntityInfrastructureInfoCard />
@@ -319,16 +351,16 @@ const awsAppEntityPage = (
 </EntityLayout>
 );
 
-// update defaultEntityPage to ->
+// update defaultEntityPage to include an EntityLayout.Route for /ci-cd->
 const defaultEntityPage = (
   <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
     {cicdContent}
   </EntityLayout.Route>
 ...
   )
-// update the const componentPage to ->
+// update the const componentPage to include an EntitySwitch.Case for aws-app component types ->
 const componentPage = (
-<EntitySwitch.Case if={isComponentType('aws-app')}>
+  <EntitySwitch.Case if={isComponentType('aws-app')}>
     <AwsAppPage>
       {awsAppEntityPage}
     </AwsAppPage>
@@ -338,11 +370,12 @@ const componentPage = (
 
 ```
 
-5. Edit `backstage/packages/backend/src/index.ts`
+6. Edit `backstage/packages/backend/src/index.ts`
+
 ```ts
 // Add the below imports
 import gitlab from './plugins/gitlab';
-import awsApps from './plugins/awsApps'
+import awsApps from './plugins/awsApps';
 
 // After   const createEnv = makeCreateEnv(config); add the below ->
 const awsAppsEnv = useHotMemoize(module, () => createEnv('aws-apps-backend'));
@@ -353,70 +386,43 @@ apiRouter.use('/gitlab', await gitlab(gitlabEnv));
 apiRouter.use('/aws-apps-backend', await awsApps(awsAppsEnv));
 ```
 
-6. Create plugins reference files - `awsApps.ts`, `gitlab.ts` under `backstage/packages/backend/src/plugins`
-
-```ts
-//awsApps.ts
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
-
-import {createRouter} from '@internal/plugin-aws-apps-backend'
-import { Router } from 'express';
-import { PluginEnvironment } from '../types';
-export default async function createPlugin(env: PluginEnvironment): Promise<Router> {
-  // Here is where you will add all of the required initialization code that
-  // your backend plugin needs to be able to start!
-  // The env contains a lot of goodies, but our router currently only
-  // needs a logger
-  //   env.identity.getIdentity()
-  return await createRouter({
-    logger: env.logger,
-    userIdentity: env.identity,
-  });
-}
-
-//gitlab.ts
-import { PluginEnvironment } from '../types';
-import { Router } from 'express-serve-static-core';
-import { createRouter } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
-
-export default async function createPlugin(
-    env: PluginEnvironment
-): Promise<Router> {
-    return createRouter({
-        logger: env.logger,
-        config: env.config,
-    });
-}
-
-```
-
 7. Edit `packages/app/src/components/Root/Root.tsx`
 
-```ts
+```diff
 // import the below
-import CloudIcon from '@material-ui/icons/Cloud';
++ import CloudIcon from '@material-ui/icons/Cloud';
 
-// update to the code below
+// update to the code below to add a SidebarItem pointing to the AWS apps search page
 export const Root = ({ children }: PropsWithChildren<{}>) => (
   <SidebarPage>
     <Sidebar>
       <SidebarLogo />
+      <SidebarGroup label="Search" icon={<SearchIcon />} to="/search">
+        <SidebarSearchModal />
+      </SidebarGroup>
+      <SidebarDivider />
       <SidebarGroup label="Menu" icon={<MenuIcon />}>
         {/* Global nav, not org-specific */}
         <SidebarItem icon={HomeIcon} to="/" text="Home" />
 +       <SidebarItem icon={CloudIcon} to="aws-apps-search-page" text="AWS" />
+        <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
         {/* End global nav */}
+        <SidebarDivider />
+        <SidebarScrollWrapper>
+          <SidebarItem icon={MapIcon} to="tech-radar" text="Tech Radar" />
+        </SidebarScrollWrapper>
       </SidebarGroup>
+      <SidebarSpace />
+      <SidebarDivider />
       <SidebarGroup label="Settings" icon={<UserSettingsSignInAvatar />} to="/settings">
         <SidebarSettings />
       </SidebarGroup>
     </Sidebar>
     {children}
   </SidebarPage>
-
+);
 ```
 
 8. Edit `packages/app/src/App.tsx`
@@ -425,8 +431,8 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
 + import { AppCatalogPage } from '@internal/plugin-aws-apps';
 + import {SignInPage} from '@backstage/core-components'
 + import { oktaAuthApiRef } from '@backstage/core-plugin-api';
-// Modify the below sign in page
 
+// Modify the createApp function as shown below to add a sign in page
 const app = createApp({
   apis,
 +  components: {
@@ -448,8 +454,7 @@ const app = createApp({
 +    },
 +  },
 
-// Add the reference below
-
+// Add the Route reference for /aws-apps-search-page as shown below
 [...]
 const routes = (
   <FlatRoutes>
@@ -460,9 +465,11 @@ const routes = (
   </FlatRoutes>
 );
 ```
+
 9. Edit `packages/backend/src/plugins/auth.ts`
+
 ```ts
-// Add the below auth provider after the github provider
+// Add the Okta auth provider to the providerFactories as shown below (after the github provider)
 
       okta: providers.okta.create({
         signIn: {
@@ -481,9 +488,6 @@ const routes = (
           }
         },
       }),
-
-
-
 ```
 
 

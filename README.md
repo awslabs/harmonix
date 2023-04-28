@@ -120,7 +120,7 @@ export default async function createPlugin(
 
 ```
 
-1. Add scaffolder actions to the `scaffolder.ts` file
+2. Add scaffolder actions to the `scaffolder.ts` file
 
 ```diff
 // backstage/packages/backend/src/plugins/scaffolder.ts
@@ -193,7 +193,7 @@ return createRouter({
 }   
 ```
 
-3. Edit `backstage/packages/app/src/components/cataog/EntitiyPage.tsx`   
+4. Edit `backstage/packages/app/src/components/cataog/EntitiyPage.tsx`   
 ```ts
   // Add the below imports
   import { Entity } from '@backstage/catalog-model';
@@ -338,7 +338,7 @@ const componentPage = (
 
 ```
 
-4. Edit `backstage/packages/backend/src/index.ts`
+5. Edit `backstage/packages/backend/src/index.ts`
 ```ts
 // Add the below imports
 import gitlab from './plugins/gitlab';

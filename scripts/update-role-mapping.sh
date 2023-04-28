@@ -2,7 +2,11 @@ set -o pipefail # FAIL FAST
 source ./scripts/helpers.sh
 shopt -s expand_aliases
 
-SECURITY_MAPPING_TABLE=baws-solution-securitymappingtableSecurityMappingTabletableF68716EF-ZPGYR7LN94GG
+SECURITY_MAPPING_TABLE_SSM=/baws/SecurityMappingTable
+AWS_REGION=us-east-1
+SECURITY_MAPPING_TABLE=`aws ssm get-parameter --name $SECURITY_MAPPING_TABLE_SSM --output text --query Parameter.Value --region $AWS_REGION --with-decryption`
+echo "Table name $SECURITY_MAPPING_TABLE"
+
 set_env
 AWS_ACCOUNT_ID=$CURR_AWS_ACCOUNT
 CURRENT_DATE=$(date "+%F")

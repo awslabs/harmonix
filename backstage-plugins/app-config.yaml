@@ -1,0 +1,128 @@
+app:
+  title: Backstage App Suite
+  baseUrl: http://localhost:3000
+  logo: logo
+  logoIcon: logoIcon
+
+organization:
+  name: ${CUSTOMER_NAME}
+
+backend:
+  # Used for enabling authentication, secret is shared by all backend plugins
+  # See https://backstage.io/docs/auth/service-to-service-auth for
+  # information on the format
+  # auth:
+  #   keys:
+  #     - secret: ${BACKEND_SECRET}
+  baseUrl: http://localhost:7007
+  listen:
+    # port: 7007
+    port: 8080  
+    # Uncomment the following host directive to bind to specific interfaces
+    # host: 127.0.0.1
+  csp:
+    connect-src: ["'self'", 'http:', 'https:']
+    # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
+    # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+  cors:
+    origin: http://localhost:3000
+    methods: [GET, HEAD, PATCH, POST, PUT, DELETE]
+    credentials: true
+  # This is for local development only, it is not recommended to use this in production
+  # The production database configuration is stored in app-config.production.yaml
+  database:
+    # client: better-sqlite3
+    # connection: ':memory:'
+    client: pg
+    connection:
+      host: ${POSTGRES_HOST}
+      port: ${POSTGRES_PORT}
+      user: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+  cache:
+    store: memory
+  # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
+  reading:
+    allow:
+      - host: ${GITLAB_HOSTNAME}
+
+integrations:
+  github:
+    - host: github.com
+      # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
+      # about setting up the GitHub integration here: https://backstage.io/docs/getting-started/configuration#setting-up-a-github-integration
+      token: ${GITHUB_TOKEN}
+    ### Example for how to add your GitHub Enterprise instance using the API:
+    # - host: ghe.example.net
+    #   apiBaseUrl: https://ghe.example.net/api/v3
+    #   token: ${GHE_TOKEN}
+  # gitlab:
+  #   - host: ${GITLAB_HOSTNAME}
+  #     apiBaseUrl: https://${GITLAB_HOSTNAME}/api/v4
+  #     baseUrl: https://${GITLAB_HOSTNAME}
+  #     token: ${GITLAB_ADMIN_TOKEN}
+
+proxy:
+  ### Example for how to add a proxy endpoint for the frontend.
+  ### A typical reason to do this is to handle HTTPS and CORS for internal services.
+  # '/test':
+  #   target: 'https://example.com'
+  #   changeOrigin: true
+# Reference documentation http://backstage.io/docs/features/techdocs/configuration
+# Note: After experimenting with basic setup, use CI/CD to generate docs
+# and an external cloud storage when deploying TechDocs for production use-case.
+# https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
+techdocs:
+  builder: 'local' # Alternatives - 'external'
+  generator:
+    runIn: 'docker' # Alternatives - 'local'
+  publisher:
+    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+
+auth:
+  # see https://backstage.io/docs/auth/ to learn about auth providers
+  environment: development
+  providers:
+    okta:
+      development:
+        clientId: ${OKTA_CLIENT_ID}
+        clientSecret: ${OKTA_CLIENT_SECRET}
+        audience: ${OKTA_ORG_URL}
+        # authServerId:
+        # idp:
+# aws:
+#   # The main account is used as the source of credentials for calling
+#   # the STS AssumeRole API to assume IAM roles in other AWS accounts.
+#   # This section can be omitted to fall back to the AWS SDK's default creds chain.
+#   mainAccount:
+#     accessKeyId: ${AWS_ACCESS_KEY_ID}
+#     secretAccessKey: ${AWS_SECRET_ACCESS_KEY}
+scaffolder:
+  # see https://backstage.io/docs/features/software-templates/configuration for software template options
+  defaultAuthor:
+    name: Backstage Scaffolder
+    email: fsi-pace-amer+backstage-admin@amazon.com
+
+catalog:
+  import:
+    entityFilename: catalog-info.yaml
+    pullRequestBranchName: backstage-integration
+  rules:
+    - allow: [Component, System, API, Resource, Location, Template, AWSEnvironment, AWSEnvironmentProvider]
+
+  locations:
+    - type: url
+      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/catalog/all-environments.yaml
+
+    - type: url
+      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/catalog/all-environment-providers.yaml
+
+    # AWS templates
+    - type: url
+      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/templates/all-templates.yaml
+      rules:
+        - allow: [Location, Template]
+  providers:
+    okta:
+      - orgUrl: ${OKTA_ORG_URL}
+        token: ${OKTA_API_TOKEN}

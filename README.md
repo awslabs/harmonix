@@ -325,24 +325,105 @@ export default async function createPlugin(
 
 ```
 
+6. Edit `packages/app/src/components/Root/Root.tsx`
 
-### 2. Deploy Infrastructure Prereq
+```ts
+// import the below
+import CloudIcon from '@material-ui/icons/Cloud';
 
-See the [Infrastructure README.md](/infrastructure/README.md#1-prerequisites) for details about deploying the prereq stack.
+// update to the code below
+export const Root = ({ children }: PropsWithChildren<{}>) => (
+  <SidebarPage>
+    <Sidebar>
+      <SidebarLogo />
+      <SidebarGroup label="Menu" icon={<MenuIcon />}>
+        {/* Global nav, not org-specific */}
+        <SidebarItem icon={HomeIcon} to="/" text="Home" />
++       <SidebarItem icon={CloudIcon} to="aws-apps-search-page" text="AWS" />
+        <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+        <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
+        {/* End global nav */}
+      </SidebarGroup>
+      <SidebarGroup label="Settings" icon={<UserSettingsSignInAvatar />} to="/settings">
+        <SidebarSettings />
+      </SidebarGroup>
+    </Sidebar>
+    {children}
+  </SidebarPage>
 
-### 3. Build and Deploy the Backstage image
-
-After configuration of Backstage and deployment of Infrastructure prereq resources are complete, continue with building and deploying Backstage to the new ECR repository.
-
-The make command below will build a Docker container image and push it to the remote repository.
-**Note** You must be logged into your AWS account via CLI in the shell where you run this make command.
-```sh
-make build-and-deploy-backstage-image
 ```
 
-### 4. Deploy and Configure the Infrastructure Solution
+7. Edit `packages/app/src/App.tsx`
+```diff
+// Add the import below
++ import { AppCatalogPage } from '@internal/plugin-aws-apps';
++ import {SignInPage} from '@backstage/core-components'
++ import { oktaAuthApiRef } from '@backstage/core-plugin-api';
+// Modify the below sign in page
 
-See the [Infrastructure README.md](./infrastructure/README.md#3-deploy-the-solution-stack) for details about deploying the infrastructure solution stack, GitLab Runner stack, reference repository, and restarting the Backstage service.
+const app = createApp({
+  apis,
++  components: {
++    SignInPage: props => {
++      return (
++        <SignInPage
++          {...props}
++          auto
++          providers={[
++            {
++              id: 'okta-auth-provider',
++              title: 'Okta',
++              message: 'Sign in using Okta credentials',
++              apiRef: oktaAuthApiRef,
++            },
++          ]}
++        />
++      );
++    },
++  },
+
+// Add the reference below
+
+[...]
+const routes = (
+  <FlatRoutes>
+    [other Route configurations...]
++   <Route path="/aws-apps-search-page" element={<CatalogIndexPage />}>
++     <AppCatalogPage />
++   </Route>
+  </FlatRoutes>
+);
+```
+8. Edit `packages/backend/src/plugins/auth.ts`
+```ts
+// Add the below auth provider after the github provider
+
+      okta: providers.okta.create({
+        signIn: {
+          // resolver: providers.okta.resolvers.emailMatchingUserEntityAnnotation(),
+          resolver: async (info, ctx) => {
+            const {
+              profile: { email },
+            } = info;
+            if (!email) {
+              throw new Error('User profile contained no email');
+            }
+            const [name] = email.split('@');
+            return ctx.signInWithCatalogUser({
+              entityRef: { name }
+            });
+          }
+        },
+      }),
+
+
+
+```
+
+
+### 2. Deploy Infrastructure
+
+See the [Infrastructure README.md](/infrastructure/README.md#1-prerequisites) for details about deploying the infrastructure stacks.
 
 ### Security
 

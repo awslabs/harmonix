@@ -1,0 +1,180 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: example-serverless-rest-api-ts-template
+  title: Serverless REST API (TypeScript)
+  description: >-
+    Create a serverless REST API that utilizes the
+    Open API specification, powered by a lambda function
+    written in TypeScript and configured via a SAM
+    template
+  tags:
+    - rest
+    - swagger
+    - openapi
+    - typescript
+    - apigateway
+    - serverless
+    - sam
+    - aws
+  links:
+    - title: Serverless Application Model (SAM)
+      url: https://aws.amazon.com/serverless/sam/
+spec:
+  owner: group:admins
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Provide some basic component information
+      required:
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+        description:
+          title: Description
+          type: string
+          description: Help others understand what this API is for
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+    - title: Provide environment information for the application
+      required:
+        - environment
+      properties:
+        environment:
+          title: AWS Environment
+          type: string
+          description: The AWS Environment where the API is created
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AWSEnvironment
+    - title: Choose a location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-app
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    - id: getComponentInfo
+      name: Get Component Info
+      action: baws:get-component-info
+      input:
+        componentName: ${{ parameters.component_id }}
+
+    - id: bawsGetAwsEnvProviders
+      name: Get AWS Environment Providers
+      action: baws:get-env-providers
+      input:
+        environmentRef: ${{ parameters.environment }}
+
+    - id: bawsGetSsmParams
+      name: Get parameter values
+      action: baws:get-ssm-parameters
+      input:
+        paramKeys:
+          - '/baws/domain'
+        envProviders: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders }}
+
+    - id: createS3Bucket
+      name: Create an S3 bucket
+      action: baws:create-s3-bucket
+      input:
+        bucketName: ${{ steps['getComponentInfo'].output.kebabCaseComponentName }}-${{ steps['bawsGetAwsEnvProviders'].output.envShortName }}
+        envProviders: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders }}
+        tags:
+          - Key: "aws-apps:${{ parameters.component_id }}"
+            Value: ${{ parameters.component_id }}
+
+    - id: createSecretManager
+      name: Create a Secret
+      action: baws:create-secret
+      input:
+        secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
+        region: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].region }}
+        accountId: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].accountId }}
+        description: "Gitlab repo access token"
+        tags:
+          - Key: "aws-apps:${{ parameters.component_id }}"
+            Value: ${{ parameters.component_id }}
+
+    - id: fetchBase
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./skeleton
+        values:
+          component_id: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          aws_environment: ${{ parameters.environment }}
+          aws_environment_short_name: ${{ steps['bawsGetAwsEnvProviders'].output.envShortName }}
+          aws_region: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].region }}
+          aws_account: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].accountId }}
+          aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+          aws_bucket_name: ${{ steps['createS3Bucket'].output.awsBucketName }}
+          aws_hosted_zone_domain: ${{ steps['bawsGetSsmParams'].output.params[steps['bawsGetAwsEnvProviders'].output.envProviders[0].envProviderName]['/baws/domain'] }}
+          aws_kebab_component_id: ${{ steps['getComponentInfo'].output.kebabCaseComponentName }}
+          aws_vpc_id: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].vpcId }}
+          aws_vpc_public_subnets: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].publicSubnets|join(',') }}
+          aws_vpc_private_subnets: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].privateSubnets|join(',') }}
+          
+    # This step publishes the contents of the working directory to GitLab.
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+
+    - id: createRepoToken
+      name: Create Repo Access Token
+      action: baws:createRepoAccessToken:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        projectId: ${{ steps['publish'].output.projectId}}
+        secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+        region: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].region }}
+        accountId: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].accountId }}
+
+    # The final step is to register our new component in the catalog.
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

@@ -1,0 +1,17 @@
+apiVersion: aws.backstage.io/v1alpha
+kind: AWSEnvironment
+metadata:
+  name: AWS-Prod-Pub-Environment
+  short-name: prod
+  description: An AWS public production environment
+  env-type-account: single-account
+  env-type-region: multi-region
+  category: production
+  # category: production, development, testing, staging, sandbox, qa
+  classification: public
+  # classification: public, private, internal
+spec:
+  type: environment
+  lifecycle: experimental
+  owner: group:dev-ops
+  system: demo

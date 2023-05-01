@@ -1,0 +1,119 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: aws-environment-provider
+  title: AWS Environment Provider
+  description: Configure an AWS environment provider
+  tags:
+    - aws
+    - environment
+spec:
+  owner: group:admins
+  type: environment-provider
+  parameters:
+    - title: Fill in the environment provider details
+      required:
+        - name
+        - environment_type
+        - aws_account_id
+        - aws_region
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name for the environment provider
+          ui:autofocus: true
+        environment_type:
+          title: Environment type
+          type: string
+          description: Select an environment type
+          default: ECS
+          enum:
+            - ecs-fargate
+            - ecs-ec2
+            - eks
+            - ec2
+          enumNames:
+            - 'ECS - Fargate'
+            - 'ECS - EC2'
+            - 'EKS'
+            - 'EC2'
+        aws_account_id:
+          title: AWS Account number
+          type: string
+          description: Enter an AWS account number
+        aws_region:
+          title: AWS Region
+          type: string
+          description: Select AWS region
+          default: us-east-1
+          enum:
+            - us-east-1
+            - us-east-2
+            - us-west-1
+            - us-west-2
+            - af-south-1
+            - ap-east-1
+            - ap-south-2
+            - ap-southeast-3
+            - ap-southeast-4
+            - ap-south-1
+            - ap-northeast-3
+            - ap-northeast-2
+            - ap-southeast-1
+            - ap-southeast-2
+            - ap-northeast-1
+            - ca-central-1
+            - eu-central-1
+            - eu-west-1
+            - eu-west-2
+            - eu-south-1
+            - eu-west-3
+            - eu-south-2
+            - eu-north-1
+            - eu-central-2
+            - me-south-1
+            - me-central-1
+            - sa-east-1
+          enumNames:
+            - 'US East (N. Virginia)'
+            - 'US East (Ohio)'
+            - 'US West (N. California)'
+            - 'US West (Oregon)'
+            - 'Africa (Cape Town)'
+            - 'Asia Pacific (Hong Kong)'
+            - 'Asia Pacific (Hyderabad)'
+            - 'Asia Pacific (Jakarta)'
+            - 'Asia Pacific (Melbourne)'
+            - 'Asia Pacific (Mumbai)'
+            - 'Asia Pacific (Osaka)'
+            - 'Asia Pacific (Seoul)'
+            - 'Asia Pacific (Singapore)'
+            - 'Asia Pacific (Sydney)'
+            - 'Asia Pacific (Tokyo)'
+            - 'Canada (Central)'
+            - 'Europe (Frankfurt)'
+            - 'Europe (Ireland)'
+            - 'Europe (London)'
+            - 'Europe (Milan)'
+            - 'Europe (Paris)'
+            - 'Europe (Spain)'
+            - 'Europe (Stockholm)'
+            - 'Europe (Zurich)'
+            - 'Middle East (Bahrain)'
+            - 'Middle East (UAE)'
+            - 'South America (São Paulo)'
+  steps:
+  - id: register
+    name: Register
+    action: catalog:register
+    input:
+      # repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+      # catalogInfoPath: '/catalog-info.yaml'
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}

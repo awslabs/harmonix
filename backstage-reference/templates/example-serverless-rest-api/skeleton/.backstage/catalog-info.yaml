@@ -1,0 +1,35 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.component_id | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - rest
+    - swagger
+    - openapi
+    - apigateway
+    - serverless
+  annotations:
+    aws.amazon.com/baws-repo-secret-arn: ${{ values.aws_secret_repo_arn | dump }}
+    aws.amazon.com/baws-component-subtype: "serverless-rest-api"
+    aws.amazon.com/baws-s3-bucket-name: ${{ values.aws_bucket_name | dump }}
+    aws.amazon.com/baws-cf-stack-name: baws-api-${{ values.aws_environment_short_name }}-${{ values.aws_kebab_component_id }}
+    aws.amazon.com/baws-hosted-zone-domain: ${{ values.aws_hosted_zone_domain | dump }}
+    aws.amazon.com/baws-app-resource-group: arn:aws:resource-groups:${{ values.aws_region }}:${{ values.aws_account }}:group/${{ values.component_id }}-rg
+  links:
+    - title: ${{ values.component_id}} ${{ values.aws_environment_short_name }} API endpoint
+      url: https://${{ values.aws_environment_short_name }}.api.${{ values.aws_hosted_zone_domain }}/${{ values.aws_kebab_component_id }}
+    # - title: AWS provisioning pipeline
+    #   url: https://${{ values.aws_region }}.console.aws.amazon.com/states/home?region=${{ values.aws_region }}#/v2/executions/details/${{ values.pipeline_arn }}
+    
+  labels:
+    aws-iacType: sam
+spec:
+  type: aws-app
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn:
+    - ${{ values.aws_environment }}

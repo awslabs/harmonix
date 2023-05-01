@@ -1,0 +1,249 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: example-nodejs-rds-template
+  title: Node.js microservice with SQL DB
+  description: >-
+    Create a Node.js RESTful service providing basic CRUD operations 
+    and an Amazon RDS postgreSQL database.
+  tags:
+    - nodejs
+    - rds
+    - aws
+spec:
+  owner: group:admins
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Provide basic component information
+      required:
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Help others understand what this service is for
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+    - title: Provide deployment information for the application
+      required:
+        - environment
+      properties:
+        environment:
+          title: AWS Environment
+          type: string
+          description: The AWS Environment where the database is created
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AWSEnvironment
+
+    - title: Provide basic database resource information
+      required:
+        - rds_resource_id
+      properties:
+        rds_resource_id:
+          title: Resource identifier
+          type: string
+          description: Unique name of the database resource
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        rds_description:
+          title: Database description
+          type: string
+          description: What's the purpose of this database resource?
+    - title: Provide database and application configuration
+      required:
+        #   - db_type
+        #   - instance_size
+        - db_name
+        - db_object_name
+      properties:
+        # db_type:
+        #   title: Database engine
+        #   type: string
+        #   description: The type of database to create
+        #   default: aurora_postgresql
+        #   enum:
+        #     - aurora_mysql
+        #     - aurora_postgresql
+        #     - mysql
+        #     - postgresql
+        #     - mariadb
+        #   enumNames:
+        #     - "Aurora MySQL"
+        #     - "Aurora PostgreSQL"
+        #     - "MySQL"
+        #     - "PostgreSQL"
+        #     - "MariaDB"
+        # instance_size:
+        #   title: Database size
+        #   type: string
+        #   description: The size of the database required
+        #   default: small
+        #   enum:
+        #     - small
+        #     - medium
+        #     - large
+        #   enumNames:
+        #     - "Small (20 GB) - development/prototypes"
+        #     - "Medium (100 GB) - dev/test scenarios"
+        #     - "Large (500 GB) - production scenarios"
+        db_name:
+          title: Database name
+          type: string
+          description: The name of a default database to create in the RDS instance
+          default: usersdb
+        db_object_name:
+          title: Object name
+          type: string
+          description: >-
+            The name of the object that you will track in the default database.  
+            This is usually a singular noun (e.g. 'author' or 'user').
+          default: user
+
+    - title: Choose a git repository location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-app
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    # Each step executes an action, in this case one templates files into the working directory.
+    - id: bawsDeployRDSBoilerplate
+      name: Deploy RDS Boilerplate
+      action: baws:deploy-boilerplate
+      input:
+        boilerplateRepositories:
+          - aws_rds
+        inputParameters:
+          APP_SHORT_NAME: ${{ parameters.component_id}}
+          DB_NAME: ${{ parameters.db_name }}
+          RDS_ID: ${{ parameters.rds_resource_id }}
+          # DB_PARAMS:
+          # DB_ENGINE: # ${{ parameters.db_type }}
+          # DB_SIZE: # ${{ parameters.instance_size }}
+        environmentRef: ${{ parameters.environment }}
+        actionType: "Create Resource"
+    - id: bawsDeployECSBoilerplate
+      name: Deploy ECS Boilerplate
+      action: baws:deploy-boilerplate
+      input:
+        boilerplateRepositories:
+          - aws_ecs
+        inputParameters:
+          APP_SHORT_NAME: ${{ parameters.component_id}}
+          APP_ENV_PLAINTEXT:
+            PORT: "3001"
+            VAR1: "var1 value"
+          APP_ENV_SECRETS:
+            RDS_CREDS: "${{ steps['bawsDeployRDSBoilerplate'].output.cfnOutputs['baws-db-admin-secret-arn'] }}"
+        environmentRef: ${{ parameters.environment }}
+        actionType: "Create App"
+    # - id: debug
+    #   name: Debug Statement
+    #   action: debug:log
+    #   input:
+    #     message: |
+    #       rdsCfnOutputs: "${{ steps['bawsDeployRDSBoilerplate'].output.cfnOutputs | dump }}"
+    #       ecsCfnOutputs: "${{ steps['bawsDeployECSBoilerplate'].output.cfnOutputs | dump }}"
+    - id: createSecretManager
+      name: Create a Secret
+      action: baws:create-secret
+      input:
+        secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
+        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+        description: "Gitlab repo access token"
+        tags:
+          - Key: "aws-apps:${{ parameters.component_id }}"
+            Value: ${{ parameters.component_id }}
+    - id: fetchBase
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          component_id: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          aws_environment: ${{ parameters.environment }}
+          aws_region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+          aws_account: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+          aws_ecs_bp_outputs: ${{ steps['bawsDeployECSBoilerplate'].output.cfnOutputs }}
+          rds_resource_id: ${{ parameters.rds_resource_id }}
+          rds_description: ${{ parameters.rds_description }}
+          db_name: ${{ parameters.db_name }}
+          db_object_name: ${{ parameters.db_object_name }}
+          owner: ${{ parameters.owner }}
+          aws_pipeline_arn: ${{ steps['bawsDeployECSBoilerplate'].output.executionArn }}
+          aws_rds_bp_outputs: ${{ steps['bawsDeployRDSBoilerplate'].output.cfnOutputs }}
+          app_port: "3002"
+          aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+    # This step publishes the contents of the working directory to GitLab.
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+    - id: createRepoToken
+      name: Create Repo Token
+      action: baws:createRepoAccessToken:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        projectId: ${{ steps['publish'].output.projectId }}
+        secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+    # The final step is to register our new component in the catalog.
+    - id: registerApp
+      name: Register Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+    - id: registerRds
+      name: Register RDS Resource
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/aws-catalog-info.yaml"
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open application component in catalog
+        icon: catalog
+        entityRef: ${{ steps['registerApp'].output.entityRef }}
+      - title: Open RDS resource in catalog
+        icon: resource
+        entityRef: ${{ steps['registerRds'].output.entityRef }}

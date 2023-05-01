@@ -1,0 +1,186 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: example-nodejs-efs-template
+  title: Node.js microservice with EFS
+  description: >-
+    Create a sample journal application which persists
+    entries to an AWS EFS file system.
+  tags:
+    - nodejs
+    - efs
+    - aws
+spec:
+  owner: group:admins
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Provide basic component information
+      required:
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Help others understand what this service is for
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+    - title: Provide deployment information for the application
+      required:
+        - environment
+      properties:
+        environment:
+          title: AWS Environment
+          type: string
+          description: The AWS Environment where the application is created
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds: [AWSEnvironment]
+
+    - title: Provide basic file system resource information
+      required:
+        - efs_resource_id
+      properties:
+        efs_resource_id:
+          title: Resource identifier
+          type: string
+          description: Unique name of the file system resource
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        efs_description:
+          title: File system description
+          type: string
+          description: What's the purpose of this file system resource?
+    - title: Choose a git repository location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-app
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    # Each step executes an action, in this case one templates files into the working directory.
+    - id: bawsDeployEFSBoilerplate
+      name: Deploy EFS resource
+      action: baws:deploy-boilerplate
+      input:
+        boilerplateRepositories:
+          - aws_efs
+        inputParameters:
+          APP_SHORT_NAME: ${{ parameters.component_id}}
+          EFS_NAME: ${{ parameters.efs_resource_id }}
+          EFS_ACCESS_POINT_PATH: "/data"
+        environmentRef: ${{ parameters.environment }}
+        actionType: "Create Resource"
+    - id: bawsDeployECSBoilerplate
+      name: Deploy ECS Boilerplate
+      action: baws:deploy-boilerplate
+      input:
+        boilerplateRepositories:
+          - aws_ecs
+        inputParameters:
+          APP_SHORT_NAME: ${{ parameters.component_id}}
+          EFS_ID: ${{ steps['bawsDeployEFSBoilerplate'].output.cfnOutputs['baws-efs-id'] }}
+          # EFS_MOUNT_PATH: "/data"
+          EFS_ACCESS_POINT_ID: ${{ steps['bawsDeployEFSBoilerplate'].output.cfnOutputs['baws-efs-access-point-id'] }}
+          APP_ENV_PLAINTEXT:
+            PORT: "3001"
+        environmentRef: ${{ parameters.environment }}
+        actionType: "Create App"
+    - id: createSecretManager
+      name: Creates a Secret
+      action: baws:create-secret
+      input:
+        secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
+        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+        description: "Gitlab repo access token"
+        tags:
+          - Key: "aws-apps:${{ parameters.component_id }}"
+            Value: ${{ parameters.component_id }}
+    - id: fetchBase
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          component_id: ${{ parameters.component_id }}
+          owner: ${{ parameters.owner }}
+          description: ${{ parameters.description }}
+          aws_environment: ${{ parameters.environment }}
+          aws_region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+          aws_account: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+          aws_ecs_bp_outputs: ${{ steps['bawsDeployECSBoilerplate'].output.cfnOutputs }}
+          aws_efs_bp_outputs: ${{ steps['bawsDeployEFSBoilerplate'].output.cfnOutputs }}
+          aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+          aws_pipeline_arn: ${{ steps['bawsDeployECSBoilerplate'].output.executionArn }}
+          efs_resource_id: ${{ parameters.efs_resource_id }}
+          efs_description: ${{ parameters.efs_description }}
+          app_port: "3002"
+    # This step publishes the contents of the working directory to GitLab.
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+    - id: createRepoToken
+      name: Create Repo Token
+      action: baws:createRepoAccessToken:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        projectId: ${{ steps['publish'].output.projectId }}
+        secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+    # The final step is to register our new component in the catalog.
+    - id: registerApp
+      name: Register Component
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+    - id: registerEfs
+      name: Register EFS Resource
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/aws-catalog-info.yaml"
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open application component in catalog
+        icon: catalog
+        entityRef: ${{ steps['registerApp'].output.entityRef }}
+      - title: Open EFS resource in catalog
+        icon: resource
+        entityRef: ${{ steps['registerEfs'].output.entityRef }}

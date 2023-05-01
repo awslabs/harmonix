@@ -1,0 +1,17 @@
+apiVersion: aws.backstage.io/v1alpha
+kind: AWSEnvironment
+metadata:
+  name: AWS-Development-Pub-Environment
+  short-name: dev
+  description: An AWS public development environment
+  env-type-account: single-account
+  env-type-region: single-region
+  category: development
+  # category: production, development, testing, staging, sandbox, qa
+  classification: public
+  # classification: public, private, internal
+spec:
+  type: environment
+  lifecycle: experimental
+  owner: group:dev-ops
+  system: demo

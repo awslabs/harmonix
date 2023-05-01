@@ -10,7 +10,13 @@ The solution is composed of two parts:
 
 This solution leverages the flexibility and extensibility of the Backstage platform to provide customizable software templates, scaffolder actions, and boilerplate deployment configurations. While this provides a lot of freedom in implementation, it can be overwhelming to get started.  To help users get started, a reference repository is also provided with samples to show how to use the solution.
 
-## Architecture Overview
+## Content
+
+1. Architecture overview
+2. Installation instructions
+3. Q.A
+
+## 1. Architecture Overview
 
 See [ARCHITECTURE.md](./docs/ARCHITECTURE.md) for details about the solution architecture
 
@@ -30,7 +36,7 @@ The installation instructions documented here were tested using the following ve
 - cdk v2.59
 ```
 
-## Installation
+## 2. Installation
 
 After cloning this repository, change directory to the repository location and perform the following steps to deploy the complete solution:
 
@@ -502,3 +508,20 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ### License
 
 This project is licensed under the Apache-2.0 License.
+
+## 3. Q.A
+
+Q. I don't use Okta. Can i change the identity provider to another one? <br>
+A Yes, Backstage [supports many IDPs](https://backstage.io/docs/auth/), once you configure backstage to your chosen IDP make sure backstage catalog is synced with the users and groups from your IDP. don't forget to update the security role mapping to match the groups in your IDP to the AWS environment roles.
+<br><br>
+
+Q. I want to use another source control that is not GitLabs. how can i do it?<br>
+A. Backstage support different source control which can be integrated through backstage config. we use Gitlab for several usage which will need to migrate to another source control provider:
+1. Storing application source code
+2. Storing template source code
+3. Storing catalog information - AWS Environment and AWS Environment providers
+4. Executing pipelines that are responsible to build the application when new code is pushed and push the updated image to ECR.
+<br><br>
+
+Q. I'm using Terraform, can i use this solution with terraform to provision application resources?<br>
+A. Yes, the step function which is responsible to provision resource for a given Environment can also execute terraform modules. Since it's using AWS CodeBuild behind the scene you can introduce your own software for provisioning resources but also enjoy some of the built-in implementation like passing Environment variables in and out of the step function.

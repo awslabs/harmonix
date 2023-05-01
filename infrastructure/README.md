@@ -118,3 +118,19 @@ Lastly - to accommodate all the changes above, please login to the AWS ECS conso
 At this point, you should be able to login to Backstage using your {{route53DNSName}} in your browser. Make sure the security group of the Backstage loadbalancer allows access from your IP.
 Once on the main screen, use your Okta credentials to connect to Backstage.
 
+
+### 8. Setting up role mapping
+In order to map the identity provider groups to the IAM roles, you must configure the mapping between them.
+<br><br>
+For your convince we created a script to populate the table, however - you need to change it to meet the group your identity provider is using.
+
+1. Edit the file `scripts/update-role-mapping.sh`
+2. Update the groups - 'developers' 'qa' 'dev-ops' and 'admins' to your appropriate groups. Please note that the groups are matching the roles that are created in the infrastructure(you may change them as well):
+   1. 'backstage-dev-role'
+   2. 'backstage-qa-role'
+   3. 'backstage-dev-ops-role'
+   4. 'backstage-admins-role' 
+3. From the root directory run the script:
+```sh
+sh scripts/update-role-mapping.sh
+```

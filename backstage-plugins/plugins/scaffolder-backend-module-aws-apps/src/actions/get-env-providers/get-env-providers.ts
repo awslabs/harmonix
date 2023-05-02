@@ -6,7 +6,7 @@ import { JsonArray, } from '@backstage/types';
 import { Entity, EntityRelation, RELATION_DEPENDENCY_OF } from '@backstage/catalog-model';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import yaml from 'yaml';
-import { getAWScreds } from '@internal/plugin-aws-apps-backend';
+import { getAWScreds } from '@aws/plugin-aws-apps-backend';
 import { getSSMParameterValue } from '../../helpers/action-context';
 import { EnvironmentProvider } from '../../types';
 

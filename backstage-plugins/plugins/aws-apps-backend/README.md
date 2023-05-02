@@ -15,7 +15,7 @@ This is the backend part of the AWS Apps plugin.  It has four primary responsibi
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/backend @internal/plugin-aws-apps-backend@0.1.0
+yarn add --cwd packages/backend @aws/plugin-aws-apps-backend@0.1.0
 ```
 
 ## Configuration
@@ -29,7 +29,7 @@ Create a `awsApps.ts` file in the `packages/backend/src/plugins/`directory.  Thi
 ```ts
 // packages/backend/src/plugins/awsApps.ts
 
-import { createRouter } from '@internal/plugin-aws-apps-backend'
+import { createRouter } from '@aws/plugin-aws-apps-backend'
 import { Router } from 'express';
 import { PluginEnvironment } from '../types';
 export default async function createPlugin(env: PluginEnvironment): Promise<Router> {
@@ -80,7 +80,7 @@ import { CatalogBuilder } from '@backstage/plugin-catalog-backend';
 import { ScaffolderEntitiesProcessor } from '@backstage/plugin-scaffolder-backend';
 import { Router } from 'express';
 import { PluginEnvironment } from '../types';
-+ import { AWSEnvironmentEntitiesProcessor, AWSEnvironmentProviderEntitiesProcessor} from '@internal/plugin-aws-apps-backend';
++ import { AWSEnvironmentEntitiesProcessor, AWSEnvironmentProviderEntitiesProcessor} from '@aws/plugin-aws-apps-backend';
 
 export default async function createPlugin(
   env: PluginEnvironment,

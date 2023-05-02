@@ -1,5 +1,5 @@
 {
-  "name": "@internal/backstage-plugin-scaffolder-backend-module-aws-apps",
+  "name": "@aws/backstage-plugin-scaffolder-backend-module-aws-apps",
   "description": "The aws-apps module for @backstage/plugin-scaffolder-backend",
   "version": "0.1.0",
   "main": "src/index.ts",
@@ -34,7 +34,7 @@
     "@backstage/plugin-scaffolder-node": "^0.1.0",
     "@backstage/integration": "^1.4.2",
     "@backstage/errors": "^1.1.4",
-    "@internal/plugin-aws-apps-backend": "^0.1.0",
+    "@aws/plugin-aws-apps-backend": "^0.1.0",
     "lodash": "^4.17.21",
     "yaml": "^2.2.1"
   },

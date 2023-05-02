@@ -24,7 +24,7 @@ Install the AWS Apps frontend plugin into your Backstage application:
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/app @internal/plugin-aws-apps@0.1.0
+yarn add --cwd packages/app @aws/plugin-aws-apps@0.1.0
 ```
 
 ## Configuration
@@ -52,7 +52,7 @@ import {
   EntityInfrastructureInfoCard,
   EntityAppConfigCard,
   EntityAuditTable,
-} from '@internal/plugin-aws-apps';
+} from '@aws/plugin-aws-apps';
 
 [...]
 
@@ -175,7 +175,7 @@ It should be configured as a new `<Route ...>` in the file.
 // packages/app/src/App.tsx
 
 [imports...]
-+ import { AppCatalogPage } from '@internal/plugin-aws-apps';
++ import { AppCatalogPage } from '@aws/plugin-aws-apps';
 
 [...]
 const routes = (

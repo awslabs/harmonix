@@ -1,5 +1,5 @@
 import React, { ReactNode } from 'react';
-import { AsyncAwsAppProvider, useAwsAppFromContext } from '@internal/plugin-aws-apps/src/hooks/useAwsApp';
+import { AsyncAwsAppProvider, useAwsAppFromContext } from '@aws/plugin-aws-apps/src/hooks/useAwsApp';
 
 interface AwsAppPageProps {
   children?: ReactNode

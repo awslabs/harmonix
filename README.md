@@ -72,13 +72,13 @@ yarn --cwd packages/backend add "@immobiliarelabs/backstage-plugin-gitlab-backen
 yarn --cwd packages/app add "@immobiliarelabs/backstage-plugin-gitlab"
 
 # Install the AWS Apps plugins
-yarn --cwd packages/backend add "@internal/plugin-aws-apps-backend@^0.1.0"
-yarn --cwd packages/backend add "@internal/backstage-plugin-scaffolder-backend-module-aws-apps@^0.1.0"
-yarn --cwd packages/app add "@internal/plugin-aws-apps@^0.1.0"
+yarn --cwd packages/backend add "@aws/plugin-aws-apps-backend@^0.1.0"
+yarn --cwd packages/backend add "@aws/backstage-plugin-scaffolder-backend-module-aws-apps@^0.1.0"
+yarn --cwd packages/app add "@aws/plugin-aws-apps@^0.1.0"
 
 # Install the demo app.  The backstage plugin-home plugin is used by the aws-apps-demo plugin
 yarn --cwd packages/app add "@backstage/plugin-home"
-yarn --cwd packages/app add "@internal/plugin-aws-apps-demo@^0.1.0"
+yarn --cwd packages/app add "@aws/plugin-aws-apps-demo@^0.1.0"
 ```
 
 Configure Backstage to use the plugins:
@@ -96,7 +96,7 @@ Configure Backstage to use the plugins:
 //Add these imports
 + import { OktaOrgEntityProvider } from '@roadiehq/catalog-backend-module-okta';
 + import { GitlabFillerProcessor } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
-+ import { AWSEnvironmentEntitiesProcessor, AWSEnvironmentProviderEntitiesProcessor} from '@internal/plugin-aws-apps-backend';
++ import { AWSEnvironmentEntitiesProcessor, AWSEnvironmentProviderEntitiesProcessor} from '@aws/plugin-aws-apps-backend';
 
 export default async function createPlugin(
   env: PluginEnvironment,
@@ -145,7 +145,7 @@ import type { PluginEnvironment } from '../types';
 +   getEnvProvidersAction,
 +   getComponentInfoAction,
 +   getSsmParametersAction,
-+ } from '@internal/backstage-plugin-scaffolder-backend-module-aws-apps';
++ } from '@aws/backstage-plugin-scaffolder-backend-module-aws-apps';
 
 export default async function createPlugin(env: PluginEnvironment): Promise<Router> {
   const catalogClient = new CatalogClient({
@@ -207,7 +207,7 @@ export default async function createPlugin(
 
 ```ts
 // awsApps.ts
-import {createRouter} from '@internal/plugin-aws-apps-backend'
+import {createRouter} from '@aws/plugin-aws-apps-backend'
 import { Router } from 'express';
 import { PluginEnvironment } from '../types';
 
@@ -233,7 +233,7 @@ import {
   EntityInfrastructureInfoCard,
   EntityAppConfigCard,
   EntityAuditTable,
-} from '@internal/plugin-aws-apps';
+} from '@aws/plugin-aws-apps';
 import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 
 // Add the following const variables after the import statements
@@ -434,7 +434,7 @@ export const Root = ({ children }: PropsWithChildren<{}>) => (
 8. Edit `packages/app/src/App.tsx`
 ```diff
 // Add the import below
-+ import { AppCatalogPage } from '@internal/plugin-aws-apps';
++ import { AppCatalogPage } from '@aws/plugin-aws-apps';
 + import {SignInPage} from '@backstage/core-components'
 + import { oktaAuthApiRef } from '@backstage/core-plugin-api';
 

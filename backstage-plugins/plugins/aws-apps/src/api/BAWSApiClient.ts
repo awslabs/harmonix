@@ -6,7 +6,7 @@ import { Service, Task, TaskDefinition } from '@aws-sdk/client-ecs';
 import { GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 import { LogStream } from '@aws-sdk/client-cloudwatch-logs';
 import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
-import { AWSServiceResources } from '@internal/plugin-aws-apps-common';
+import { AWSServiceResources } from '@aws/plugin-aws-apps-common';
 import { ScanCommandOutput } from '@aws-sdk/client-dynamodb';
 import { HeadObjectCommandOutput } from '@aws-sdk/client-s3';
 import {

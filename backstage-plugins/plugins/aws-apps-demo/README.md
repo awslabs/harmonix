@@ -14,7 +14,7 @@ It provides a basic Home page with an ability to add customer-specific logo imag
 
 ```bash
 # From your Backstage root directory
-yarn add --cwd packages/app @internal/plugin-aws-apps-demo@0.1.0
+yarn add --cwd packages/app @aws/plugin-aws-apps-demo@0.1.0
 ```
 
 ## Setup
@@ -27,7 +27,7 @@ yarn add --cwd packages/app @internal/plugin-aws-apps-demo@0.1.0
 ```diff
 // packages/app/src/App.tsx
 
-+ import { AWSAppsHomePage, customerTheme } from '@internal/plugin-aws-apps-demo';
++ import { AWSAppsHomePage, customerTheme } from '@aws/plugin-aws-apps-demo';
   
   const app = createApp({
     ...
@@ -59,7 +59,7 @@ yarn add --cwd packages/app @internal/plugin-aws-apps-demo@0.1.0
 ```diff
 // packages/app/src/components/Root.tsx
 
-+ import { AWSLogoFull, AWSLogoIcon, CustomerLogoIcon, CustomerLogoFullLight } from '@internal/plugin-aws-apps-demo';
++ import { AWSLogoFull, AWSLogoIcon, CustomerLogoIcon, CustomerLogoFullLight } from '@aws/plugin-aws-apps-demo';
 
 ...
 

@@ -26,8 +26,9 @@ yarn add --cwd packages/app @aws/plugin-aws-apps-demo@0.1.0
 
 ```diff
 // packages/app/src/App.tsx
-
 + import { AWSAppsHomePage, customerTheme } from '@aws/plugin-aws-apps-demo';
++ import { darkTheme, lightTheme } from '@backstage/theme';
+
   
   const app = createApp({
     ...
@@ -42,7 +43,28 @@ yarn add --cwd packages/app @aws/plugin-aws-apps-demo@0.1.0
 +         </ThemeProvider>
 +       ),
 +     },
-      ...
++     // add the default 'light' and 'dark' themes if you wish to continue using them
++     {
++       id: 'light',
++       title: 'Light',
++       variant: 'light',
++       Provider: ({ children }) => (
++         <ThemeProvider theme={lightTheme}>
++           <CssBaseline>{children}</CssBaseline>
++         </ThemeProvider>
++       ),
++     },
++     {
++       id: 'dark',
++       title: 'Dark',
++       variant: 'dark',
++       Provider: ({ children }) => (
++         <ThemeProvider theme={darkTheme}>
++           <CssBaseline>{children}</CssBaseline>
++         </ThemeProvider>
++       ),
++     },
+    ...
     ]
   })
   
@@ -59,13 +81,14 @@ yarn add --cwd packages/app @aws/plugin-aws-apps-demo@0.1.0
 ```diff
 // packages/app/src/components/Root.tsx
 
++ import { useApi } from '@backstage/core-plugin-api';
 + import { AWSLogoFull, AWSLogoIcon, CustomerLogoIcon, CustomerLogoFullLight } from '@aws/plugin-aws-apps-demo';
 
 ...
 
 + function getLogo(themeId: string) {
 +   switch (themeId) {
-+     case: 'customerTheme':
++     case 'customerTheme':
 +       return[<CustomerLogoFullLight />, <CustomerLogoIcon />];
 +     default:
 +       return [<LogoFull />, <LogoIcon />];

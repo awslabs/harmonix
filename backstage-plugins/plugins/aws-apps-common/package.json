@@ -1,5 +1,5 @@
 {
-  "name": "@aws/plugin-aws-apps-common",
+  "name": "@aws/plugin-aws-apps-common-for-backstage",
   "description": "Common functionalities for the aws-apps plugin",
   "version": "0.1.0",
   "main": "src/index.ts",

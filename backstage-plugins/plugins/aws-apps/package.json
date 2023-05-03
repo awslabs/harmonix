@@ -1,5 +1,5 @@
 {
-  "name": "@aws/plugin-aws-apps",
+  "name": "@aws/plugin-aws-apps-for-backstage",
   "description": "App Development for Backstage.io on AWS Frontend plugin",
   "version": "0.1.0",
   "main": "src/index.ts",
@@ -48,7 +48,7 @@
     "@backstage/theme": "^0.2.16",
     "@emotion/react": "^11.10.5",
     "@emotion/styled": "^11.10.5",
-    "@aws/plugin-aws-apps-common": "^0.1.0",
+    "@aws/plugin-aws-apps-common-for-backstage": "^0.1.0",
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
     "@material-ui/lab": "4.0.0-alpha.61",

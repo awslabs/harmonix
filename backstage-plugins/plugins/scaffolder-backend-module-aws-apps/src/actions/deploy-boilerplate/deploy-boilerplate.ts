@@ -16,7 +16,7 @@ import { Entity, EntityRelation, RELATION_DEPENDENCY_OF } from '@backstage/catal
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { capitalize, kebabCase } from 'lodash';
 import yaml from 'yaml';
-import { getAWScreds } from '@aws/plugin-aws-apps-backend';
+import { getAWScreds } from '@aws/plugin-aws-apps-backend-for-backstage';
 import winston from 'winston';
 import { getSSMParameterValue } from '../../helpers/action-context';
 

@@ -3,7 +3,7 @@
 
 import { InfoCard, MissingAnnotationEmptyState, EmptyState } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { AWSServiceResources } from '@aws/plugin-aws-apps-common';
+import { AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
 import { LinearProgress, Typography } from '@material-ui/core';
 import React, { useEffect, useState } from 'react';
 import { bawsApiRef } from '../../api';

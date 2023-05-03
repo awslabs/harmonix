@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SubvalueCell, Table, TableColumn } from '@backstage/core-components';
-import { AWSResource, AWSServiceResources } from '@aws/plugin-aws-apps-common';
+import { AWSResource, AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
 import { makeStyles, Typography } from '@material-ui/core';
 import { Link } from '@mui/material';
 import React, { useState, useCallback } from 'react';

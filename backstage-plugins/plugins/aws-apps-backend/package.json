@@ -1,5 +1,5 @@
 {
-  "name": "@aws/plugin-aws-apps-backend",
+  "name": "@aws/plugin-aws-apps-backend-for-backstage",
   "description": "App Development for Backstage.io on AWS Backend plugin",
   "version": "0.1.0",
   "main": "src/index.ts",
@@ -42,7 +42,7 @@
     "@aws-sdk/client-secrets-manager": "^3.290.0",
     "@aws-sdk/client-cloudformation": "^3.290.0",
     "@aws-sdk/types": "^3.290.0",
-    "@aws/plugin-aws-apps-common": "^0.1.0",
+    "@aws/plugin-aws-apps-common-for-backstage": "^0.1.0",
     "@backstage/backend-common": "^0.18.2",
     "@backstage/config": "^1.0.6",
     "@types/express": "*",

@@ -5,7 +5,7 @@ import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { ScmIntegrationRegistry } from '@backstage/integration';
 import { parseRepoUrl } from '../../helpers/util';
 import { InputError } from '@backstage/errors';
-import { getAWScreds, AwsAppsApi, createAuditRecord } from '@aws/plugin-aws-apps-backend';
+import { getAWScreds, AwsAppsApi, createAuditRecord } from '@aws/plugin-aws-apps-backend-for-backstage';
 import { validate as validateArn } from '@aws-sdk/util-arn-parser';
 
 export function createRepoAccessTokenAction(options: { integrations: ScmIntegrationRegistry }) {

@@ -5,7 +5,7 @@ import { createApiRef } from '@backstage/core-plugin-api';
 import { Task, Service, TaskDefinition } from '@aws-sdk/client-ecs';
 import { GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
-import { AWSServiceResources } from '@aws/plugin-aws-apps-common';
+import { AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
 import { LogStream } from '@aws-sdk/client-cloudwatch-logs';
 import { ScanCommandOutput } from '@aws-sdk/client-dynamodb';
 import { HeadObjectCommandOutput } from '@aws-sdk/client-s3';

@@ -93,7 +93,7 @@ import {
   DeleteStackCommandOutput,
 } from "@aws-sdk/client-cloudformation";
 import { parse as parseArn } from '@aws-sdk/util-arn-parser';
-import { AWSServiceResources } from '@aws/plugin-aws-apps-common';
+import { AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
 
 export class AwsAppsApi {
   public constructor(

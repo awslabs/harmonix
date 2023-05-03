@@ -1,5 +1,5 @@
 {
-  "name": "@aws/plugin-aws-apps-demo",
+  "name": "@aws/plugin-aws-apps-demo-for-backstage",
   "description": "App Development for Backstage.io on AWS - home page and theme demo",
   "version": "0.1.0",
   "main": "src/index.ts",

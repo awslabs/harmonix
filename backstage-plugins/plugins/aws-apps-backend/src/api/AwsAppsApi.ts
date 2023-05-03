@@ -705,7 +705,10 @@ export class AwsAppsApi {
    */
   public async describeStack(stackName: string): Promise<DescribeStacksCommandOutput> {
     this.logger.info('Calling describeStack');
-    const client = new CloudFormationClient({ region: this.awsRegion });
+    const client = new CloudFormationClient({
+      region: this.awsRegion,
+      credentials: this.awsCredentials,
+    });
     const input = {
       StackName: stackName,
     };
@@ -730,7 +733,10 @@ export class AwsAppsApi {
   ): Promise<DescribeStackEventsCommandOutput> {
 
     this.logger.info('Calling describeStackEvents');
-    const client = new CloudFormationClient({ region: this.awsRegion });
+    const client = new CloudFormationClient({
+      region: this.awsRegion,
+      credentials: this.awsCredentials,
+    });
     const input = {
       StackName: stackName,
     };
@@ -762,7 +768,10 @@ export class AwsAppsApi {
 
     this.logger.info('Calling updateStack');
 
-    const client = new CloudFormationClient({ region: this.awsRegion });
+    const client = new CloudFormationClient({
+      region: this.awsRegion,
+      credentials: this.awsCredentials,
+    });
 
     const input = {
       StackName: stackName,
@@ -806,7 +815,10 @@ export class AwsAppsApi {
 
     this.logger.info('Calling createStack');
 
-    const client = new CloudFormationClient({ region: this.awsRegion });
+    const client = new CloudFormationClient({
+      region: this.awsRegion,
+      credentials: this.awsCredentials,
+    });
 
     const input = {
       StackName: stackName,
@@ -844,7 +856,10 @@ export class AwsAppsApi {
 
     this.logger.info('Calling deleteStack');
 
-    const client = new CloudFormationClient({ region: this.awsRegion });
+    const client = new CloudFormationClient({
+      region: this.awsRegion,
+      credentials: this.awsCredentials,
+    });
 
     const input = {
       StackName: stackName,

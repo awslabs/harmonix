@@ -70,7 +70,9 @@ yarn add --cwd packages/app @aws/plugin-aws-apps-demo-for-backstage@0.1.0
   
   const routes = (
     <FlatRoutes>
-+     <Route path="/" element={ <AWSAppsHomePage /> } />
+-     <Route path="/" element={<Navigate to="catalog" />} />
++     <Route path="/" element={<Navigate to="home" />} />
++     <Route path="/home" element={ <AWSAppsHomePage /> } />
       ...
     </FlatRoutes>
   );

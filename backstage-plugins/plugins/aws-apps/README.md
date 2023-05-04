@@ -19,7 +19,6 @@ This is the frontend UI of the AWS Apps plugin.  An AWS Catalog Page and several
 
 ## Installation
 
-<!-- See installation details in the [AWS Apps Plugin Install Guide](../../../docs/PLUGIN_INSTALL.md) -->
 Install the AWS Apps frontend plugin into your Backstage application:
 
 ```sh

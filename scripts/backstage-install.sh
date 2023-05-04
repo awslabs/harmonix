@@ -26,7 +26,7 @@ yarn --cwd packages/app add \
     "@aws/plugin-aws-apps-demo-for-backstage@^0.1.0"
 
 # Copy/overwrite modified backstage files.
-# Note that these modifications were based on modifying Backstage 1.10 files.  
+# Note that these modifications were based on modifying Backstage 1.13 files.  
 # Later versions of Backstage may modify the base versions of these files and the overwrite action may wipe out intended Backstage changes.
 # A preferred approach is to be intentional in the customization of Backstage and follow the instructions in the 
 # plugins' README files to manually modify the Backstage source files

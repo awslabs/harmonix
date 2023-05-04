@@ -4,7 +4,7 @@
 import { parse } from '@aws-sdk/util-arn-parser';
 import { Table, TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { AWSResource } from '@internal/plugin-aws-apps-common';
+import { AWSResource } from '@aws/plugin-aws-apps-common-for-backstage';
 import {
   Button,
   Dialog,

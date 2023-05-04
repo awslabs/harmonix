@@ -1,5 +1,5 @@
 import { JsonArray, } from '@backstage/types';
-import { AwsAuthResponse } from '@internal/plugin-aws-apps-backend';
+import { AwsAuthResponse } from '@aws/plugin-aws-apps-backend-for-backstage';
 
 export type EnvironmentProviderConnection = {
   providerName: string;

@@ -37,6 +37,9 @@ build: ## Init entire project
 	$(MAKE) build-backstage
 	$(MAKE) set-backstage-env
 
+backstage-install: ## install base backstage app and dependency modules
+	. ./scripts/backstage-install.sh
+
 # Local Debugging
 start-local:  ## Start the backstage app for local development
 	. ./scripts/local-runners.sh; start_local

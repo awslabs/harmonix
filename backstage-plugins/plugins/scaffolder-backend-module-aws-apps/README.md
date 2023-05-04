@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 
 # AWS Apps Scaffolder Actions
 
-`@internal/backstage-plugin-scaffolder-backend-module-aws-apps`
+`@aws/plugin-scaffolder-backend-aws-apps-for-backstage`
 
 This plugin provides scaffolder actions to create AWS resources and utility actions for interacting with Gitlab repositories.
 
@@ -13,7 +13,7 @@ This plugin provides scaffolder actions to create AWS resources and utility acti
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/backend @internal/backstage-plugin-scaffolder-backend-module-aws-apps@0.1.0
+yarn add --cwd packages/backend @aws/plugin-scaffolder-backend-aws-apps-for-backstage@0.1.0
 ```
 
 ## Configuration
@@ -27,7 +27,7 @@ import {
   createBawsDeployBoilerplateAction, 
   createRepoAccessTokenAction, 
   createSecretAction,
-} from '@internal/backstage-plugin-scaffolder-backend-module-aws-apps';
+} from '@aws/plugin-scaffolder-backend-aws-apps-for-backstage';
 
 ...
 
@@ -46,7 +46,7 @@ After the scaffolder configuration is updated, you can use the new actions in yo
 Documentation for common usage of the contributed scaffolder actions is included below.
 For full documentation of the scaffolder action inputs and outputs, see the https://<your backstage app>/create/actions page in your Backstage app.
 
-The scaffolder actions which create AWS resources will leverage the AWS Environments and Environments Provider model provided in the `@internal/plugin-aws-apps-backend` plugin.
+The scaffolder actions which create AWS resources will leverage the AWS Environments and Environments Provider model provided in the `@aws/plugin-aws-apps-backend-for-backstage` plugin.
 Reference the plugin documentation to understand how to create and surface AWS Environments for use in scaffolder actions and the UI.
 
 ### Deploy boilerplate

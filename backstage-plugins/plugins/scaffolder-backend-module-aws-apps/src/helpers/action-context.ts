@@ -5,7 +5,7 @@ import { GetParameterCommand, SSMClient } from '@aws-sdk/client-ssm';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { Logger } from 'winston';
 import { UserEntity } from '@backstage/catalog-model';
-import { getAWScreds } from '@internal/plugin-aws-apps-backend';
+import { getAWScreds } from '@aws/plugin-aws-apps-backend-for-backstage';
 import { EnvironmentProvider, EnvironmentProviderConnection } from '../types';
 
 export type EnvProviderConnectMap = { [key: string]: EnvironmentProviderConnection; }

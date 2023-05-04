@@ -6,7 +6,7 @@ import { Task, Service, TaskDefinition } from '@aws-sdk/client-ecs';
 import { BAWSApi } from '../api';
 import { GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 import { LogStream } from '@aws-sdk/client-cloudwatch-logs';
-import { AWSServiceResources } from '@internal/plugin-aws-apps-common';
+import { AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
 import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
 import { ContainerDetailsType } from '../types';
 import { ScanCommandOutput } from '@aws-sdk/client-dynamodb';

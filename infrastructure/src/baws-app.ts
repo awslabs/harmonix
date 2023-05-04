@@ -54,7 +54,7 @@ async function main() {
 
   const solutionStack = new BAWSStack(app, "BAWSStack", {
     stackName: `${envName}-solution`,
-    description: 'uksb-1tupbocl5',
+    description: 'App Development for Backstage on AWS (uksb-1tupbocl5)',
     config,
     env,
   });

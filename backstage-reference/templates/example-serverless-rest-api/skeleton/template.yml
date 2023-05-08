@@ -92,25 +92,14 @@ Resources:
     DependsOn:
       - ApiStage
 
-  ApiLogGroup:
-    DependsOn: Api
-    Type: AWS::Logs::LogGroup
-    Properties:
-      LogGroupName: !Sub 'API-Gateway-Execution-Logs_${Api}/${Stage}'
-      RetentionInDays: !Ref LogRetentionDays  # Optional: define the number of days to retain logs (default to 30 when not defined as with other AWS services)
-
   Api:
     Type: AWS::Serverless::Api
     Properties:
       EndpointConfiguration: REGIONAL
       Name: !Sub '${AppName}-api-${Stage}'
       MethodSettings:
-        - LoggingLevel: INFO
-          ResourcePath: '/*' # allows for logging on any resource
+        - ResourcePath: '/*' # allows for logging on any resource
           HttpMethod: '*' # allows for logging on any method
-      AccessLogSetting: 
-        Format: '{ "requestId":"$context.requestId", "ip": "$context.identity.sourceIp", "caller":"$context.identity.caller", "user":"$context.identity.user","requestTime":"$context.requestTime", "httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath", "status":"$context.status","protocol":"$context.protocol", "responseLength":"$context.responseLength" }'
-      TracingEnabled: true
       StageName: !Ref Stage
       CacheClusterEnabled: false
       DefinitionBody:
@@ -217,7 +206,6 @@ Outputs:
     Description: JSON Array of Log Group Names
     Value: !Sub '
       [
-        "${ApiLogGroup}",
         "${GetEquipmentFunctionLogGroup}",
         "${PersistDataFunctionLogGroup}"
       ]'

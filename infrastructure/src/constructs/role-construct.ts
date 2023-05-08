@@ -95,7 +95,11 @@ export class RoleConstruct extends Construct {
 
     this.IAMRole.addToPolicy(
       new iam.PolicyStatement({
-        actions: ["resource-groups:ListGroupResources"],
+        actions: [
+          "resource-groups:ListGroupResources",
+          "resource-groups:Tag",
+          "resource-groups:DeleteGroup"
+        ],
         effect: iam.Effect.ALLOW,
         resources: [`arn:aws:resource-groups:*:${props.config.Account}:group/*`],
       })
@@ -229,6 +233,28 @@ export class RoleConstruct extends Construct {
           resources: [`arn:aws:dynamodb:*:${props.config.Account}:*`],
         })
       );
+    } else {
+      // Add managed role policies to support SAM template deployment for non-root roles
+      // 
+      // In a production scenario, a customized IAM policy granting specific permissions should be created.
+      // See https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-permissions-cloudformation.html
+      this.IAMRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AWSCloudFormationFullAccess"));
+      this.IAMRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("IAMFullAccess"));
+      this.IAMRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AWSLambda_FullAccess"));
+      this.IAMRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonAPIGatewayAdministrator"));
+      this.IAMRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"));
+      this.IAMRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonEC2ContainerRegistryFullAccess"));
+
+      // allow creation of a Resource Group to track application resources via tags
+      this.IAMRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: [
+            "resource-groups:CreateGroup"
+          ],
+          effect: iam.Effect.ALLOW,
+          resources: ["*"],  // CreateGroup does not support resource-level permissions and requires a wildcard
+        })
+      )
     }
 
   }

@@ -17,11 +17,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "github:aws-samples/app-development-for-backstage-io-on-aws",
+    "url": "github:awslabs/app-development-for-backstage-io-on-aws",
     "directory": "backstage-plugins/plugins/aws-apps-common"
   },
   "bugs": {
-    "url": "https://github.com/aws-samples/app-development-for-backstage-io-on-aws/issues"
+    "url": "https://github.com/awslabs/app-development-for-backstage-io-on-aws/issues"
   },
   "backstage": {
     "role": "common-library"

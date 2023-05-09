@@ -15,6 +15,7 @@ This solution leverages the flexibility and extensibility of the Backstage platf
 1. Architecture overview
 2. Installation instructions
 3. FAQs
+4. Demonstration and Tutorial Videos
 
 ## 1. Architecture Overview
 
@@ -87,3 +88,6 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 
 This project is licensed under the Apache-2.0 License.
 
+## 4. Demonstration and Tutorial Videos
+
+See demonstration and tutorial videos on our [YouTube playlist](https://www.youtube.com/playlist?list=PLhr1KZpdzukemoBUAPNUMCgGk88pdURJB).

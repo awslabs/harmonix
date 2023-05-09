@@ -6,7 +6,7 @@ BACKSTAGE_APP_NAME=backstage npx -y -q @backstage/create-app@latest --path ./bac
 
 # Copy the backstage-plugins into the backstage/plugins directory
 echo "Copying AWS Apps plugins"
-\cp -R ./backstage-plugins/ ./backstage
+# \cp -R ./backstage-plugins/ ./backstage
 cd backstage
 
 # Install backend dependencies

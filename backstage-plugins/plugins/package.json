@@ -4,7 +4,7 @@
     "version": "0.0.0",
     "repository": {
       "type": "git",
-      "url": "github:aws-samples/app-development-for-backstage-io-on-aws"
+      "url": "github:awslabs/app-development-for-backstage-io-on-aws"
     },
     "license": "Apache-2.0",
     "author": {

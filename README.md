@@ -10,12 +10,15 @@ The solution is composed of two parts:
 
 This solution leverages the flexibility and extensibility of the Backstage platform to provide customizable software templates, scaffolder actions, and boilerplate deployment configurations. While this provides a lot of freedom in implementation, it can be overwhelming to get started.  To help users get started, a reference repository is also provided with samples to show how to use the solution.
 
+:clapper: **Demonstrations and Tutorials**  
+For more information about the solution and its functionality, 
+check out the demonstration and tutorial videos on our [YouTube playlist](https://www.youtube.com/playlist?list=PLhr1KZpdzukemoBUAPNUMCgGk88pdURJB).
+
 ## Content
 
 1. Architecture overview
 2. Installation instructions
 3. FAQs
-4. Demonstration and Tutorial Videos
 
 ## 1. Architecture Overview
 
@@ -87,7 +90,3 @@ See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more inform
 ## License
 
 This project is licensed under the Apache-2.0 License.
-
-## 4. Demonstration and Tutorial Videos
-
-See demonstration and tutorial videos on our [YouTube playlist](https://www.youtube.com/playlist?list=PLhr1KZpdzukemoBUAPNUMCgGk88pdURJB).

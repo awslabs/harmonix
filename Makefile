@@ -3,6 +3,7 @@
 
 REGION						= us-east-1
 export CDK_DEFAULT_REGION=$(REGION)
+SHELL := /bin/bash
 
 .DEFAULT_GOAL := help
 

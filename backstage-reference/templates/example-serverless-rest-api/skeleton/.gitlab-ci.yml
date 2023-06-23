@@ -13,6 +13,7 @@ build-and-package:
     - apt-get update
     - python3 -V
     - apt install -yq python3-pip
+    - export PIP_BREAK_SYSTEM_PACKAGES=1
     - pip3 install awscli --upgrade
     - pip3 install aws-sam-cli --upgrade
     - aws sts get-caller-identity

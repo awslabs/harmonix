@@ -79,6 +79,8 @@ run the command below on the repository root:
 make deploy-solution
 ```
 
+*Note - This step will create more Elastic IPs and VPCs than the default quota per region. Please request for more EIPs and VPCs by creating a service quota if it has been done already*
+
 ### 4. Deploy the GitLab CICD Runner stack
 
 Before executing the command below, make sure that GitLab is up and running by opening a browser tab and navigating to the GitLab Web console. If the console comes up, you are ready to deploy the GitLab Runner stack by executing the command below:

@@ -79,7 +79,7 @@ run the command below on the repository root:
 make deploy-solution
 ```
 
-*Note - This step will create more Elastic IPs than the default quota per region ( 5 EIPs ). Please request for more EIPs by creating a service quota if it has been done already*
+*Note - This step will create more Elastic IPs and VPCs than the default quota per region. Please request for more EIPs and VPCs by creating a service quota if it has been done already*
 
 ### 4. Deploy the GitLab CICD Runner stack
 

@@ -15,7 +15,7 @@ This is the backend part of the AWS Apps plugin.  It has four primary responsibi
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/backend @aws/plugin-aws-apps-backend-for-backstage@0.1.0
+yarn add --cwd packages/backend @aws/plugin-aws-apps-backend-for-backstage@^0.1.0
 ```
 
 ## Configuration

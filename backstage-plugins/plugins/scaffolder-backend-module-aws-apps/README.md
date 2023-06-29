@@ -13,7 +13,7 @@ This plugin provides scaffolder actions to create AWS resources and utility acti
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/backend @aws/plugin-scaffolder-backend-aws-apps-for-backstage@0.1.0
+yarn add --cwd packages/backend @aws/plugin-scaffolder-backend-aws-apps-for-backstage@^0.1.0
 ```
 
 ## Configuration

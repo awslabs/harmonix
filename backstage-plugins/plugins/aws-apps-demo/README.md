@@ -14,7 +14,7 @@ It provides a basic Home page with an ability to add customer-specific logo imag
 
 ```bash
 # From your Backstage root directory
-yarn add --cwd packages/app @aws/plugin-aws-apps-demo-for-backstage@0.1.0
+yarn add --cwd packages/app @aws/plugin-aws-apps-demo-for-backstage@^0.1.0
 ```
 
 ## Setup

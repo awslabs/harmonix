@@ -23,7 +23,7 @@ Install the AWS Apps frontend plugin into your Backstage application:
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/app @aws/plugin-aws-apps-for-backstage@0.1.0
+yarn add --cwd packages/app @aws/plugin-aws-apps-for-backstage@^0.1.0
 ```
 
 ## Configuration

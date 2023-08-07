@@ -17,6 +17,8 @@ spec:
         - ./example-springboot/template.yaml
         # API Gateway & Lambda Serverless REST API template
         - ./example-serverless-rest-api/template.yaml
+        # Terraform app 
+        - ./example-nodejs-tf/template.yaml
     rules:
         - allow: [Template]
 

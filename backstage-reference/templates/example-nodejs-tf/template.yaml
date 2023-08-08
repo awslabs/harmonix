@@ -63,7 +63,7 @@ spec:
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts:
-              - git.zahi.backstage.fsi.pace.aws.dev
+              - {{ gitlab_hostname }}
             allowedOwners:
               - aws-app
 

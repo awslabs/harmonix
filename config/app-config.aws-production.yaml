@@ -1,14 +1,15 @@
 app:
-  title: ${CUSTOMER_NAME} Backstage App Suite
+  title: AWS ${BACKSTAGE_TITLE}
   # Should be the same as backend.baseUrl when using the `app-backend` plugin.
   baseUrl: ${PROTOCOL}://${BACKSTAGE_HOSTNAME}
-  logo: ${CUSTOMER_LOGO}
-  logoIcon: ${CUSTOMER_LOGO_ICON}
+  logo: https://companieslogo.com/img/orig/AMZN_BIG-accd00da.png
+  logoIcon: https://companieslogo.com/img/orig/AMZN.D-13fddc58.png
 
 organization:
   name: ${CUSTOMER_NAME}
 
 backend:
+  platformRegion: ${AWS_REGION}
   # Note that the baseUrl should be the URL that the browser and other clients
   # should use when communicating with the backend, i.e. it needs to be
   # reachable not just from within the backend host, but from all of your
@@ -25,8 +26,8 @@ backend:
       - secret: ${BACKSTAGE_SECRET}
 
   csp:
-    connect-src: ["'self'", 'http:', 'https:']
-    img-src: ["'self'", 'https://companieslogo.com']
+    connect-src: ["'self'", "http:", "https:"]
+    img-src: ["'self'", "https://companieslogo.com"]
 
   cors:
     origin: ${PROTOCOL}://${BACKSTAGE_HOSTNAME}
@@ -48,7 +49,7 @@ backend:
       #     $file: <file-path>/ca/server.crt
   reading:
     allow:
-      - host: ${GITLAB_HOSTNAME}
+      - host: ${SSM_GITLAB_HOSTNAME}
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   session:
@@ -65,37 +66,59 @@ auth:
 
 integrations:
   gitlab:
-    - host: ${GITLAB_HOSTNAME}
-      apiBaseUrl: https://${GITLAB_HOSTNAME}/api/v4
-      baseUrl: https://${GITLAB_HOSTNAME}
+    - host: ${SSM_GITLAB_HOSTNAME}
+      apiBaseUrl: https://${SSM_GITLAB_HOSTNAME}/api/v4
+      baseUrl: https://${SSM_GITLAB_HOSTNAME}
       token: ${GITLAB_ADMIN_TOKEN}
 
-# scaffolder:
+scaffolder:
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
-  # defaultAuthor:
-  #   name: Backstage Scaffolder
-  #   email: backstage-scaffolder@mycompany.com
+  defaultAuthor:
+    name: ${BACKSTAGE_SCAFFOLDER_NAME}
+    email: ${BACKSTAGE_SCAFFOLDER_EMAIL}
+
+gitlab:
+  allowedKinds:
+    - Component
+    - Resource
+    - AWSEnvironmentProvider
 
 catalog:
   # Overrides the default list locations from app-config.yaml as these contain example data.
   # See https://backstage.io/docs/features/software-catalog/software-catalog-overview#adding-components-to-the-catalog for more details
   # on how to get entities into the catalog.
   rules:
-    - allow: [Component, System, API, Resource, Location, Template, AWSEnvironment, AWSEnvironmentProvider]
+    - allow:
+        [
+          Domain,
+          Component,
+          System,
+          API,
+          Resource,
+          Location,
+          Template,
+          AWSEnvironment,
+          AWSEnvironmentProvider,
+        ]
   locations:
-
-    - type: url
-      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/catalog/all-environments.yaml
-
-    - type: url
-      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/catalog/all-environment-providers.yaml
-
     # AWS templates
     - type: url
-      target: https://${GITLAB_HOSTNAME}/baws-admin/backstage-reference/-/blob/main/templates/all-templates.yaml
+      target: https://${SSM_GITLAB_HOSTNAME}/opa-admin/backstage-reference/-/blob/main/templates/all-templates.yaml
       rules:
         - allow: [Location, Template]
   providers:
     okta:
       - orgUrl: ${OKTA_ORG_URL}
         token: ${OKTA_API_TOKEN}
+    gitlab:
+      opa:
+        host: ${SSM_GITLAB_HOSTNAME}
+        branch: main
+        fallbackBranch: main
+        skipForkedRepos: false
+        # group: example-group # Optional. Group and subgroup (if needed) to look for repositories. If not present the whole instance will be scanned
+        entityFilename: .backstage/catalog-info.yaml
+        projectPattern: '[\s\S]*'
+        schedule:
+          frequency: { minutes: 15 }
+          timeout: { minutes: 3 }

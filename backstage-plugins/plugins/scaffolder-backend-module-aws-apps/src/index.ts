@@ -3,7 +3,7 @@
 
 /***/
 /**
- * The baws module for @backstage/plugin-scaffolder-backend.
+ * The opa module for @backstage/plugin-scaffolder-backend.
  *
  * @packageDocumentation
  */

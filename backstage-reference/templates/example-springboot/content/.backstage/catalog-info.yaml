@@ -1,0 +1,23 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.component_id | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - java
+    - springboot
+  annotations:
+    aws.amazon.com/opa-repo-secret-arn: ${{ values.aws_secret_repo_arn | dump }}
+  # links:
+  #   - title: ${{ values.component_id}} endpoint
+  #     url: ${{ values.aws_bp_outputs["opa-alb-endpoint"] | dump }}
+  iac-type: cdk
+  repo-secret-arn: ${{ values.aws_secret_repo_arn | dump }}
+spec:
+  type: aws-app
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn: []

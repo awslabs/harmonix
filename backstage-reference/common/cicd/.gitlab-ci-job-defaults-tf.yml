@@ -1,0 +1,32 @@
+default:
+  image:
+    name: node:18
+  before_script:
+    - cat /etc/os-release
+    - apt-get update
+    - apt install nodejs npm git python3-pip yq jq -y
+    - export PIP_BREAK_SYSTEM_PACKAGES=1
+    - pip3 install awscli --upgrade
+    - yarn global add aws-cli typescript@latest
+    - yarn --version
+    - aws --version
+    - apt-get install -y gnupg software-properties-common curl
+    - wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor | tee /usr/share/keyrings/hashicorp-archive-keyring.gpg
+    - echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/hashicorp.list
+    - apt-get update && apt-get install terraform
+    - terraform -v
+    # Unset AWS_xxx env vars so that we will use the default EC2 instance role
+    - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+    - aws sts get-caller-identity
+    # Storing gitlab access token before changing role
+    - export ACCESS_TOKEN=`aws secretsmanager get-secret-value --secret-id opa-admin-gitlab-secrets --region ${OPA_PLATFORM_REGION} | jq --raw-output '.SecretString' | jq -r .apiToken`
+    - git config --global user.email "fsi-pace-pe@amazon.com"
+    - git config --global user.name "OPA CICD User"
+    # Clone reference repo so that apps can utilize shared files. This allows us to have
+    # a single point of change for reusable files, instead of having to change them in
+    # every application repository.
+    - git clone https://oauth2:$ACCESS_TOKEN@$CI_SERVER_HOST/opa-admin/backstage-reference.git
+    - mv $CI_PROJECT_DIR/backstage-reference/common/cicd $CI_PROJECT_DIR/
+    - rm -rf $CI_PROJECT_DIR/backstage-reference
+    - echo "Shared files are available in $CI_PROJECT_DIR/cicd"
+    - ls -la $CI_PROJECT_DIR/cicd/scripts

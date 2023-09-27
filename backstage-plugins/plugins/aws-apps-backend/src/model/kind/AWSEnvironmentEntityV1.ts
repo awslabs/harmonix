@@ -22,7 +22,7 @@ import {
     /**
      * The kind of the entity
      */
-    kind: 'AWSEnvironmentProvider';
+    kind: 'AWSEnvironment';
     /**
      * The specification of the Template Entity
      */
@@ -48,6 +48,7 @@ import {
        * The owner entityRef of the TemplateEntity
        */
       owner?: string;
+      dependsOn?: string[];
     };
   }
   

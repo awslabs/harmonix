@@ -49,7 +49,6 @@ export interface AWSEnvironmentProviderEntityV1 extends Entity {
      * The owner entityRef of the TemplateEntity
      */
     owner?: string;
-    dependsOn?: string[];
   };
 }
 

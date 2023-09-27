@@ -1,9 +1,12 @@
 image: docker:20.10.16
 variables:
+  APP_SHORT_NAME: "${{ values.component_id }}"
+  APP_TEMPLATE_NAME: "example-nodejs-efs"
   AWS_ACCOUNT: "${{ values.aws_account }}"
   AWS_DEFAULT_REGION: "${{ values.aws_region }}"
   ECR_REPO: "${{ values.component_id }}"
   ECR_REGISTRY: "${{ values.aws_account }}.dkr.ecr.${{ values.aws_region }}.amazonaws.com"
+  OPA_PLATFORM_REGION: "${{ values.platform_region }}"
   # When you use the dind service, you must instruct Docker to talk with
   # the daemon started inside of the service. The daemon is available
   # with a network connection instead of the default

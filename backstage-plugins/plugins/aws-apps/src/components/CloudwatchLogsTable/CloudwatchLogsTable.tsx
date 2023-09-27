@@ -1,12 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-
 import React, { useEffect, useState } from 'react';
 import { EmptyState, LogViewer, TableColumn, Table } from '@backstage/core-components';
 import { makeStyles } from '@material-ui/core/styles';
 import { useApi } from '@backstage/core-plugin-api';
-import { bawsApiRef } from '../../api';
+import { opaApiRef } from '../../api';
 import { formatWithTime } from '../../helpers/date-utils';
 
 import Button from '@mui/material/Button';
@@ -21,6 +20,12 @@ import { LinearProgress } from '@material-ui/core';
 import { saveAs as FileSaver } from 'file-saver';
 import { LogStream } from '@aws-sdk/client-cloudwatch-logs';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
+import {
+  AWSComponent,
+  isAWSECSAppDeploymentEnvironment,
+  isAWSEKSAppDeploymentEnvironment,
+  isAWSServerlessAppDeploymentEnvironment
+} from '@aws/plugin-aws-apps-common-for-backstage';
 
 interface TableData {
   name: string;
@@ -42,9 +47,8 @@ const useStyles = makeStyles(theme => ({
 
 type LogsTableInput = {
   logGroupNames: string[];
-  account: string;
-  region: string;
   stackName?: string;
+  awsComponent: AWSComponent
 };
 
 type LogGroupStreams = {
@@ -52,10 +56,11 @@ type LogGroupStreams = {
   logStreamsList: LogStream[];
 }
 
-const CloudwatchLogsTable = ({ input: { logGroupNames, account, region, stackName } }: { input: LogsTableInput }) => {
+const CloudwatchLogsTable = ({ input: { logGroupNames, stackName } }: { input: LogsTableInput }) => {
   const emptyLogStreams = [...logGroupNames.map(_ => [])];
   const classes = useStyles();
-  const bawsApi = useApi(bawsApiRef);
+  const api = useApi(opaApiRef);
+
   const [logStreams, setLogStreams] = useState<Array<TableData[]>>(emptyLogStreams);
   const [open, setOpen] = useState(false);
   const [logs, setLogs] = useState('');
@@ -73,7 +78,7 @@ const CloudwatchLogsTable = ({ input: { logGroupNames, account, region, stackNam
 
     Promise.all(
       logGroupNames.map(async (logGroupName: string): Promise<LogGroupStreams> => {
-        return bawsApi.getLogStreamNames({ logGroupName, account, region })
+        return api.getLogStreamNames({ logGroupName })
           .then(logStreams => { return { logGroupName, logStreamsList: logStreams } as LogGroupStreams });
       })
     ).then(allLogGroupStreams => {
@@ -139,9 +144,8 @@ const CloudwatchLogsTable = ({ input: { logGroupNames, account, region, stackNam
     setOpen(true);
     setLogStreamName(streamName);
     setDialogLoading(true);
-
-    bawsApi
-      .getLogStreamData({ logGroupName, logStreamName: streamName, account, region })
+    api
+      .getLogStreamData({ logGroupName, logStreamName: streamName })
       .then(data => {
         setLogs(data);
         setDialogLoading(false);
@@ -223,11 +227,10 @@ const CloudwatchLogsTable = ({ input: { logGroupNames, account, region, stackNam
                 tooltip: 'Download',
                 onClick: (_, rowData) => {
                   const clickedStreamName = (rowData as TableData).name;
-
                   setLoading(true);
 
-                  bawsApi
-                    .getLogStreamData({ logGroupName, logStreamName: clickedStreamName, account, region })
+                  api
+                    .getLogStreamData({ logGroupName, logStreamName: clickedStreamName })
                     .then(data => {
                       setLoading(false);
                       const blob = new Blob([data], { type: 'text/plain;charset=utf-8' });
@@ -252,23 +255,35 @@ export const CloudwatchLogsWidget = () => {
 
   if (awsAppLoadingStatus.loading) {
     return <LinearProgress />;
-  } else if (awsAppLoadingStatus.deployments && awsAppLoadingStatus.deployments.logGroupNames.length > 0) {
-    const env1 = awsAppLoadingStatus.deployments
-      .environments[Object.keys(awsAppLoadingStatus.deployments.environments)[0]];
-    const logGroupNames = awsAppLoadingStatus.deployments.logGroupNames;
-    const account = env1.accountNumber;
-    const region = env1.region;
-    const stackName = env1.cloudFormation?.cloudFormationStackName ?? undefined;
-    return (
-      <CloudwatchLogsTable
-        input={{
-          logGroupNames,
-          account,
-          region,
-          stackName,
-        }}
-      />
-    );
+  } else if (awsAppLoadingStatus.component) {
+    const env = awsAppLoadingStatus.component.currentEnvironment;
+
+    let logGroupNames: string[];
+    if (isAWSServerlessAppDeploymentEnvironment(env)) {
+      logGroupNames = env.app.logGroupNames;
+    } else if (isAWSECSAppDeploymentEnvironment(env)) {
+      logGroupNames = [env.app.logGroupName];
+    } else if (isAWSEKSAppDeploymentEnvironment(env)) {
+      logGroupNames = [env.app.logGroupName];
+    } else {
+      logGroupNames = [];
+    }
+
+    if (logGroupNames && logGroupNames.length > 0) {
+      const stackName = '' //env.app.cloudFormation!
+      return (
+        <CloudwatchLogsTable
+          input={{
+            logGroupNames,
+            stackName,
+            awsComponent: awsAppLoadingStatus.component
+          }}
+        />
+      );
+    }
+    else {
+      return <EmptyState missing="data" title="Application Logs" description="Logs would show here" />;
+    }
   } else {
     return <EmptyState missing="data" title="Application Logs" description="Logs would show here" />;
   }

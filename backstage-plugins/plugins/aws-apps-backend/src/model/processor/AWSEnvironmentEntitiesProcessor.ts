@@ -7,13 +7,15 @@ import {
     parseEntityRef,
     RELATION_OWNED_BY,
     RELATION_OWNER_OF,
+    RELATION_DEPENDS_ON,
+    RELATION_DEPENDENCY_OF,
   } from '@backstage/catalog-model';
   import {
     CatalogProcessor,
     CatalogProcessorEmit,
     LocationSpec,
     processingResult,
-  } from '@backstage/plugin-catalog-backend';
+  } from '@backstage/plugin-catalog-node';
   import {
     AWSEnvironmentEntityV1,
     awsEnvironmentEntityV1Validator,
@@ -79,6 +81,38 @@ import {
               target: selfRef,
             }),
           );
+        }
+        if (template.spec.dependsOn) {
+          template.spec.dependsOn.forEach(awsEnv => {
+            const targetRef = parseEntityRef(awsEnv, {
+              defaultKind: 'awsenvironmentprovider',
+              defaultNamespace: selfRef.namespace,
+            });
+            if (targetRef.kind == 'awsenvironmentprovider') {
+              emit(
+                processingResult.relation({
+                  source: selfRef,
+                  type: RELATION_DEPENDS_ON,
+                  target: {
+                    kind: targetRef.kind,
+                    namespace: targetRef.namespace,
+                    name: targetRef.name,
+                  },
+                }),
+              );
+              emit(
+                processingResult.relation({
+                  source: {
+                    kind: targetRef.kind,
+                    namespace: targetRef.namespace,
+                    name: targetRef.name,
+                  },
+                  type: RELATION_DEPENDENCY_OF,
+                  target: selfRef,
+                }),
+              );
+            }
+          });
         }
       }
   

@@ -31,13 +31,13 @@ yarn --cwd packages/backend add "@immobiliarelabs/backstage-plugin-gitlab-backen
 yarn --cwd packages/app add "@immobiliarelabs/backstage-plugin-gitlab"
 
 # Install the AWS Apps plugins
-yarn --cwd packages/backend add "@aws/plugin-aws-apps-backend-for-backstage@^0.1.0"
-yarn --cwd packages/backend add "@aws/plugin-scaffolder-backend-aws-apps-for-backstage@^0.1.0"
-yarn --cwd packages/app add "@aws/plugin-aws-apps-for-backstage@^0.1.0"
+yarn --cwd packages/backend add "@aws/plugin-aws-apps-backend-for-backstage@^0.2.0"
+yarn --cwd packages/backend add "@aws/plugin-scaffolder-backend-aws-apps-for-backstage@^0.2.0"
+yarn --cwd packages/app add "@aws/plugin-aws-apps-for-backstage@^0.2.0"
 
 # Install the demo app.  The backstage plugin-home plugin is used by the aws-apps-demo plugin
 yarn --cwd packages/app add "@backstage/plugin-home"
-yarn --cwd packages/app add "@aws/plugin-aws-apps-demo-for-backstage@^0.1.0"
+yarn --cwd packages/app add "@aws/plugin-aws-apps-demo-for-backstage@^0.2.0"
 ```
 
 Configure Backstage to use the plugins:
@@ -97,7 +97,7 @@ import { Router } from 'express';
 import type { PluginEnvironment } from '../types';
 + import { ScmIntegrations } from '@backstage/integration';
 + import {
-+   createBawsDeployBoilerplateAction,
++   createOpaDeployBoilerplateAction,
 +   createRepoAccessTokenAction,
 +   createSecretAction,
 +   createS3BucketAction,
@@ -122,7 +122,7 @@ export default async function createPlugin(env: PluginEnvironment): Promise<Rout
 
 +  const actions = [
 +     ...builtInActions,
-+    createBawsDeployBoilerplateAction({ catalogClient }),
++    createOpaDeployBoilerplateAction({ catalogClient }),
 +    createRepoAccessTokenAction({ integrations }),
 +    createS3BucketAction(),
 +    createSecretAction(),
@@ -200,12 +200,12 @@ const isCicdApplicable = (entity: Entity) => {
   return isGitlabAvailable(entity) || isGithubActionsAvailable(entity);
 };
 export const isServerlessRestApi = (entity: Entity): boolean => {
-  const subType = entity?.metadata?.annotations?.['aws.amazon.com/baws-component-subtype'];
+  const subType = entity?.metadata?.annotations?.['aws.amazon.com/opa-component-subtype'];
   return 'serverless-rest-api' === subType;
 };
 export const isLogsAvailable = (entity: Entity): boolean => {
-  return !!entity?.metadata?.annotations?.['aws.amazon.com/baws-task-log-group'] ||
-  'serverless-rest-api' === entity?.metadata?.annotations?.['aws.amazon.com/baws-component-subtype'];
+  return !!entity?.metadata?.annotations?.['aws.amazon.com/opa-task-log-group'] ||
+  'serverless-rest-api' === entity?.metadata?.annotations?.['aws.amazon.com/opa-component-subtype'];
 };
 
 // Add the GitLab CI/CD content to the entity page

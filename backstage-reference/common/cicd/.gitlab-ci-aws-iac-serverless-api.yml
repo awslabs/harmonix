@@ -1,0 +1,66 @@
+.abstract-iac-deployment:
+  script:
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    # tell CDK where to deploy to, based on provider props file
+    - export CDK_DEPLOY_ACCOUNT=$ACCOUNT
+    - export CDK_DEPLOY_REGION=$REGION
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=3600 --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    - aws sts get-caller-identity
+    - cd $CI_PROJECT_DIR/.iac/
+    - yarn install
+    - $CI_PROJECT_DIR/.iac/node_modules/.bin/cdk deploy --outputs-file cdk-output.json --require-approval never
+    - cat cdk-output.json
+    - jq '.[] ' cdk-output.json | jq -r 'to_entries[]|"\(.key)=\"\(.value)\""' > cdk-output.properties
+    - cat cdk-output.properties
+    - set -a && source cdk-output.properties && set +a
+    # alter entity details
+    - cd $CI_PROJECT_DIR/.backstage
+    - if [[ -z "$BuildBucketName" ]]; then BuildBucketName=$(cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml | yq -r ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"BuildBucketName\"]"); fi
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"AppResourceGroup\"] =\"${AppResourceGroup}\"" catalog-info.yaml
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"StackName\"] =\"${StackName}\"" catalog-info.yaml
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"AppStackName\"] =\"${APP_SHORT_NAME}-${TARGET_ENV_PROVIDER_NAME}\"" catalog-info.yaml
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"BuildBucketName\"] =\"${BuildBucketName}\"" catalog-info.yaml
+    - ALREADY_DEPENDS_ON="$(grep "awsenvironment:default/$TARGET_ENV_NAME" catalog-info.yaml || true)"
+    - if [[ -z "$ALREADY_DEPENDS_ON" ]]; then yq -Yi ".spec.dependsOn += [\"awsenvironment:default/${TARGET_ENV_NAME}\"]" catalog-info.yaml; fi
+    - cat catalog-info.yaml
+    - git add $CI_PROJECT_DIR/.backstage/catalog-info.yaml
+    - UPDATE_COUNT=$(git diff --cached --numstat | wc -l | sed 's/ *$//g')
+    - echo "The number of files that will be committed is $UPDATE_COUNT"
+    - git status
+    - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git commit -m "updating entity details" --quiet; fi
+    - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git push -o ci.skip https://oauth2:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME HEAD:main; fi
+    # Additional functionality for serverless - write file for CICD artifact output
+    - echo "BuildBucketName=${BuildBucketName}" > $CI_PROJECT_DIR/serverless-ci-output-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties
+  cache:
+    - key:
+        files:
+          - $CI_PROJECT_DIR/.iac/yarn.lock
+      paths:
+        - $CI_PROJECT_DIR/.iac/node_modules
+
+.abstract-sam-package:
+  script:
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    # Attempt to get BuildBucketName from the Backstage entity appData
+    - if [[ -z "$BuildBucketName" ]]; then BuildBucketName=$(cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml | yq -r ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"BuildBucketName\"]"); fi
+    # Source output artifact file if it exists from IaC job to get BuildBucketName
+    - if [[ -f "$CI_PROJECT_DIR/serverless-ci-output-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties" ]]; then set -a && source $CI_PROJECT_DIR/serverless-ci-output-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties && set +a; fi
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=3600 --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    - aws sts get-caller-identity
+    - pip3 install aws-sam-cli --upgrade
+    - sam build
+    - echo "sam package will upload to S3 bucket \"$BuildBucketName\""
+    - sam package --force-upload --region $REGION --s3-bucket $BuildBucketName --output-template-file packaged.yaml
+    # put the latest build file into S3 and overwrite the previous file
+    - aws s3api put-object --bucket $BuildBucketName --key packaged.yaml --body packaged.yaml
+    # put the build file into S3 with a timestamp so that it wont get overwritten by other builds
+    - export today=$(date +%m-%d-%Y_%H-%M-%S)
+    - aws s3api put-object --bucket $BuildBucketName --key packaged-${today}.yaml --body packaged.yaml
+    - cat packaged.yaml
+    - echo "SUCCESS"

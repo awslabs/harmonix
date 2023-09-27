@@ -1,17 +1,17 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-
 import { InfoCard, EmptyState } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { LinearProgress } from '@material-ui/core';
 import { Button, CardContent, Divider, Grid, Typography } from '@mui/material';
 import React, { useState, useEffect, useRef } from 'react';
 import { DescribeStackEventsCommandOutput, UpdateStackCommandOutput, CreateStackCommandOutput, DeleteStackCommandOutput, } from "@aws-sdk/client-cloudformation";
-import { bawsApiRef } from '../../api';
-import { useAsyncAwsApp, CloudFormationStack } from '../../hooks/useAwsApp';
+import { opaApiRef } from '../../api';
+import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { formatWithTime } from '../../helpers/date-utils';
 import { useCancellablePromise } from '../../hooks/useCancellablePromise';
+import { AWSComponent, AWSServerlessAppDeploymentEnvironment, CloudFormationStack } from '@aws/plugin-aws-apps-common-for-backstage';
 
 type stackEvent = {
   action: string | undefined;
@@ -21,29 +21,27 @@ type stackEvent = {
 
 const eventStyle = { paddingRight: "15px" };
 
-const BawsAppStateOverview = ({
-  input: { account, region, stack, s3BucketName, componentName, refresh }
-}: { input: { account: string, region: string, stack: CloudFormationStack, s3BucketName: string, componentName: string, refresh: VoidFunction } }) => {
-  const bawsApi = useApi(bawsApiRef)
+const OpaAppStateOverview = ({
+  input: { awsComponent, stack, s3BucketName, refresh }
+}: { input: { awsComponent: AWSComponent, stack: CloudFormationStack, s3BucketName: string, refresh: VoidFunction } }) => {
+  const api = useApi(opaApiRef)
 
   const [polling, setPolling] = useState(false);
   const [pollingEnabled, setPollingEnabled] = useState(true);
   const [events, setEvents] = useState<stackEvent[]>([]);
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
   const timerRef = useRef<any>(null);
-  const { cancellablePromise } = useCancellablePromise({rejectOnCancel: true});
+  const { cancellablePromise } = useCancellablePromise({ rejectOnCancel: true });
 
   useEffect(() => {
 
-    // console.log('useEffect AppStateCardCloudFormation');
-    if (pollingEnabled && stack.stackStatus.endsWith('PROGRESS')) {
+    if (pollingEnabled && stack.stackDeployStatus.endsWith('PROGRESS')) {
       getStackEvents().then(_ => { });
     }
 
     return () => {
       setPollingEnabled(false);
       if (timerRef.current) {
-        // console.log('Clearing timeout ' + timerRef.current);
         clearTimeout(timerRef.current);
       }
 
@@ -61,19 +59,13 @@ const BawsAppStateOverview = ({
     let count = 0;
     while (pollingEnabled && count < 720) {
       if (count > 0) {
-        // console.log(`sleeping... ${new Date()}`);
         await sleep(5000);
-        // console.log('sleep timer id is ' + timerRef.current);
       }
       count++;
       try {
-        // console.log('calling get Stack events...' + new Date());
-        const stackEvents = await cancellablePromise<DescribeStackEventsCommandOutput>(bawsApi.getStackEvents({
-          stackName: stack.cloudFormationStackName,
-          account: account,
-          region: region,
+        const stackEvents = await cancellablePromise<DescribeStackEventsCommandOutput>(api.getStackEvents({
+          stackName: stack.stackName,
         }));
-        // console.log('returned from get Stack events...' + new Date());
 
         if (!stackEvents.StackEvents) {
           break;
@@ -109,7 +101,6 @@ const BawsAppStateOverview = ({
           };
         });
 
-        // console.log(`Setting events with size ${visibleEvents.length} ${new Date()}`);
         setEvents(visibleEvents);
 
       } catch (e) {
@@ -135,8 +126,6 @@ const BawsAppStateOverview = ({
     return new Promise(resolve => {
 
       const resolveHandler = () => {
-        // console.log(`Done sleeping. ${new Date()}`);
-        // console.log(`Clearing timeout ${timerRef.current}`);
         clearTimeout(timerRef.current);
         resolve(null);
       }
@@ -145,7 +134,7 @@ const BawsAppStateOverview = ({
   }
 
   const handleStartDeployment = async () => {
-    if (stack.stackStatus.includes('STAGED')) {
+    if (stack.stackDeployStatus.includes('STAGED')) {
       return handleCreateDeployment();
     } else {
       return handleUpdateDeployment();
@@ -157,17 +146,18 @@ const BawsAppStateOverview = ({
     setEvents([]);
     setPolling(true);
 
-    // console.log('calling updateStack...' + new Date());
     try {
-      await cancellablePromise<UpdateStackCommandOutput>(bawsApi.updateStack({
-        componentName,
-        stackName: stack.cloudFormationStackName,
+      await cancellablePromise<UpdateStackCommandOutput>(api.updateStack({
+        componentName: awsComponent.componentName,
+        stackName: stack.stackName,
         s3BucketName,
         cfFileName: "packaged.yaml",
-        account,
-        region,
+        environmentName: awsComponent.currentEnvironment.environment.name,
+        gitHost: awsComponent.gitHost,
+        gitProjectGroup: 'aws-app',
+        gitAdminSecret: 'opa-admin-gitlab-secrets',
+        gitRepoName: awsComponent.gitRepo.split('/')[1],
       }));
-      // console.log('updateStack returned ' + new Date());
 
       getStackEvents();
     } catch (e) {
@@ -184,17 +174,18 @@ const BawsAppStateOverview = ({
     setEvents([]);
     setPolling(true);
 
-    // console.log('calling createStack...' + new Date());
     try {
-      await cancellablePromise<CreateStackCommandOutput>(bawsApi.createStack({
-        componentName,
-        stackName: stack.cloudFormationStackName,
+      await cancellablePromise<CreateStackCommandOutput>(api.createStack({
+        componentName: awsComponent.componentName,
+        stackName: stack.stackName,
         s3BucketName,
         cfFileName: "packaged.yaml",
-        account,
-        region,
+        environmentName: awsComponent.currentEnvironment.environment.name,
+        gitHost: awsComponent.gitHost,
+        gitProjectGroup: 'aws-app',
+        gitAdminSecret: 'opa-admin-gitlab-secrets',
+        gitRepoName: awsComponent.gitRepo.split('/')[1],
       }));
-      // console.log('createStack returned ' + new Date());
 
       getStackEvents();
     } catch (e) {
@@ -210,15 +201,11 @@ const BawsAppStateOverview = ({
     setEvents([]);
     setPolling(true);
 
-    // console.log('calling deleteStack...' + new Date());
     try {
-      await cancellablePromise<DeleteStackCommandOutput>(bawsApi.deleteStack({
-        componentName,
-        stackName: stack.cloudFormationStackName,
-        account,
-        region,
+      await cancellablePromise<DeleteStackCommandOutput>(api.deleteStack({
+        componentName: awsComponent.componentName,
+        stackName: stack.stackName,
       }));
-      // console.log('deleteStack returned ' + new Date());
 
       getStackEvents();
     } catch (e) {
@@ -293,7 +280,7 @@ const BawsAppStateOverview = ({
             <Grid container>
               <Grid item xs={4}>
                 <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Status</Typography>
-                <Typography sx={{ mt: 1 }}>{getStatus(stack.stackStatus)}</Typography>
+                <Typography sx={{ mt: 1 }}>{getStatus(stack.stackDeployStatus)}</Typography>
               </Grid>
               <Divider orientation="vertical" flexItem sx={{ mr: '-1px' }} />
               <Grid item zeroMinWidth xs={4} sx={{ pl: 1, pr: 1 }}>
@@ -324,16 +311,16 @@ const BawsAppStateOverview = ({
                 sx={{ mr: 2 }}
                 variant="outlined"
                 size="small"
-                disabled={stack.stackStatus === 'UNSTAGED'}
+                disabled={stack.stackDeployStatus === 'UNSTAGED'}
                 onClick={handleStartDeployment}
               >
-                {stack.stackStatus.includes('STAGED') ? 'Deploy' : 'Update'} App
+                {stack.stackDeployStatus.includes('STAGED') ? 'Deploy' : 'Update'} App
               </Button>
               <Button
                 sx={{ mr: 2 }}
                 variant="outlined"
                 size="small"
-                disabled={!stack.stackStatus.includes('COMPLETE')}
+                disabled={!stack.stackDeployStatus.includes('COMPLETE')}
                 onClick={handleStopApp}
               >
                 Delete App
@@ -352,19 +339,16 @@ export const AppStateCard = () => {
 
   if (awsAppLoadingStatus.loading) {
     return <LinearProgress />
-  } else if (awsAppLoadingStatus.deployments) {
-    const env1 = awsAppLoadingStatus.deployments
-      .environments[Object.keys(awsAppLoadingStatus.deployments.environments)[0]];
+  } else if (awsAppLoadingStatus.component) {
+    const env = awsAppLoadingStatus.component.currentEnvironment as AWSServerlessAppDeploymentEnvironment;
     const input = {
-      account: env1.accountNumber,
-      region: env1.region,
-      componentName: awsAppLoadingStatus.deployments.componentName,
-      s3BucketName: env1.s3BucketName!,
-      stackName: env1.cloudFormation!.cloudFormationStackName,
-      stack: env1.cloudFormation!,
+      awsComponent: awsAppLoadingStatus.component,
+      s3BucketName: env.app.s3BucketName!,
+      stack: env.app.appStack,
       refresh: awsAppLoadingStatus.refresh!,
     };
-    return <BawsAppStateOverview input={input} />
+
+    return <OpaAppStateOverview input={input} />
   } else {
     return <EmptyState missing="data" title="No state data to show" description="State data would show here" />
   }

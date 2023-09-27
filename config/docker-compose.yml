@@ -1,0 +1,25 @@
+# Use postgres/example user/password credentials
+version: '3.1'
+
+services:
+
+  db:
+    image: postgres
+    restart: always
+    env_file:
+      - ./.env
+#    environment:
+#      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+#      # The POSTGRES_HOST_AUTH_METHOD=trust env var allows passwordless access for localhost
+#      # POSTGRES_HOST_AUTH_METHOD: trust
+#      # Change the password in your .env file
+#      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-example}
+#      # POSTGRES_DB: ${POSTGRES_DB:-postgres}
+    ports:
+      - "5432:5432"
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080

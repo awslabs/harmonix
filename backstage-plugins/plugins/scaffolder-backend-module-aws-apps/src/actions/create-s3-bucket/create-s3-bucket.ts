@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
-import { getAWScreds, AwsAppsApi, createAuditRecord } from '@aws/plugin-aws-apps-backend-for-backstage';
+// import { getAWScreds, AwsAppsApi, createAuditRecord } from '@aws/plugin-aws-apps-backend-for-backstage';
 import { EnvironmentProvider, } from '../../types';
 
 export function createS3BucketAction() {
@@ -11,7 +11,7 @@ export function createS3BucketAction() {
     envProviders: EnvironmentProvider[];
     tags?: { Key: string, Value: string | number | boolean }[];
   }>({
-    id: 'baws:create-s3-bucket',
+    id: 'opa:create-s3-bucket',
     description: 'Creates an S3 bucket',
     schema: {
       input: {
@@ -58,40 +58,46 @@ export function createS3BucketAction() {
         },
       },
     },
-    async handler(ctx) {
-      const { bucketName, tags, envProviders } = ctx.input;
+    async handler() {
 
-      // TODO add support for multiaccount/multiregion
-      const { accountId, region } = envProviders[0];
+      // We plan to remove/depricate this scaffolder action...
 
-      const creds = await getAWScreds(accountId, region, ctx.user!.entity!);
+      // const { bucketName, tags, envProviders } = ctx.input;
 
-      const apiClient = new AwsAppsApi(ctx.logger, creds.credentials, region, accountId);
+      // // TODO add support for multiaccount/multiregion
+      // const { accountId, region } = envProviders[0];
 
-      ctx.logger.info(`Creating bucket with name: ${bucketName}-${accountId}-${region}`);
+      // const creds = await getAWScreds(accountId, region, ctx.user!.entity!);
 
-      try {
-        const response = await apiClient.createS3Bucket(bucketName, tags);
-        ctx.output('awsBucketName', response.Location!.slice(1));
+      // const apiClient = new AwsAppsApi(ctx.logger, creds.credentials, region, accountId);
 
-        const auditResponse = await createAuditRecord({
-          actionType: 'Create S3 Bucket',
-          actionName: response.Location!.slice(1),
-          apiClient: apiClient,
-          roleArn: creds.roleArn,
-          awsAccount: accountId,
-          awsRegion: region,
-          logger: ctx.logger,
-          requester: ctx.user!.entity!.metadata.name,
-          status: response.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED',
-          owner: creds.owner || '',
-        });
-        if (auditResponse.status === 'FAILED') {
-          throw Error;
-        }
-      } catch (e) {
-        throw new Error(e instanceof Error ? e.message : JSON.stringify(e));
-      }
+      // ctx.logger.info(`Creating bucket with name: ${bucketName}-${accountId}-${region}`);
+
+      // try {
+      //   const response = await apiClient.createS3Bucket(bucketName, tags);
+      //   ctx.output('awsBucketName', response.Location!.slice(1));
+
+      //   const auditResponse = await createAuditRecord({
+      //     actionType: 'Create S3 Bucket',
+      //     actionName: response.Location!.slice(1),
+      //     apiClient: apiClient,
+      //     roleArn: creds.roleArn,
+      //     awsAccount: accountId,
+      //     awsRegion: region,
+      //     logger: ctx.logger,
+      //     requester: ctx.user!.entity!.metadata.name,
+      //     status: response.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED',
+      //     owner: creds.owner || '',
+      //     envProviderName: "FIXME", // FIXME createS3BucketAction pass envProviderName
+      //     envProviderPrefix: "FIXME", // FIXME createS3BucketAction pass envProviderPrefix
+
+      //   });
+      //   if (auditResponse.status === 'FAILED') {
+      //     throw Error;
+      //   }
+      // } catch (e) {
+      //   throw new Error(e instanceof Error ? e.message : JSON.stringify(e));
+      // }
     },
   });
 }

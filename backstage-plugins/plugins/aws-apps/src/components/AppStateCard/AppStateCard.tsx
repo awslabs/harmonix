@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-
 import { Task } from '@aws-sdk/client-ecs';
 import { InfoCard, EmptyState } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
@@ -9,13 +8,15 @@ import { LinearProgress } from '@material-ui/core';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Button, CardContent, Divider, Grid, IconButton, Typography } from '@mui/material';
 import React, { useEffect, useState } from 'react';
-import { bawsApiRef } from '../../api';
+import { opaApiRef } from '../../api';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
+import { AWSComponent, AWSECSAppDeploymentEnvironment } from '@aws/plugin-aws-apps-common-for-backstage';
 
-const BawsAppStateOverview = ({
-  input: { account, region, cluster, serviceArn, taskDefArn }
-}: { input: { account: string, region: string, cluster: string, serviceArn: string, taskDefArn: string } }) => {
-  const bawsApi = useApi(bawsApiRef);
+const OpaAppStateOverview = ({
+  input: { cluster, serviceArn, taskDefArn }
+}: { input: { cluster: string, serviceArn: string, taskDefArn: string, awsComponent: AWSComponent } }) => {
+  const api = useApi(opaApiRef);
+
   const [taskData, setTaskData] = useState<Task>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
@@ -27,11 +28,9 @@ const BawsAppStateOverview = ({
   */
   async function getTaskDetails() {
     await sleep(5000);
-    return await bawsApi.getTaskDetails({
+    return api.getTaskDetails({
       cluster: cluster,
-      service: serviceArn,
-      account: account,
-      region: region,
+      service: serviceArn
     });
   }
 
@@ -40,12 +39,10 @@ const BawsAppStateOverview = ({
   entity and also task Data
   */
   async function getData() {
-    
-    const tasks = await bawsApi.getTaskDetails({
+
+    const tasks = await api.getTaskDetails({
       cluster,
       service: serviceArn,
-      account: account,
-      region: region,
     });
     setTaskData(tasks);
   }
@@ -67,13 +64,11 @@ const BawsAppStateOverview = ({
   }
 
   const handleStartTask = async () => {
-    await bawsApi.updateService({
+    await api.updateService({
       cluster: cluster,
       service: serviceArn,
       desiredCount: 1,
       restart: false,
-      account: account,
-      region: region,
       taskDefinition: taskDefArn,
     });
     setLoading(true);
@@ -93,13 +88,11 @@ const BawsAppStateOverview = ({
   };
 
   const handleStopTask = async () => {
-    await bawsApi.updateService({
+    await api.updateService({
       cluster: cluster,
       service: serviceArn,
       desiredCount: 0,
       restart: false,
-      account: account,
-      region: region,
       taskDefinition: taskDefArn,
     });
     let getTaskResult;
@@ -182,17 +175,16 @@ export const AppStateCard = () => {
 
   if (awsAppLoadingStatus.loading) {
     return <LinearProgress />
-  } else if (awsAppLoadingStatus.deployments) {
-    const env1 = awsAppLoadingStatus.deployments
-      .environments[Object.keys(awsAppLoadingStatus.deployments.environments)[0]];
+  } else if (awsAppLoadingStatus.component) {
+    const env = awsAppLoadingStatus.component.currentEnvironment as AWSECSAppDeploymentEnvironment;
+    const latestTaskDef = env.app.taskDefArn.substring(0, env.app.taskDefArn.lastIndexOf(":"))
     const input = {
-      account: env1.accountNumber,
-      region: env1.region,
-      cluster: env1.ecs.clusterName,
-      serviceArn: awsAppLoadingStatus.deployments.ecs.serviceArn,
-      taskDefArn: awsAppLoadingStatus.deployments.ecs.taskDefArn,
+      cluster: env.clusterName,
+      serviceArn: env.app.serviceArn,
+      taskDefArn: latestTaskDef,
+      awsComponent: awsAppLoadingStatus.component
     };
-    return <BawsAppStateOverview input={input} />
+    return <OpaAppStateOverview input={input} />
   } else {
     return <EmptyState missing="data" title="No state data to show" description="State data would show here" />
   }

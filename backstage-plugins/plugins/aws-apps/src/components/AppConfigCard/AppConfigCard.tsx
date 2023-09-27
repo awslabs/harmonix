@@ -2,136 +2,38 @@
 // SPDX-License-Identifier: Apache-2.0
 import { InfoCard, EmptyState } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { LinearProgress } from '@material-ui/core';
+import { IconButton, LinearProgress, Tooltip } from '@material-ui/core';
 import { Button, CardContent, Grid, TextField, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import React, { useEffect, useState } from 'react';
-import { bawsApiRef } from '../../api';
+import { opaApiRef } from '../../api';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { ContainerDetailsType } from '../../types';
+import { AWSComponent, AWSECSAppDeploymentEnvironment } from '@aws/plugin-aws-apps-common-for-backstage';
 
-const ContainerDetailsCard = ({
-  containerDetails,
-  dataChangeHandler,
-  addHandler,
-  saveHandler,
-  removeHandler,
-  editHandler,
-  index,
-  edit,
+const AppConfigOverview = ({
+  input: { awsComponent },
 }: {
-  containerDetails: ContainerDetailsType;
-  dataChangeHandler: (event: any) => void;
-  index: number;
-  addHandler: (event: any) => void;
-  saveHandler: (event: any) => void;
-  removeHandler: (event: any) => void;
-  editHandler: (event: any) => void;
-  edit: boolean;
+  input: {
+    awsComponent: AWSComponent;
+  };
 }) => {
-  return (
-    <Grid container sx={index == 0 ? { mt: 0 } : { mt: 5 }}>
-      <Grid item xs={4}>
-        <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Container Name</Typography>
-        <Typography sx={{ mt: 1 }}>{containerDetails.containerName}</Typography>
-      </Grid>
-      <Grid item xs={8}>
-        <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Environment Variables</Typography>
-        <Button
-          sx={{ mt: 1 }}
-          variant="outlined"
-          size="small"
-          id={index.toString()}
-          onClick={addHandler}
-          disabled={containerDetails.env?.length != 0 && edit}
-        >
-          Add
-        </Button>
-        <Button
-          sx={{ mt: 1, ml: 1 }}
-          variant="outlined"
-          size="small"
-          id={index.toString()}
-          onClick={editHandler}
-          disabled={!edit}
-        >
-          Edit
-        </Button>
-        <Button
-          sx={{ mt: 1, ml: 1 }}
-          variant="outlined"
-          size="small"
-          id={index.toString()}
-          onClick={saveHandler}
-          disabled={edit}
-        >
-          Save
-        </Button>
-        {containerDetails.env?.length != 0 ? (
-          <Grid container direction={'row'} sx={{ mt: 1 }} spacing={1}>
-            <Grid item xs={5}>
-              <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Name</Typography>
-            </Grid>
-            <Grid item xs={5}>
-              <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}> Value</Typography>
-            </Grid>
-          </Grid>
-        ) : (
-          <Typography sx={{ mt: 1 }}>
-            {' '}
-            No environment variables defined for container {containerDetails.containerName}
-          </Typography>
-        )}
+  const api = useApi(opaApiRef);
 
-        {containerDetails.env?.map(variables => (
-          <Grid container key="{variables.name}" direction={'row'} sx={{ mt: 1 }} spacing={1}>
-            <Grid item xs={5}>
-              <TextField
-                id={'key-' + index + '-' + variables.name}
-                size="small"
-                value={variables.name}
-                onChange={dataChangeHandler}
-                disabled={edit}
-                error={!variables.name}
-                helperText={variables.name ? '' : 'Cannot be Empty'}
-              ></TextField>
-            </Grid>
-            <Grid item xs={5}>
-              <TextField
-                id={'value-' + index + '-' + variables.value}
-                size="small"
-                value={variables.value}
-                onChange={dataChangeHandler}
-                disabled={edit}
-                error={!variables.value}
-                helperText={variables.value ? '' : 'Cannot be Empty'}
-              ></TextField>
-            </Grid>
-
-            <Button id={index + '-' + variables.name} onClick={removeHandler} disabled={edit}>
-              Remove
-            </Button>
-          </Grid>
-        ))}
-      </Grid>
-    </Grid>
-  );
-};
-
-const BawsAppConfigOverview = ({
-  input: { account, region, cluster, serviceArn, taskDefArn },
-}: {
-  input: { account: string; region: string; cluster: string; serviceArn: string; taskDefArn: string };
-}) => {
-  const bawsApi = useApi(bawsApiRef);
-  const [envVariable, setEnvVariables] = useState<ContainerDetailsType[]>([]);
+  // States managed by React useState
+  const [savedEnvVariables, setSavedEnvVariables] = useState<ContainerDetailsType[]>([]);
+  const [envVariables, setEnvVariables] = useState<ContainerDetailsType[]>([]);
   const [loading, setLoading] = useState(true);
-  const [edit, setEdit] = useState(true);
+  const [unsavedChanges, setUnsavedChanges] = useState(false);
+  const [edit, setEdit] = useState(false);
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
+  const env = awsComponent.currentEnvironment as AWSECSAppDeploymentEnvironment;
+  // get latest task definition
+  const latestTaskDef = env.app.taskDefArn.substring(0, env.app.taskDefArn.lastIndexOf(":"))
+
   async function getData() {
-    const taskDefinition = await bawsApi.describeTaskDefinition({
-      account,
-      region,
-      taskDefinitionArn: taskDefArn,
+    const taskDefinition = await api.describeTaskDefinition({
+      taskDefinitionArn: latestTaskDef,
     });
 
     const containerDetails = taskDefinition.containerDefinitions?.map(containerDef => {
@@ -141,119 +43,10 @@ const BawsAppConfigOverview = ({
       };
     });
 
+    setSavedEnvVariables(containerDetails!);
     setEnvVariables(containerDetails!);
   }
 
-  const editHandler = () => {
-    setEdit(!edit);
-  };
-
-  const saveHandler = () => {
-    let emptyVar;
-    envVariable.map(containerDef => {
-      for (const i in containerDef.env) {
-        if (containerDef.env[Number(i)].name === '' || containerDef.env[Number(i)].value === '') {
-          emptyVar = true;
-          break;
-        }
-      }
-    });
-    if (emptyVar) {
-      return;
-    } else {
-      bawsApi
-        .updateTaskDefinition({
-          taskDefinitionArn: taskDefArn,
-          account: account,
-          region: region,
-          envVar: envVariable,
-        })
-        .then(td => {
-          const containerDet = td.containerDefinitions?.map(condef => {
-            return {
-              containerName: condef?.name,
-              env: condef?.environment,
-            };
-          });
-          setEnvVariables(containerDet!);
-
-          setEdit(!edit);
-          bawsApi
-            .updateService({
-              cluster: cluster,
-              service: serviceArn,
-              account: account,
-              region: region,
-              taskDefinition: taskDefArn,
-              restart: true,
-              desiredCount: undefined,
-            })
-            .then(() => {
-              setLoading(false);
-              setError({ isError: false, errorMsg: '' });
-            });
-        })
-        .catch(e => {
-          setLoading(false);
-          setError({ isError: true, errorMsg: `Unexpected error occurred while udpating taskDefinition: ${e}` });
-        });
-    }
-  };
-
-  const removeHandler = (event: any) => {
-    let newState = [...envVariable];
-    const index = event.target.id?.split('-')[0];
-    const key = event.target.id.split('-')[1];
-    if (newState[index].env?.length == 0 || undefined) {
-      return;
-    }
-    for (const i in newState[index].env) {
-      if (newState[index].env![Number(i)]?.name == key) {
-        delete newState[index].env![Number(i)];
-      }
-    }
-    setEnvVariables(newState);
-  };
-
-  const addHandler = (event: any) => {
-    let newState = [...envVariable];
-    if (newState[Number(event.target.id!)].env?.length == 0 || undefined) {
-      setEdit(!edit);
-    }
-
-    newState[Number(event.target.id!)].env?.push({
-      name: '',
-      value: '',
-    });
-    setEnvVariables(newState);
-  };
-
-  const handler = (event: any) => {
-    const parts = event.target.id.split('-');
-    let newState = [...envVariable];
-    const type = parts[0];
-    const index = Number(parts[1]);
-    const value = parts[2];
-
-    if (newState[index]?.env === undefined) {
-      return;
-    }
-    if (type == 'key') {
-      for (const i in newState[index]['env']) {
-        if (newState[index].env![Number(i)].name == value) {
-          newState[index].env![Number(i)].name = event.target.value;
-        }
-      }
-    }
-    if (type === 'value') {
-      for (const i in newState[index]['env']) {
-        if (newState[index].env![Number(i)].value == value) {
-          newState[index].env![Number(i)].value = event.target.value;
-        }
-      }
-    }
-    setEnvVariables(newState);
-  };
   useEffect(() => {
     getData()
       .then(() => {
@@ -265,6 +58,176 @@ const BawsAppConfigOverview = ({
         setLoading(false);
       });
   }, []);
+
+  const onEdit = (containerName: string) => {
+
+    // don't allow switching out of edit mode if any environment variables are empty
+    if (edit) {
+      let emptyVar = false;
+      const containerDetails = envVariables.filter(details => details.containerName === containerName)[0];
+
+      for (const i in containerDetails.env) {
+        if (containerDetails.env[Number(i)].name === '' || containerDetails.env[Number(i)].value === '') {
+          emptyVar = true;
+          break;
+        }
+      }
+
+      if (emptyVar) {
+        return;
+      }
+    }
+
+    setEdit(!edit);
+  };
+
+  const onSave = () => {
+    setLoading(true);
+    let emptyVar = false;
+    const env = awsComponent.currentEnvironment as AWSECSAppDeploymentEnvironment;
+    envVariables.map(containerDef => {
+      for (const i in containerDef.env) {
+        if (containerDef.env[Number(i)].name === '' || containerDef.env[Number(i)].value === '') {
+          emptyVar = true;
+          break;
+        }
+      }
+    });
+
+    if (emptyVar) {
+      return;
+    }
+
+    api
+      .updateTaskDefinition({
+        taskDefinitionArn: latestTaskDef,
+        envVar: envVariables
+      })
+      .then(td => {
+        const containerDet = td.containerDefinitions?.map(condef => {
+          return {
+            containerName: condef?.name,
+            env: condef?.environment,
+          };
+        });
+
+        setSavedEnvVariables(containerDet!);
+        setEnvVariables(containerDet!);
+        setUnsavedChanges(false);
+        setEdit(false);
+
+        api
+          .updateService({
+            cluster: env.clusterName,
+            service: env.app.serviceArn,
+            taskDefinition: env.app.taskDefArn,
+            restart: true,
+            desiredCount: undefined,
+            // prefix,
+            // providerName
+          })
+          .then(() => {
+            setLoading(false);
+            setError({ isError: false, errorMsg: '' });
+          });
+      })
+      .catch(e => {
+        setLoading(false);
+        setError({ isError: true, errorMsg: `Unexpected error occurred while udpating taskDefinition: ${e}` });
+      });
+
+  };
+
+  // Returns a new object reference that is a shallow clone of envVariables, except for the
+  // specific containerName, which will be deep cloned.
+  const getEnvVarsPartialDeepClone = (containerName: string): ContainerDetailsType[] => {
+    const newState = [...envVariables];
+    const containerIndex = newState.findIndex((search: ContainerDetailsType) => search.containerName === containerName);
+
+    // the env array object reference needs to be changed or else we can't detect
+    // unsaved changes
+    newState[containerIndex] = { ...envVariables[containerIndex] };
+    newState[containerIndex].env = [...(newState[containerIndex].env || [])];
+
+    return newState;
+  };
+
+  const checkForUnsavedChanges = (containerName: string, newDetails: ContainerDetailsType[]) => {
+
+    if (savedEnvVariables === newDetails) {
+      setUnsavedChanges(false);
+      return;
+    }
+
+    if (savedEnvVariables.length !== newDetails.length) {
+      setUnsavedChanges(true);
+      return;
+    }
+
+    const savedDetails = savedEnvVariables.filter(details => details.containerName === containerName)[0];
+    const details = newDetails.filter(details => details.containerName === containerName)[0];
+
+    if (savedDetails.env?.length !== details.env?.length) {
+      setUnsavedChanges(true);
+      return;
+    }
+
+    // Note - cannot use a forEach loop here since we want to return from this function immediately
+    // if we find unsaved changes
+    for (let index = 0; index < (savedDetails.env?.length || 0); index++) {
+      const keyValPair = savedDetails.env![index];
+
+      if (keyValPair?.name !== details.env?.[index]?.name ||
+        keyValPair?.value !== details.env?.[index]?.value) {
+
+        setUnsavedChanges(true);
+        return;
+      }
+    }
+
+    setUnsavedChanges(false);
+  }
+
+  const onEnvVarChange = (containerName: string, type: string, value: string, envVarIndex: number) => {
+    const newState = getEnvVarsPartialDeepClone(containerName);
+    const containerDetails = newState.filter(details => details.containerName === containerName)[0];
+
+    const originalKeyVal = containerDetails.env![envVarIndex];
+
+    if (type === "key") {
+      containerDetails.env![envVarIndex] = { ...originalKeyVal, name: value };
+    } else {
+      containerDetails.env![envVarIndex] = { ...originalKeyVal, value };
+    }
+
+    checkForUnsavedChanges(containerName, newState);
+    setEnvVariables(newState);
+  };
+
+  const onDeleteEnvVar = (containerName: string, envVarIndex: number) => {
+    const newState = getEnvVarsPartialDeepClone(containerName);
+    const containerDetails = newState.filter(details => details.containerName === containerName)[0];
+    containerDetails.env!.splice(envVarIndex, 1); // delete the env var out of the array
+    checkForUnsavedChanges(containerName, newState);
+    setEnvVariables(newState);
+  }
+
+  const onAddEnvVar = (containerName: string) => {
+    const newState = getEnvVarsPartialDeepClone(containerName);
+
+    const containerDetails = newState.filter(details => details.containerName === containerName)[0];
+
+    if (!containerDetails.env) {
+      containerDetails.env = [];
+    }
+
+    containerDetails.env.push({ name: '', value: '' });
+
+    setEdit(true);
+    setUnsavedChanges(true);
+    setEnvVariables(newState);
+  };
+
   if (loading) {
     return (
       <InfoCard title="Application Configuration">
@@ -272,26 +235,108 @@ const BawsAppConfigOverview = ({
       </InfoCard>
     );
   }
+
   if (error.isError) {
     return <InfoCard title="Application Configuration">{error.errorMsg}</InfoCard>;
   }
+
   return (
     <InfoCard title="Application Configuration">
       <CardContent sx={{ mt: 2 }}>
-        <Grid container direction="column" rowSpacing={2}>
-          {envVariable.map((details, index) => {
+        <Grid container direction="column" rowSpacing={4}>
+          {envVariables.map((containerDetails, index) => {
             return (
-              <ContainerDetailsCard
-                key={index}
-                containerDetails={details}
-                dataChangeHandler={handler}
-                addHandler={addHandler}
-                saveHandler={saveHandler}
-                removeHandler={removeHandler}
-                index={index}
-                edit={edit}
-                editHandler={editHandler}
-              ></ContainerDetailsCard>
+              <div key={containerDetails.containerName}>
+                <Grid key={`${containerDetails.containerName!}Grid`} container sx={index == 0 ? { mt: 0 } : { mt: 5 }}>
+                  <Grid item xs={12}>
+                    <Typography sx={{ fontWeight: 'bold' }}>ENVIRONMENT VARIABLES: "{containerDetails.containerName}"</Typography>
+                    <Button
+                      sx={{ mt: 1 }}
+                      variant="outlined"
+                      size="small"
+                      id={index.toString()}
+                      onClick={() => onAddEnvVar(containerDetails.containerName!)}
+                    >
+                      Add
+                    </Button>
+                    <Button
+                      sx={{ mt: 1, ml: 1 }}
+                      variant="outlined"
+                      size="small"
+                      id={index.toString()}
+                      onClick={() => onEdit(containerDetails.containerName!)}
+                      disabled={!containerDetails.env || !containerDetails.env.length}
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      sx={{ mt: 1, ml: 1 }}
+                      variant="outlined"
+                      size="small"
+                      id={index.toString()}
+                      onClick={onSave}
+                      disabled={!unsavedChanges}
+                    >
+                      Save
+                    </Button>
+                    {containerDetails.env?.length != 0 ? (
+                      <Grid container direction={'row'} sx={{ mt: 1 }} spacing={1}>
+                        <Grid item xs={edit ? 5 : 6}>
+                          <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Name</Typography>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}> Value</Typography>
+                        </Grid>
+                      </Grid>
+                    ) : (
+                      <Typography sx={{ mt: 1 }}>
+                        {' '}
+                        No environment variables defined for container {containerDetails.containerName}
+                      </Typography>
+                    )}
+
+                    {containerDetails.env?.map((nameAndValue, envVarIndex) => (
+                      <Grid container key={`${containerDetails.containerName}${envVarIndex}`} direction={'row'} sx={{ mt: 1 }} spacing={1}>
+                        <Grid item xs={edit ? 5 : 6}>
+
+                          <TextField
+                            id={`key|${index}|${envVarIndex}`}
+                            size="small"
+                            fullWidth
+                            value={nameAndValue.name}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvVarChange(containerDetails.containerName!, "key", e.target.value, envVarIndex)}
+                            disabled={!edit}
+                            error={!nameAndValue.name}
+                            helperText={nameAndValue.name ? '' : 'Cannot be Empty'}
+                          ></TextField>
+                        </Grid>
+                        <Grid item xs={6}>
+                          <TextField
+                            id={`value|${index}|${envVarIndex}`}
+                            size="small"
+                            fullWidth
+                            value={nameAndValue.value}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvVarChange(containerDetails.containerName!, "value", e.target.value, envVarIndex)}
+                            disabled={!edit}
+                            error={!nameAndValue.value}
+                            helperText={nameAndValue.value ? '' : 'Cannot be Empty'}
+                          ></TextField>
+                        </Grid>
+                        {edit &&
+                          <Grid item xs={1}>
+
+                            <Tooltip title="Delete">
+                              <IconButton size="small" aria-label="delete" onClick={() => onDeleteEnvVar(containerDetails.containerName!, envVarIndex)}>
+                                <DeleteIcon aria-label="delete" color="primary" />
+                              </IconButton>
+                            </Tooltip>
+                          </Grid>
+                        }
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Grid>
+              </div>
             );
           })}
         </Grid>
@@ -305,17 +350,12 @@ export const AppConfigCard = () => {
 
   if (awsAppLoadingStatus.loading) {
     return <LinearProgress />;
-  } else if (awsAppLoadingStatus.deployments) {
-    const env1 = awsAppLoadingStatus.deployments
-      .environments[Object.keys(awsAppLoadingStatus.deployments.environments)[0]];
+  } else if (awsAppLoadingStatus.component) {
     const input = {
-      account: env1.accountNumber,
-      region: env1.region,
-      cluster: env1.ecs.clusterName,
-      serviceArn: awsAppLoadingStatus.deployments.ecs.serviceArn,
-      taskDefArn: awsAppLoadingStatus.deployments.ecs.taskDefArn,
+      awsComponent: awsAppLoadingStatus.component
     };
-    return <BawsAppConfigOverview input={input} />;
+
+    return <AppConfigOverview input={input} />;
   } else {
     return <EmptyState missing="data" title="No config data to show" description="Config data would show here" />;
   }

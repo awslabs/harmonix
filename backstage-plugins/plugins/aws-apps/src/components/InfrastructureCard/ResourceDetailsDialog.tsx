@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { parse } from '@aws-sdk/util-arn-parser';
 import { Table, TableColumn } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { AWSResource } from '@aws/plugin-aws-apps-common-for-backstage';
@@ -15,7 +14,7 @@ import {
 } from '@material-ui/core';
 import { Close } from '@mui/icons-material';
 import React, { useEffect, useState } from 'react';
-import { bawsApiRef } from '../../api';
+import { opaApiRef } from '../../api';
 import { SecretStringComponent } from '../common';
 
 // Declare styles to use in the components
@@ -83,10 +82,14 @@ export const ResourceDetailsDialog = ({
   isOpen,
   closeDialogHandler,
   resource,
+  // prefix,
+  // providerName
 }: {
   isOpen: boolean;
   closeDialogHandler: () => void;
   resource: AWSResource;
+  prefix: string;
+  providerName: string;
 }) => {
   // Table column definition used for displaying basic key/value pairs
   const kvColumns: TableColumn[] = [
@@ -115,7 +118,7 @@ export const ResourceDetailsDialog = ({
   ];
 
   const classes = useStyles();
-  const bawsApi = useApi(bawsApiRef);
+  const api = useApi(opaApiRef);
   const [loading, setLoading] = useState(true);
   const [_, setError] = useState(false);
   const [tableColumns, setTableColumns] = useState<TableColumn<{}>[]>([{}]);
@@ -123,18 +126,20 @@ export const ResourceDetailsDialog = ({
 
   // Get the secret details
   async function getData() {
-    const arn = resource.resourceArn;
-    const { region, accountId } = parse(arn);
 
     if (resource.resourceTypeId == 'AWS::SecretsManager::Secret') {
-      const secretResponse = await bawsApi.getSecret({ secretName: resource.resourceArn, account: accountId, region });
+      const secretResponse = await api.getSecret({ secretName: resource.resourceArn });
       const rawSecret = secretResponse.SecretString ?? 'unknown';
 
       // Process the string differently depending on whether it's a JSON string or not
       try {
         const parsedSecret = JSON.parse(rawSecret);
         setTableColumns(kvColumns);
-        const jsonKeys = Object.keys(parsedSecret).sort();
+        const jsonKeys = Object.keys(parsedSecret).sort((a, b) => {
+          if (a < b) { return -1; }
+          if (a > b) { return 1; }
+          return 0;
+        });
         const secretTableData = jsonKeys.map((key, i) => {
           const value = /.*password.*/i.test(key) ? (
             <SecretStringComponent secret={parsedSecret[key]} />
@@ -150,10 +155,8 @@ export const ResourceDetailsDialog = ({
         setTableData([{ value: <SecretStringComponent secret={rawSecret} />, id: '1' }]);
       }
     } else if (resource.resourceTypeId == 'AWS::SSM::Parameter') {
-      const ssmParamResponse = await bawsApi.getSSMParameter({
-        ssmParamName: resource.resourceName,
-        account: accountId,
-        region,
+      const ssmParamResponse = await api.getSSMParameter({
+        ssmParamName: resource.resourceName
       });
       // SSM Parameters are single-value and will only be displayed in a single column table
       setTableColumns(singleColumn);
@@ -186,17 +189,17 @@ export const ResourceDetailsDialog = ({
           <Close />
         </IconButton>
       </DialogTitle>
-        <DialogContent>
-          <Grid container>
-            <Grid item>
-              <Typography className={classes.resourceTitle}>Name: </Typography>
-            </Grid>
-            <Grid item>
-              <Typography>{resource.resourceName}</Typography>
-            </Grid>
+      <DialogContent>
+        <Grid container>
+          <Grid item>
+            <Typography className={classes.resourceTitle}>Name: </Typography>
           </Grid>
-          <ResourceDetailsTable resource={resource} columns={tableColumns} tableData={tableData} />
-        </DialogContent>
+          <Grid item>
+            <Typography>{resource.resourceName}</Typography>
+          </Grid>
+        </Grid>
+        <ResourceDetailsTable resource={resource} columns={tableColumns} tableData={tableData} />
+      </DialogContent>
       <DialogActions>
         <Button color="primary" onClick={closeDialogHandler}>
           Dismiss

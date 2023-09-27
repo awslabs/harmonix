@@ -1,0 +1,194 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: aws-environment
+  title: AWS Environment
+  description: Configure an AWS environment
+  tags:
+    - aws
+    - aws-environment
+    - environment
+spec:
+  owner: group:admins
+  type: aws-environment
+  parameters:
+    - title: Fill in the environment details
+      required:
+        - name
+        - short_name
+        - description
+        - environment_type
+        - deployment_requires_approval
+        - owner
+        - account_type
+        - region_type
+        - category
+        - classification
+        - system
+        - level
+        - providers
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name for the environment
+          ui:autofocus: true
+        short_name:
+          title: Short Name
+          type: string
+          description: A Short name for the environment
+        description:
+          title: Description
+          type: string
+          description: A description of the environment
+        environment_type:
+          title: Select the environment type 
+          type: string
+          description: Select the environment type
+          default: ecs
+          enum:
+            - ecs
+            - eks
+            - serverless
+          enumNames:
+            - AWS ECS
+            - AWS EKS
+            - AWS Serverless
+        deployment_requires_approval:
+          title: Deployment requires approval
+          description: is approval required before deploying to this environment?
+          type: boolean
+          ui:widget: radio
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+        account_type:
+          title: Account type
+          type: string
+          description: Select the environment account type
+          default: single-account
+          enum:
+            - single-account
+            - multi-account
+          enumNames:
+            - Single-account
+            - Multi-account
+        region_type:
+          title: Region type
+          type: string
+          description: Select the environment region type
+          default: single-region
+          enum:
+            - single-region
+            - multi-region
+          enumNames:
+            - Single-region
+            - Multi-region
+        category:
+          title: Category
+          type: string
+          description: Select the category for the environment
+          default: development
+          enum:
+            - development
+            - testing
+            - staging
+            - sandbox
+            - production
+          enumNames:
+            - Development
+            - Testing
+            - Staging
+            - Sandbox
+            - Production
+        classification:
+          title: Classification
+          type: string
+          description: Select the Classification for the environment
+          default: private
+          enum:
+            - private
+            - internal
+            - public
+          enumNames:
+            - private
+            - internal
+            - public
+        system:
+          title: System
+          type: string
+          description: The system this environment belongs
+          default: demo
+        level:
+          title: Hierarchy of the Environment
+          type: number
+          description: 1 is low (e.g. DEV), 10 is high (e.g. PROD)
+        providers:
+          title: Providers
+          type: string
+          description: Select Providers for this environment
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AWSEnvironmentProvider
+            defaultKind: AWSEnvironmentProvider
+          # TODO: Add entity picker filter for only providers of the selected environment type configured above - environment_type
+    - title: Provide Repository information
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-environments
+  steps:
+    - id: fetchBase
+      name: Fetch Code Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name }}
+          short_name: ${{ parameters.short_name }}
+          description: ${{ parameters.description }}
+          environment_type: ${{parameters.environment_type}}
+          owner: ${{ parameters.owner }}
+          account_type: ${{parameters.account_type}}
+          region_type: ${{ parameters.region_type }}
+          category: ${{ parameters.category }}
+          classification: ${{ parameters.classification }}
+          system: ${{ parameters.system }}
+          providers: ${{parameters.providers}}
+          level: ${{parameters.level}}
+          repoUrl: ${{ parameters.repoUrl }}
+          deployment_requires_approval: ${{parameters.deployment_requires_approval}}
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

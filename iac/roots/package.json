@@ -1,0 +1,10 @@
+{
+    "private": true,
+    "name": "aws-application-development",
+    "workspaces": [
+        "opa-ecs-environment",
+        "opa-serverless-environment",
+        "opa-common-constructs",
+        "opa-platform"
+    ]
+}

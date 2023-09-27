@@ -1,7 +1,13 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { AwsAppsApi } from './AwsAppsApi';
 import { Logger } from 'winston';
 
 export interface AwsAuditRequest {
+  envProviderPrefix: string;
+  envProviderName: string;
+  appName:string;
   apiClient: AwsAppsApi;
   roleArn: string;
   logger: Logger;
@@ -21,41 +27,59 @@ export interface AwsAuditResponse {
   message: string;
 }
 
-export async function createAuditRecord(request: AwsAuditRequest): Promise<AwsAuditResponse> {
+export async function createAuditRecord({
+  envProviderPrefix,
+  envProviderName,
+  appName,
+  apiClient,
+  roleArn,
+  awsRegion,
+  awsAccount,
+  requester,
+  owner,
+  actionType,
+  actionName,
+  requestArgs,
+  status,
+  message,
+}: AwsAuditRequest): Promise<AwsAuditResponse> {
   const response: AwsAuditResponse = { status: 'Started', message: '' };
-  //extract dynamodb audit table name
-  // const awsAppsApi = new AwsAppsApi(request.logger, request.auth.credentials, request.awsRegion, request.awsAccount);
-  const tableNameResponse = await request.apiClient.getSSMParamer('/baws/Audit');
-  if (tableNameResponse.Parameter?.Value) {
-    const recordId =
-      request.awsAccount +
-      '#' +
-      request.awsRegion +
-      '#' +
-      request.requester +
-      '#' +
-      request.actionType +
-      '#' +
-      new Date().toISOString();
-    const auditResponse = await request.apiClient.putDynamodbTableData(
-      tableNameResponse.Parameter.Value,
-      recordId,
-      'Backstage-SDK',
-      request.actionType,
-      request.actionName,
-      request.requester,
-      request.owner,
-      request.roleArn,
-      request.awsAccount,
-      request.awsRegion,
-      request.requestArgs || '',
-      request.status,
-      request.message || '',
-    );
-    if (auditResponse.$metadata.httpStatusCode == 200) response.status = 'Success';
-  } else {
+
+  let tableNameResponse;
+  try {
+    tableNameResponse = await apiClient.getSSMParameter(`/${envProviderPrefix}/${envProviderName}/${envProviderName}-audit`);
+  } catch (err) {
     response.status = 'FAILED';
-    response.message = "Audit failed - can't extract audit table name.";
+    response.message = "Audit failed - audit table name was set to FIXME.";
+  }
+
+  if (tableNameResponse?.Parameter?.Value) {
+    const recordId = `${awsAccount}#${awsRegion}#${envProviderPrefix}#${envProviderName}#${appName}#${requester}#${actionType}#${new Date().toISOString()}`;
+    const auditResponse = await apiClient.putDynamodbTableData({
+      tableName: tableNameResponse.Parameter.Value,
+      recordId,
+      origin: 'Backstage-SDK',
+      prefix: envProviderPrefix,
+      environmentProviderName: envProviderName,
+      appName:appName,
+      actionType,
+      name: actionName,
+      initiatedBy: requester,
+      owner,
+      assumedRole: roleArn,
+      targetAccount: awsAccount,
+      targetRegion: awsRegion,
+      request: requestArgs || '',
+      status,
+      message: message || ''
+    });
+
+    if (auditResponse.$metadata.httpStatusCode == 200) {
+      response.status = 'Success';
+    } else {
+      response.status = 'FAILED';
+      response.message = "Audit failed - can't extract audit table name.";
+    }
   }
 
   return response;

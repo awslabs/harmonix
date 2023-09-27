@@ -1,0 +1,92 @@
+.abstract-get-aws-creds:
+  rules:
+    - if: $CI_COMMIT_TITLE =~ /generate CICD stages/
+      when: never
+    - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "push") && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=900 --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    - export GL_API=https://$CI_SERVER_HOST/api/v4/projects/$CI_PROJECT_ID/variables
+    - >
+      curl --silent --output /dev/null --show-error --fail
+      --request POST --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "${GL_API}"
+      --form "key=AWS_ACCESS_KEY_ID" --form "value=$AWS_ACCESS_KEY_ID"
+      --form "protected=true" --form "masked=true"
+      --form "environment_scope=$OPA_CI_ENVIRONMENT"
+    - >
+      curl --silent --output /dev/null --show-error --fail
+      --request POST --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "${GL_API}"
+      --form "key=AWS_SECRET_ACCESS_KEY" --form "value=$AWS_SECRET_ACCESS_KEY"
+      --form "protected=true" --form "masked=true"
+      --form "environment_scope=$OPA_CI_ENVIRONMENT"
+    - >
+      curl --silent --output /dev/null --show-error --fail
+      --request POST --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "${GL_API}"
+      --form "key=AWS_SESSION_TOKEN" --form "value=$AWS_SESSION_TOKEN"
+      --form "protected=true" --form "masked=true"
+      --form "environment_scope=$OPA_CI_ENVIRONMENT"
+
+.abstract-get-aws-creds-auto:
+  extends: .abstract-get-aws-creds
+  rules:
+    - if: $CI_COMMIT_TITLE =~ /generate CICD stages/
+      when: never
+    - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "push") && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+
+.abstract-get-aws-creds-manual:
+  extends: .abstract-get-aws-creds
+  rules:
+    - if: $CI_COMMIT_TITLE =~ /generate CICD stages/
+      when: never
+    - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "push") && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+
+.abstract-build-image:
+  rules:
+    - if: $CI_COMMIT_TITLE =~ /generate CICD stages/
+      when: never
+    - if: $CI_COMMIT_TITLE =~ /^Destroy TF Infrastructure/
+      when: never
+    - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "push") && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  inherit:
+    default: false
+  image:
+    name: gcr.io/kaniko-project/executor:debug
+    entrypoint: [""]
+  script:
+    - /busybox/echo PROVIDER_PROPS_FILE is $PROVIDER_PROPS_FILE
+    - . ./$PROVIDER_PROPS_FILE
+    - /busybox/echo OPA_CI_REGISTRY_IMAGE is $OPA_CI_REGISTRY_IMAGE
+    - /busybox/mkdir -p /root/.aws
+    - /busybox/echo "[default]" > /root/.aws/credentials
+    - /busybox/echo "aws_access_key_id=$AWS_ACCESS_KEY_ID" >> /root/.aws/credentials
+    - /busybox/echo "aws_secret_access_key=$AWS_SECRET_ACCESS_KEY" >> /root/.aws/credentials
+    - /busybox/echo "aws_session_token=$AWS_SESSION_TOKEN" >> /root/.aws/credentials
+    - LC_TAG=`echo "${OPA_CI_REGISTRY_IMAGE}" | tr '[:upper:]' '[:lower:]'`
+    - mkdir -p /kaniko/.docker
+    - echo "{\"credsStore\":\"ecr-login\"}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "Dockerfile"
+      --destination "${LC_TAG}:latest"
+
+.abstract-delete-aws-creds:
+  rules:
+    - if: $CI_COMMIT_TITLE =~ /generate CICD stages/
+      when: never
+    - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "push") && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    - export GL_API=https://$CI_SERVER_HOST/api/v4/projects/$CI_PROJECT_ID/variables
+    - >
+      curl --globoff --request DELETE --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}"
+      "${GL_API}/AWS_ACCESS_KEY_ID?filter[environment_scope]=$OPA_CI_ENVIRONMENT"
+    - >
+      curl --globoff --request DELETE --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}"
+      "${GL_API}/AWS_SECRET_ACCESS_KEY?filter[environment_scope]=$OPA_CI_ENVIRONMENT"
+    - >
+      curl --globoff --request DELETE --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}"
+      "${GL_API}/AWS_SESSION_TOKEN?filter[environment_scope]=$OPA_CI_ENVIRONMENT"

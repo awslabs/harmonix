@@ -3,7 +3,7 @@
 
 import { KeyValuePair } from '@aws-sdk/client-ecs';
 
-export interface BAWSAppData {
+export interface OPAAppData {
   [key: string]: any;
 }
 

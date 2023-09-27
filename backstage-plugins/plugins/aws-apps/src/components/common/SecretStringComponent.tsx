@@ -20,10 +20,10 @@ export const SecretStringComponent = ({ secret }: { secret: string }) => {
 
   return (
     <>
-    {/* <Typography noWrap> */}
+      {/* <Typography noWrap> */}
       {hidden ? secret.replaceAll(/./g, '●') : secret}
       <IconButton onClick={toggleVisibility}>{hidden ? <VisibilityOff /> : <Visibility />}</IconButton>
-    {/* </Typography> */}
+      {/* </Typography> */}
     </>
   );
 };

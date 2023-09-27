@@ -1,4 +1,6 @@
-import { JsonArray, } from '@backstage/types';
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { AwsAuthResponse } from '@aws/plugin-aws-apps-backend-for-backstage';
 
 export type EnvironmentProviderConnection = {
@@ -11,11 +13,12 @@ export type EnvironmentProviderConnection = {
 export type EnvironmentProvider = {
   envProviderName: string;
   envProviderType: string;
+  envProviderPrefix: string;
   accountId: string;
   region: string;
   vpcId: string;
-  publicSubnets: JsonArray;
-  privateSubnets: JsonArray;
-  ecsClusterArn?: string;
+  publicSubnets: string;
+  privateSubnets: string;
+  clusterArn?: string;
   assumedRoleArn: string;
 }

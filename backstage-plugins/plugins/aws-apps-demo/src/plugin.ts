@@ -1,3 +1,6 @@
+// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+// SPDX-License-Identifier: Apache-2.0
+
 import { createPlugin, createComponentExtension } from '@backstage/core-plugin-api';
 
 import { rootRouteRef } from './routes';
@@ -22,6 +25,21 @@ export const AWSLogoIcon = awsAppsDemoPlugin.provide(
     component: { lazy: () => import('./components/AWSLogoIcon').then(m => m.AWSLogoIcon) },
   }),
 );
+
+export const OPALogoFull = awsAppsDemoPlugin.provide(
+  createComponentExtension({
+    name: 'OPALogoFull',
+    component: { lazy: () => import('./components/OPALogoFull').then(m => m.OPALogoFull) },
+  }),
+);
+
+export const OPALogoIcon = awsAppsDemoPlugin.provide(
+  createComponentExtension({
+    name: 'OPALogoIcon',
+    component: { lazy: () => import('./components/OPALogoIcon').then(m => m.OPALogoIcon) },
+  }),
+);
+
 export const CustomerLogoIcon = awsAppsDemoPlugin.provide(
   createComponentExtension({
     name: 'CustomerLogoIcon',
@@ -48,6 +66,15 @@ export const AWSAppsHomePage = awsAppsDemoPlugin.provide(
     name: 'AWSAppsHomePage',
     component: {
       lazy: () => import('./components/AWSAppsHomePage/AWSAppsHomePage').then(m => m.AWSAppsHomePage),
+    },
+  }),
+);
+
+export const OPAHomePage = awsAppsDemoPlugin.provide(
+  createComponentExtension({
+    name: 'AWSAppsHomePage',
+    component: {
+      lazy: () => import('./components/OPAHomePage/OPAHomePage').then(m => m.OPAHomePage),
     },
   }),
 );

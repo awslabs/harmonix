@@ -52,6 +52,7 @@ spec:
           ui:field: EntityPicker
           ui:options:
             allowedKinds: [AWSEnvironment]
+            defaultKind: AWSEnvironment
 
     - title: Provide basic file system resource information
       required:
@@ -85,9 +86,13 @@ spec:
   # via the parameters above.
   steps:
     # Each step executes an action, in this case one templates files into the working directory.
-    - id: bawsDeployEFSBoilerplate
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+      
+    - id: opaDeployEFSBoilerplate
       name: Deploy EFS resource
-      action: baws:deploy-boilerplate
+      action: opa:deploy-boilerplate
       input:
         boilerplateRepositories:
           - aws_efs
@@ -97,28 +102,28 @@ spec:
           EFS_ACCESS_POINT_PATH: "/data"
         environmentRef: ${{ parameters.environment }}
         actionType: "Create Resource"
-    - id: bawsDeployECSBoilerplate
+    - id: opaDeployECSBoilerplate
       name: Deploy ECS Boilerplate
-      action: baws:deploy-boilerplate
+      action: opa:deploy-boilerplate
       input:
         boilerplateRepositories:
           - aws_ecs
         inputParameters:
           APP_SHORT_NAME: ${{ parameters.component_id}}
-          EFS_ID: ${{ steps['bawsDeployEFSBoilerplate'].output.cfnOutputs['baws-efs-id'] }}
+          EFS_ID: ${{ steps['opaDeployEFSBoilerplate'].output.cfnOutputs['opa-efs-id'] }}
           # EFS_MOUNT_PATH: "/data"
-          EFS_ACCESS_POINT_ID: ${{ steps['bawsDeployEFSBoilerplate'].output.cfnOutputs['baws-efs-access-point-id'] }}
+          EFS_ACCESS_POINT_ID: ${{ steps['opaDeployEFSBoilerplate'].output.cfnOutputs['opa-efs-access-point-id'] }}
           APP_ENV_PLAINTEXT:
             PORT: "3001"
         environmentRef: ${{ parameters.environment }}
         actionType: "Create App"
     - id: createSecretManager
       name: Creates a Secret
-      action: baws:create-secret
+      action: opa:create-secret
       input:
         secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
-        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+        region: ${{ steps['opaDeployECSBoilerplate'].output.region }}
+        accountId: ${{ steps['opaDeployECSBoilerplate'].output.account }}
         description: "Gitlab repo access token"
         tags:
           - Key: "aws-apps:${{ parameters.component_id }}"
@@ -132,16 +137,17 @@ spec:
           component_id: ${{ parameters.component_id }}
           owner: ${{ parameters.owner }}
           description: ${{ parameters.description }}
+          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
           aws_environment: ${{ parameters.environment }}
-          aws_region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-          aws_account: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
-          aws_ecs_bp_outputs: ${{ steps['bawsDeployECSBoilerplate'].output.cfnOutputs }}
-          aws_efs_bp_outputs: ${{ steps['bawsDeployEFSBoilerplate'].output.cfnOutputs }}
+          aws_region: ${{ steps['opaDeployECSBoilerplate'].output.region }}
+          aws_account: ${{ steps['opaDeployECSBoilerplate'].output.account }}
+          aws_ecs_bp_outputs: ${{ steps['opaDeployECSBoilerplate'].output.cfnOutputs }}
+          aws_efs_bp_outputs: ${{ steps['opaDeployEFSBoilerplate'].output.cfnOutputs }}
           aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
-          aws_pipeline_arn: ${{ steps['bawsDeployECSBoilerplate'].output.executionArn }}
+          aws_pipeline_arn: ${{ steps['opaDeployECSBoilerplate'].output.executionArn }}
           efs_resource_id: ${{ parameters.efs_resource_id }}
           efs_description: ${{ parameters.efs_description }}
-          app_port: "3002"
+          app_port: "8080"
     # This step publishes the contents of the working directory to GitLab.
     - id: publish
       name: Publish
@@ -152,13 +158,12 @@ spec:
         defaultBranch: main
     - id: createRepoToken
       name: Create Repo Token
-      action: baws:createRepoAccessToken:gitlab
+      action: opa:createRepoAccessToken:gitlab
       input:
         repoUrl: ${{ parameters.repoUrl }}
         projectId: ${{ steps['publish'].output.projectId }}
         secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
-        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+        accountId: ${{ steps['opaDeployECSBoilerplate'].output.account }}
     # The final step is to register our new component in the catalog.
     - id: registerApp
       name: Register Component

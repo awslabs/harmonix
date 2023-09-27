@@ -23,7 +23,7 @@ export class CdkSecretsManagerStack extends cdk.Stack {
     this.secretInstance = new secretsmanager.Secret(this, props.secretId || "secret", secretConfig);
 
     // Output the full secret arn for downstream consumers
-    new cdk.CfnOutput(this, "bawsSecretArn", {
+    new cdk.CfnOutput(this, "opaSecretArn", {
       description: "Arn for the newly created secret",
       value: this.secretInstance.secretArn,
     });

@@ -1,22 +1,41 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-
-import { IdentityApi } from '@backstage/plugin-auth-node';
+import {
+  AppPromoParams,
+  BindResourceParams,
+  readOpaAppAuditPermission,
+} from '@aws/plugin-aws-apps-common-for-backstage';
+import { NotAllowedError } from '@backstage/errors';
+import { IdentityApi, getBearerTokenFromAuthorizationHeader } from '@backstage/plugin-auth-node';
+import { AuthorizeResult, PermissionEvaluator } from '@backstage/plugin-permission-common';
+import { createPermissionIntegrationRouter } from '@backstage/plugin-permission-node';
 import express from 'express';
 import Router from 'express-promise-router';
 import { Logger } from 'winston';
+import YAML from 'yaml';
 import { AwsAppsApi, getAWScreds } from '../api';
 import { AwsAuditResponse, createAuditRecord } from '../api/aws-audit';
+import { AwsAppsPlatformApi } from '../api/aws-platform';
+import { Config } from '@backstage/config';
 
 export interface RouterOptions {
   logger: Logger;
   userIdentity?: IdentityApi;
+  config: Config;
+  permissions: PermissionEvaluator;
 }
 
 export async function createRouter(options: RouterOptions): Promise<express.Router> {
-  const { logger, userIdentity } = options;
+  const { logger, userIdentity, config, permissions } = options;
+
+  const permissionIntegrationRouter = createPermissionIntegrationRouter({
+    permissions: [ readOpaAppAuditPermission ]
+  });
+  
   const router = Router();
+
+  router.use(permissionIntegrationRouter);
 
   //Async function to get backend API client
   async function getApiClient(
@@ -25,13 +44,15 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const awsRegion = req.body.awsRegion?.toString();
 
     const awsAccount = req.body.awsAccount?.toString();
-
-    if (awsRegion === undefined || awsAccount === undefined) {
+    const prefix = req.body.prefix?.toString();
+    const providerName = req.body.providerName?.toString();
+    const appName = req.body.appName?.toString();
+    if (awsRegion === undefined || awsAccount === undefined || prefix === undefined || providerName === undefined || appName === undefined) {
       throw Error;
     }
     const identity = await userIdentity?.getIdentity({ request: req });
 
-    const creds = await getAWScreds(awsAccount, awsRegion, undefined, identity?.identity);
+    const creds = await getAWScreds(awsAccount, awsRegion, prefix, providerName, undefined, identity?.identity);
 
     const roleArn = creds.roleArn;
 
@@ -41,7 +62,36 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
 
     const owner = creds.owner || '';
 
-    return { apiClient, apiClientConfig: { apiClient, roleArn, awsAccount, awsRegion, requester, owner } };
+    return { apiClient, apiClientConfig: { apiClient, roleArn, awsAccount, awsRegion, requester, owner, prefix, providerName, appName } };
+  }
+
+  function getAwsAppsPlatformApi(req: any): AwsAppsPlatformApi {
+    const awsRegion = req.body.awsRegion?.toString();
+    const awsAccount = req.body.awsAccount?.toString();
+    const platformRegion = process.env.AWS_REGION || config.getString('backend.platformRegion');
+
+    if (awsRegion === undefined || awsAccount === undefined) {
+      throw new Error('getAwsAppsPlatformApi: awsRegion or awsAccount is undefined');
+    }
+    return new AwsAppsPlatformApi(logger, platformRegion, awsRegion, awsAccount);
+  }
+
+  function getCloudFormationStackParams(req: any) {
+    return {
+      // Required params
+      componentName: req.body.componentName?.toString(),
+      stackName: req.body.stackName?.toString(),
+      s3BucketName: req.body.s3BucketName?.toString(),
+      cfFileName: req.body.cfFileName?.toString(),
+      providerName: req.body.providerName?.toString(),
+
+      // Params needed if CloudFormation stack input parameters should be retrieved
+      envName: req.body.environmentName?.toString(),
+      gitSecretName: req.body.gitAdminSecret?.toString(),
+      gitHost: req.body.gitHost?.toString(),
+      gitProjectGroup: req.body.gitProjectGroup?.toString(),
+      gitRepoName: req.body.gitRepoName?.toString(),
+    };
   }
 
   async function createRouterAuditRecord(
@@ -56,6 +106,7 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const auditResponse = await createAuditRecord({
       actionType,
       actionName,
+      appName: apiClientConfig.appName,
       apiClient: apiClientConfig.apiClient,
       roleArn: apiClientConfig.roleArn,
       awsAccount: apiClientConfig.awsAccount,
@@ -64,6 +115,8 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
       requester: apiClientConfig.requester,
       status,
       owner: apiClientConfig.owner,
+      envProviderName: apiClientConfig.providerName,
+      envProviderPrefix: apiClientConfig.prefix
     });
 
     return auditResponse;
@@ -81,6 +134,7 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const { apiClient, apiClientConfig } = await getApiClient(req);
     const clusterName = req.body.clusterName?.toString();
     const serviceName = req.body.serviceName?.toString();
+
     const service = await apiClient.getEcsServiceTask(clusterName, serviceName);
 
     const auditResponse = await createRouterAuditRecord({
@@ -144,8 +198,221 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
       status: service.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED',
       apiClientConfig,
     });
+
     if (auditResponse.status == 'FAILED') res.status(500).json({ message: 'auditing request FAILED.' });
     res.status(200).json(service);
+  });
+
+  // Route for fetching platform secrets - no provider
+  router.post('/platform/secrets', async (req, res) => {
+    logger.info('router entry: /platform/secrets');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+    const secretArn = req.body.secretArn?.toString();
+    const service = await apiPlatformClient.getPlatformSecretValue(secretArn);
+
+    const status = service.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED';
+    if (status == 'FAILED') res.status(500).json({ message: 'FAILED fetching platform secret request .' });
+
+    res.status(200).json(service);
+  });
+
+  // Route for fetching platform SSM param - no provider
+  router.post('/platform/ssm', async (req, res) => {
+    logger.info('router entry: /platform/ssm');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+    const paramName = req.body.paramName?.toString();
+    const service = await apiPlatformClient.getSsmValue(paramName);
+    const status = service.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED';
+    if (status == 'FAILED') res.status(500).json({ message: 'FAILED fetching platform param request .' });
+    res.status(200).json(service);
+  });
+
+  router.post('/platform/delete-stack', async (req, res) => {
+    logger.info('router entry: platform/delete-stack');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+    const stackName = req.body.stackName?.toString();
+    const accessRole = req.body.accessRole?.toString();
+    const service = await apiPlatformClient.deleteCFStack(stackName, accessRole);
+    const status = service.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED';
+    if (status == 'FAILED') res.status(500).json({ message: 'FAILED /platform/delete-stack .' });
+    res.status(200).json(service);
+  });
+
+  router.post('/platform/delete-tf-provider', async (req, res) => {
+    logger.info('router entry: platform/delete-tf-provider');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+    const providerName = req.body.providerName?.toString();
+    const gitHost = req.body.gitHost?.toString();
+    const gitRepoName = req.body.gitRepoName?.toString();
+    const gitProjectGroup = req.body.gitProjectGroup?.toString();
+    const gitAdminSecret = req.body.gitAdminSecret?.toString();
+    const envName = req.body.envName?.toString();
+    
+    const service = await apiPlatformClient.deleteTFProvider(envName, providerName,gitHost,gitProjectGroup,gitRepoName,gitAdminSecret);
+    const status = service.status === "SUCCESS" ? 'SUCCESS' : 'FAILED';
+    if (status == 'FAILED') res.status(500).json({ message: 'FAILED Destroy TF Provider request .' });
+    res.status(200).json(service);
+  });
+
+
+  
+  router.post('/platform/delete-secret', async (req, res) => {
+    logger.info('router entry: /platform/delete-secret');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+    const secretName = req.body.secretName?.toString();
+    const service = await apiPlatformClient.deletePlatformSecret(secretName);
+    const status = service.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED';
+    if (status == 'FAILED') res.status(500).json({ message: 'FAILED /platform/delete-secret .' });
+    res.status(200).json(service);
+  });
+
+  router.post('/platform/delete-repository', async (req, res) => {
+    logger.info('router entry: platform/delete-repository');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+    const gitHost = req.body.gitHost?.toString();
+    const gitProject = req.body.gitProject?.toString();
+    const gitRepoName = req.body.gitRepoName?.toString();
+    const gitAdminSecret = req.body.gitAdminSecret?.toString();
+    const service = await apiPlatformClient.deleteRepository(gitHost, gitProject, gitRepoName, gitAdminSecret);
+    console.log(service)
+    const status = service.status === "SUCCESS" ? 'SUCCESS' : 'FAILED';
+    if (status == 'FAILED') res.status(500).json({ message: 'FAILED fetching platform param request .' });
+    res.status(200).json(service);
+  });
+
+  //Route to promote app to git job
+  router.post('/git/promote', async (req, res) => {
+    logger.info('router entry: git/promote');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+
+    const secretName = req.body.gitAdminSecret?.toString();
+    const appName = req.body.appName?.toString();
+    const envName = req.body.envName?.toString();
+    const envRequiresManualApproval = req.body.envRequiresManualApproval?.toString();
+    const gitHost = req.body.gitHost?.toString();
+    const gitJobID = req.body.gitJobID?.toString();
+    const gitProjectGroup = req.body.gitProjectGroup?.toString();
+    const gitRepoName = req.body.gitRepoName?.toString();
+
+    const providers = req.body.providers;
+
+    const params: AppPromoParams = {
+      envName,
+      envRequiresManualApproval,
+      appName,
+      gitHost,
+      gitJobID,
+      gitProjectGroup,
+      gitRepoName,
+      providers
+    };
+    // console.log(params)
+    const results = await apiPlatformClient.promoteAppToGit(params, secretName);
+    //TODO: Figure how to catch wrong call and response error
+    // const status = results$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED';
+    // if (status == 'FAILED') res.status(500).json({ message: 'FAILED fetching platform secret request .' });
+    console.log(results)
+    res.status(200).json(results);
+  });
+
+  //Route to Bind app to resource using git job
+  router.post('/platform/bind-resource', async (req, res) => {
+    logger.info('router entry: /platform/bind-resource');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+
+    const secretName = req.body.gitAdminSecret?.toString();
+    const appName = req.body.appName?.toString();
+    const envName = req.body.envName?.toString();
+    const providerName = req.body.providerName?.toString();
+
+    const gitHost = req.body.gitHost?.toString();
+    const gitJobID = req.body.gitJobID?.toString();
+    const gitProjectGroup = req.body.gitProjectGroup?.toString();
+    const gitRepoName = req.body.gitRepoName?.toString();
+    const resourceName = req.body.resourceName?.toString();
+    const resourceEntityRef = req.body.resourceEntityRef?.toString();
+    const policies = req.body.policies;
+    const params: BindResourceParams = {
+      envName,
+      appName,
+      gitHost,
+      gitJobID,
+      gitProjectGroup,
+      gitRepoName,
+      providerName,
+      resourceName,
+      resourceEntityRef,
+      policies
+    };
+    // console.log(params)
+    const results = await apiPlatformClient.bindResource(params, secretName);
+    //TODO: Figure how to catch wrong call and response error
+    // const status = results$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED';
+    // if (status == 'FAILED') res.status(500).json({ message: 'FAILED fetching platform secret request .' });
+    console.log(results)
+    res.status(200).json(results);
+  });
+
+  //Route to unBind app to resource using git job
+  router.post('/platform/unbind-resource', async (req, res) => {
+    logger.info('router entry: /platform/unbind-resource');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+
+    const secretName = req.body.gitAdminSecret?.toString();
+    const appName = req.body.appName?.toString();
+    const envName = req.body.envName?.toString();
+    const providerName = req.body.providerName?.toString();
+
+    const gitHost = req.body.gitHost?.toString();
+    const gitJobID = req.body.gitJobID?.toString();
+    const gitProjectGroup = req.body.gitProjectGroup?.toString();
+    const gitRepoName = req.body.gitRepoName?.toString();
+    const resourceName = req.body.resourceName?.toString();
+    const resourceEntityRef = req.body.resourceEntityRef?.toString();
+    const policies = req.body.policies;
+    const params: BindResourceParams = {
+      envName,
+      appName,
+      gitHost,
+      gitJobID,
+      gitProjectGroup,
+      gitRepoName,
+      providerName,
+      resourceName,
+      resourceEntityRef,
+      policies
+    };
+    // console.log(params)
+    const results = await apiPlatformClient.unBindResource(params, secretName);
+    //TODO: Figure how to catch wrong call and response error
+    // const status = results$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED';
+    // if (status == 'FAILED') res.status(500).json({ message: 'FAILED fetching platform secret request .' });
+    console.log(results)
+    res.status(200).json(results);
+  });
+
+  //Route to add provider to environment using git
+  router.post('/platform/update-provider', async (req, res) => {
+    logger.info('router entry: /platform/update-provider');
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+    const secretName = req.body.gitAdminSecret?.toString();
+    const envName = req.body.envName?.toString();
+    const provider = req.body.provider;
+    const gitHost = req.body.gitHost?.toString();
+    const gitProjectGroup = req.body.gitProjectGroup?.toString();
+    const gitRepoName = req.body.gitRepoName?.toString();
+    const action = req.body.action?.toString();
+    console.log(secretName)
+    const filePath = encodeURIComponent(`.backstage/catalog-info.yaml`);
+    logger.info(`fetching environment entity file path is ${filePath}`);
+    // get the file from the repo
+    const paramsResponse = await apiPlatformClient.getFileContentsFromGit({ gitHost, gitProjectGroup, gitRepoName }, filePath, secretName);
+
+    const entityCatalog = YAML.parse(atob(paramsResponse.content));
+
+    const results = await apiPlatformClient.updateProvider(envName, provider, gitHost, gitProjectGroup, gitRepoName, entityCatalog, action, secretName);
+    console.log(results)
+    res.status(200).json(results);
   });
 
   //Route for getting resource
@@ -191,7 +458,7 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const { apiClient, apiClientConfig } = await getApiClient(req);
     const ssmParamName = req.body.ssmParamName?.toString();
     const serviceResult = await apiClient.getSSMParameter(ssmParamName);
-    
+
     const auditResponse = await createRouterAuditRecord({
       actionType: 'Fetch SSM Param',
       actionName: ssmParamName,
@@ -252,14 +519,14 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const { apiClient, apiClientConfig } = await getApiClient(req);
     const taskDefinition = req.body.taskDefinition?.toString();
     const envVar = req.body.envVar;
+
     const oldTaskDefinition = await apiClient.describeTaskDefinition(taskDefinition);
     const newCd = oldTaskDefinition.taskDefinition?.containerDefinitions?.map((td, index) => {
       return Object.assign({}, td, { name: envVar[index].containerName, environment: envVar[index].env });
     });
+
     const newTd = Object.assign({}, oldTaskDefinition.taskDefinition, { containerDefinitions: newCd });
-
     const output = await apiClient.registerTaskDefinition(newTd);
-
     const auditResponse = await createRouterAuditRecord({
       actionType: 'Update TaskDefinition',
       actionName: taskDefinition,
@@ -279,28 +546,65 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     res.status(200).json(taskDefinitionOutout.taskDefinition);
   });
 
-  //Route for quering dynamoDB
-  router.post('/dynamo-db/query', async (req, res) => {
-    logger.info('router entry: /dynamo-db/query');
+  // Route for getting Audit table entries
+  router.post('/audit-entries', async (req, res) => {
+    logger.info('router entry: /audit-entries');
+
+    const token = getBearerTokenFromAuthorizationHeader(req.header('authorization'));
+
+    // get a permission decision
+    const decision = (
+      await permissions.authorize([{
+        permission: readOpaAppAuditPermission
+      }], {
+        token
+      })
+    );
+
+    if (decision[0].result === AuthorizeResult.DENY) {
+      throw new NotAllowedError('Unauthorized');
+    }
+
     const { apiClient, apiClientConfig } = await getApiClient(req);
     const appName = req.body.appName?.toString();
-    const auditTableName = await apiClient.getSSMParamer('/baws/Audit');
+    const auditTableParam = `/${apiClientConfig.prefix}/${apiClientConfig.providerName}/${apiClientConfig.providerName}-audit`;
+    const auditTableName = await apiClient.getSSMParameter(auditTableParam);
     if (auditTableName.Parameter?.Value) {
-      const resutls = await apiClient.getDynamodbTable(auditTableName.Parameter?.Value, appName, 1);
-      
+      const results = await apiClient.getDynamodbTable(auditTableName.Parameter?.Value, appName, 1);
+
       const auditResponse = await createRouterAuditRecord({
         actionType: 'Get Audit Table',
         actionName: appName,
-        status: resutls.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED',
+        status: results.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED',
         apiClientConfig,
       });
       if (auditResponse.status == 'FAILED') res.status(500).json({ message: 'auditing request FAILED.' });
-      res.status(200).json(resutls);
+      res.status(200).json(results);
     } else {
       res.status(400).send({
         error: 'Cant fetch audit table name',
       });
     }
+  });
+
+  //Route for quering a dynamoDB table
+  router.post('/dynamo-db/query', async (req, res) => {
+    logger.info('router entry: /dynamo-db/query');
+    const { apiClient, apiClientConfig } = await getApiClient(req);
+    const appName = req.body.appName?.toString();
+    const tableName = req.body.tableName?.toString();
+
+    const results = await apiClient.getDynamodbTable(tableName, appName, 1);
+
+    const auditResponse = await createRouterAuditRecord({
+      actionType: 'Query DynamoDb Table',
+      actionName: appName,
+      status: results.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED',
+      apiClientConfig,
+    });
+    if (auditResponse.status == 'FAILED') res.status(500).json({ message: 'auditing request FAILED.' });
+
+    res.status(200).json(results);
   });
 
   // Route for getting CloudFormation stack details 
@@ -334,13 +638,27 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
   router.post('/cloudformation/updateStack', async (req, res) => {
     logger.info('router entry: /cloudformation/updateStack');
     const { apiClient, apiClientConfig } = await getApiClient(req);
+    const {
+      componentName, stackName, s3BucketName, cfFileName, providerName,
+      envName, gitSecretName, gitHost, gitProjectGroup, gitRepoName
+    } = getCloudFormationStackParams(req);
 
-    const componentName = req.body.componentName?.toString();
-    const stackName = req.body.stackName?.toString();
-    const s3BucketName = req.body.s3BucketName?.toString();
-    const cfFileName = req.body.cfFileName?.toString();
+    const filePath = encodeURIComponent(`.awsdeployment/stackparams/${envName}-${providerName}.json`);
+    logger.info(`CloudFormation params file path is ${filePath}`);
 
-    const stackOutput = await apiClient.updateStack(componentName, stackName, s3BucketName, cfFileName);
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+
+    // CloudFormation stack parameters can be set as a file in the Git repo.
+    let parameters: { ParameterKey: string, ParameterValue: any }[] | undefined;
+    if (gitHost) {
+      const paramsResponse = await apiPlatformClient.getFileContentsFromGit({ gitHost, gitProjectGroup, gitRepoName }, filePath, gitSecretName);
+      parameters = JSON.parse(atob(paramsResponse.content));
+
+      const params = parameters!.reduce((prevVal, currVal) => `${prevVal} "${currVal.ParameterKey}=${currVal.ParameterValue}"`, '').trim();
+      logger.info(`CloudFormation parameter overrides: ${params}`);
+    }
+
+    const stackOutput = await apiClient.updateStack(componentName, stackName, s3BucketName, cfFileName, providerName, parameters);
 
     const auditResponse = await createRouterAuditRecord({
       actionType: 'Update Stack',
@@ -357,13 +675,27 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
   router.post('/cloudformation/createStack', async (req, res) => {
     logger.info('router entry: /cloudformation/createStack');
     const { apiClient, apiClientConfig } = await getApiClient(req);
+    const {
+      componentName, stackName, s3BucketName, cfFileName, providerName,
+      envName, gitSecretName, gitHost, gitProjectGroup, gitRepoName
+    } = getCloudFormationStackParams(req);
 
-    const componentName = req.body.componentName?.toString();
-    const stackName = req.body.stackName?.toString();
-    const s3BucketName = req.body.s3BucketName?.toString();
-    const cfFileName = req.body.cfFileName?.toString();
+    const filePath = encodeURIComponent(`.awsdeployment/stackparams/${envName}-${providerName}.json`);
+    logger.info(`CloudFormation params file path is ${filePath}`);
 
-    const stackOutput = await apiClient.createStack(componentName, stackName, s3BucketName, cfFileName);
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+
+    // CloudFormation stack parameters can be set as a file in the Git repo.
+    let parameters: { ParameterKey: string, ParameterValue: any }[] | undefined;
+    if (gitHost) {
+      const paramsResponse = await apiPlatformClient.getFileContentsFromGit({ gitHost, gitProjectGroup, gitRepoName }, filePath, gitSecretName);
+      parameters = JSON.parse(atob(paramsResponse.content));
+
+      const params = parameters!.reduce((prevVal, currVal) => `${prevVal} "${currVal.ParameterKey}=${currVal.ParameterValue}"`, '').trim();
+      logger.info(`CloudFormation parameter overrides: ${params}`);
+    }
+
+    const stackOutput = await apiClient.createStack(componentName, stackName, s3BucketName, cfFileName, providerName, parameters);
 
     const auditResponse = await createRouterAuditRecord({
       actionType: 'Create Stack',
@@ -415,6 +747,26 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
 
   });
 
+  router.post('/kubernetes/scaleEKSDeployment', async (req, res) => {
+    try {
+      logger.info('router entry: /kubernetes/scaleEKSDeployment');
+      const { apiClient } = await getApiClient(req)
+
+      const namespace = req.body.namespace;
+      const deploymentName = req.body.deploymentName;
+      const replicaCount = req.body.replicaCount
+      // Call the scaleEKSDeployment API client method here
+      const result = await apiClient.scaleEKSDeployment(deploymentName, namespace, replicaCount)
+
+      // Respond with a successful result
+      res.status(200).json(result);
+    } catch (error) {
+      // Handle errors appropriately and respond with an error status code and message
+      console.error('Error in /kubernetes/scaleEKSDeployment:', error);
+      res.status(500).json({ message: 'Internal Server Error' });
+    }
+  });
+
   return router;
 }
 
@@ -423,6 +775,9 @@ type ApiClientConfig = {
   roleArn: string;
   awsAccount: string;
   awsRegion: string;
+  prefix: string;
+  providerName: string;
+  appName: string;
   requester: string;
   owner: string;
 };

@@ -3,14 +3,14 @@
 
 import { CatalogApi } from '@backstage/catalog-client';
 import { JsonArray, } from '@backstage/types';
-import { Entity, EntityRelation, RELATION_DEPENDENCY_OF } from '@backstage/catalog-model';
+import { Entity, EntityRelation, RELATION_DEPENDS_ON } from '@backstage/catalog-model';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import yaml from 'yaml';
 import { getAWScreds } from '@aws/plugin-aws-apps-backend-for-backstage';
 import { getSSMParameterValue } from '../../helpers/action-context';
 import { EnvironmentProvider } from '../../types';
 
-const ID = 'baws:get-env-providers';
+const ID = 'opa:get-env-providers';
 
 const examples = [
   {
@@ -19,7 +19,7 @@ const examples = [
       steps: [
         {
           action: ID,
-          id: 'bawsGetAwsEnvProviders',
+          id: 'opaGetAwsEnvProviders',
           name: 'Get AWS Environment Providers',
           input: {
             environmentRef: 'awsenvironment:Test-Environment',
@@ -32,14 +32,17 @@ const examples = [
 
 interface DeploymentParameters {
   envName: string;
+  envRef: string;
   envProviderName: string;
   envProviderType: string;
+  envProviderPrefix: string;
   accountId: string;
   region: string;
+  ssmAssumeRoleArn: string;
   ssmPathVpc: string;
   ssmPublicSubnets: string;
   ssmPrivateSubnets: string;
-  ssmPathEcsCluster: string;
+  ssmPathCluster: string;
 }
 
 export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
@@ -68,6 +71,8 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
         required: [
           'envName',
           'envShortName',
+          'envRef',
+          'envDeployManualApproval',
           'envProviders',
         ],
         properties: {
@@ -79,6 +84,14 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
             title: 'The short AWS environment name e.g. dev, qa, prod',
             type: 'string',
           },
+          envRef: {
+            title: 'The entity reference ID of the environment',
+            type: 'string',
+          },
+          envDeployManualApproval: {
+            title: 'Whether manual approval is required for deploying to the environment',
+            type: 'boolean',
+          },
           envProviders: {
             title: 'The AWS environment providers',
             type: 'array',
@@ -87,6 +100,7 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
               required: [
                 'envProviderName',
                 'envProviderType',
+                'envProviderPrefix',
                 'account',
                 'region',
                 'vpcId',
@@ -123,8 +137,8 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
                   title: 'The VPC private subnet ids',
                   type: 'array',
                 },
-                ecsClusterArn: {
-                  title: 'The Arn of the ECS cluster where the service and task are deployed, if needed',
+                clusterArn: {
+                  title: 'The Arn of the cluster where the service and task are deployed, if needed. A cluster could be ECS or EKS',
                   type: 'string',
                 },
                 assumedRoleArn: {
@@ -154,39 +168,69 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
         throw new Error(`The environment entity "${environmentRef}" could not be located in the catalog.`);
       }
 
+      const envShortName = awsEnvEntity.metadata['short-name']?.toString() || '';
+      ctx.output('envName', awsEnvEntity.metadata.name);
+      ctx.output('envRef', environmentRef);
+      ctx.output('envDeployManualApproval', "true" === awsEnvEntity.metadata['deployment_requires_approval']?.toString() || '')
+      ctx.output('envShortName', envShortName);
+
       const deploymentParametersArray = await getEnvDeploymentParameters(awsEnvEntity);
-      
+
       ctx.logger.debug(`envProviders info: ${JSON.stringify(deploymentParametersArray, null, 2)}`);
 
       const envProviderOutputArray: JsonArray = [];
 
+      // looping over all providers of the selected environment
       for (const params of deploymentParametersArray) {
-        const { accountId, region, ssmPathVpc, ssmPublicSubnets, ssmPrivateSubnets, ssmPathEcsCluster, 
-          envProviderName, envProviderType } = params;
+        const { accountId, region, ssmAssumeRoleArn, ssmPathVpc, ssmPublicSubnets, ssmPrivateSubnets, ssmPathCluster,
+          envProviderName, envProviderType, envProviderPrefix } = params;
 
-        // Get AWS credentials
+        if (!accountId) {
+          throw new Error(`accountId not configured for environment provider: ${envProviderName}. The provider IaC deployment may have failed.`);
+        }
+        if (!region) {
+          throw new Error(`region not configured for environment provider: ${envProviderName}. The provider IaC deployment may have failed.`);
+        }
+        if (!ssmAssumeRoleArn) {
+          throw new Error(`ssmAssumeRoleArn not configured for environment provider: ${envProviderName}. The provider IaC deployment may have failed.`);
+        }
+        if (!ssmPathVpc) {
+          throw new Error(`ssmPathVpc not configured for environment provider: ${envProviderName}. The provider IaC deployment may have failed.`);
+        }
+
+        // Get AWS credentials for the specific provider
         ctx.logger.info(`Getting credentials for AWS deployment to account ${accountId} in ${region}`);
-        const { credentials, roleArn } = await getAWScreds(accountId, region, ctx.user!.entity!);
+        const response = await getAWScreds(accountId, region, envProviderPrefix, envProviderName, ctx.user!.entity!);
+        const { credentials } = response;
 
-        const envProvider: EnvironmentProvider = {
-          envProviderName,
-          envProviderType,
-          accountId,
-          region,
-          vpcId: await getSSMParameterValue(region, credentials, ssmPathVpc, ctx.logger),
-          publicSubnets:  JSON.parse(await getSSMParameterValue(region, credentials, ssmPublicSubnets, ctx.logger)),
-          privateSubnets:  JSON.parse(await getSSMParameterValue(region, credentials, ssmPrivateSubnets, ctx.logger)),
-          ecsClusterArn: envProviderType === 'ecs-fargate' ? await getSSMParameterValue(region, credentials, ssmPathEcsCluster, ctx.logger) : '',
-          assumedRoleArn: roleArn,
-        };
+        try {
+          const vpcId = await getSSMParameterValue(region, credentials, ssmPathVpc, ctx.logger);
+          const publicSubnets = await getSSMParameterValue(region, credentials, ssmPublicSubnets, ctx.logger);
+          const privateSubnets = await getSSMParameterValue(region, credentials, ssmPrivateSubnets, ctx.logger);
+          const clusterArn = (envProviderType === 'ecs' || envProviderType === 'eks') ? await getSSMParameterValue(region, credentials, ssmPathCluster, ctx.logger) : '';
+          const assumedRoleArn = await getSSMParameterValue(region, credentials, ssmAssumeRoleArn, ctx.logger);
 
-        envProviderOutputArray.push(envProvider);
+          const envProvider: EnvironmentProvider = {
+            envProviderName,
+            envProviderType,
+            envProviderPrefix,
+            accountId,
+            region,
+            vpcId,
+            publicSubnets,
+            privateSubnets,
+            clusterArn,
+            assumedRoleArn,
+          };
+
+          envProviderOutputArray.push(envProvider);
+        } catch (err: any) {
+          throw new Error(`Failed to populate environment provider ${envProviderName}. ${err.toString()}`)
+        }
       }
 
       ctx.logger.info(`Resolved environment providers: ${JSON.stringify(envProviderOutputArray, null, 2)}`);
 
-      ctx.output('envName', awsEnvEntity.metadata.name);
-      ctx.output('envShortName', awsEnvEntity.metadata['short-name']?.toString() || '');
       ctx.output('envProviders', envProviderOutputArray);
 
       // For a given AWS Environment entity, get the defined attributes required for a deployment to AWS
@@ -195,7 +239,7 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
         const envProvRefs: string[] = entityRelations
           .filter(
             envProvRel =>
-              envProvRel.type === RELATION_DEPENDENCY_OF && envProvRel.targetRef.startsWith('awsenvironmentprovider'),
+              envProvRel.type === RELATION_DEPENDS_ON && envProvRel.targetRef.startsWith('awsenvironmentprovider'),
           )
           .map(envProvRel => envProvRel.targetRef);
 
@@ -205,20 +249,25 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
           .filter(
             entity =>
               entity &&
-              ['name', 'env-type', 'aws-account', 'aws-region', 'vpc', 'cluster-name'].every(key => key in entity.metadata),
+              ['name', 'env-type', 'aws-account', 'aws-region', 'vpc'].every(key => key in entity.metadata),
           )
           .map(entity => {
             const { metadata } = entity!;
+            const vpc = metadata.vpc?.toString() || '';
+
             const deployParams: DeploymentParameters = {
+              envProviderPrefix: metadata['prefix']?.toString() || '',
               envName: envEntity.metadata.name,
               envProviderName: metadata.name,
-              envProviderType: metadata['env-type']?.toString() || '',
+              envRef: environmentRef,
+              envProviderType: metadata['env-type']?.toString().toLowerCase() || '',
               accountId: metadata['aws-account']?.toString() || '',
               region: metadata['aws-region']?.toString() || '',
-              ssmPathVpc: metadata.vpc?.toString() || '',
-              ssmPrivateSubnets: `${metadata.vpc?.toString() || ''}/private-subnets`,
-              ssmPublicSubnets: `${metadata.vpc?.toString() || ''}/public-subnets`,
-              ssmPathEcsCluster: metadata['cluster-name']?.toString() || '',
+              ssmAssumeRoleArn: metadata['provisioning-role']?.toString() || '',
+              ssmPathVpc: vpc,
+              ssmPrivateSubnets: `${vpc}/private-subnets`,
+              ssmPublicSubnets: `${vpc}/public-subnets`,
+              ssmPathCluster: metadata['cluster-name']?.toString() || '',
             };
             return deployParams;
           });

@@ -1,45 +1,32 @@
-# Architecture - App Development for Backstage<!-- -->.io on AWS
+# Architecture - OPA on AWS
 
 
 ## Architecture Overview
-<span style="color: red">FIXME: Add high-level overview.  Declare how the solution is a sample that has chosen to use Okta as an IdP, Gitlab for source control, and ECS to run the Backstage application; however, alternatives can be used.  Installation and configuration for alternate plugins and deployment options are out of scope for this documentation.</span>
 
+OPA is intended to be used as a foundation and reference implementation for running Backstage itself on AWS and extending Backstage via UI plugins that make deploying resources and applications to AWS much simpler and with reduced cognitive load. These plugins make the job of an application developer and platform engineer much easier and help organizations to make use of reusable best practice implementations that can evolve over time. 
 
-### Prerequisite Infrastructure Deployment
+Platform engineers can use the OPA plugins to configure AWS accounts to run various types of workloads in the regions of their choice. They can also import application templates they've written into Backstage. OPA provides several different example application templates and runtime environment scripts that platform engineers can use to get started. These templates are not intended to limit what can be done with AWS/Backstage, but rather to provide a reference implementation that platform engineers can use to understand how they can create their own custom AWS runtime environment infrastructure and application templates.
 
-An infrastructure prerequisite stack provides core resources required to support the solution.
-The prerequisite stack will create:
+Developers can create new applications from Backstage templates that have been set up for them by platform engineers. This will cause a new application repository to be created in Git, along with a CICD pipeline that will deploy the app to AWS. Once an app is created, Backstage will show many useful application details to developers in a single pane of glass, such as links to the application (if it is a website or API), a visual depiction of the resources (such as databases) that the application uses, the deployment status of the application, application logs, and much more.
 
-1. **ECR repository** to hold Backstage container images.
+The makers of OPA realize that each organization selects the toolset that they want to standardize on. We can't possibly implement every single variation of a toolset chain, so we instead selected popular tools and technologies and based our solution on them. For example, we have integrated with Okta as an identity provider and GitLab for Git hosting and CICD. OPA also provides reference implementations of Infrastructure as Code using CDK and Terraform.  Finally, OPA contains several different application templates that range in technology from Java/Spring to Python/Flask to NodeJS. These templates can run on containerized infrastructure, such as ECS/EKS, or serverless. 
 
-2. **KMS** key used for all data at rest encryption of Backstage platform resources.
+Your organization likely uses some tools that we have not selected. However, OPA doesn't lock you in to our default choices. While the OPA team will continue to add features and options into the future, using a unique toolset may require some additional work on the part of your organization to customize the solution. The good news is that there are multiple ways to customize OPA/Backstage. The most common way is to use third party plugins that are already available for Backstage. For example, you could delete the OPA configurations that integrate with the Okta IDP and replace them with plugin configurations that integrate with Active Directory.
 
-3. **Okta Secret** that will hold okta confiugration and credentails to be use as authentication provider for backstage.
+In some cases, simply switching plugins won't be enough and you will need to port or alter some OPA code. For example, to use a CICD pipeline other than GitLab, you could port over the OPA GitLab pipeline implementations to your Git provider of choice, or you could delete the OPA pipelines completely and start fresh.
 
-4. **Gitlab Admin Secret** to store gitlab admin account credentials.
+One way to provide the OPA team with feedback on a tool or service you'd like to see supported would be to raise an issue in our GitHub repo and/or upvote requests by others who are requesting something you would also like to see supported.
 
-![DeploymentArchitecture.png](../docs/images/DeploymentArchitecture.png)
+### High-Level Architecture
 
-### Backstage Deployment
+In the below diagram, the top row/box depicts an AWS account that is hosting Backstage itself on ECS with Fargate. Backstage makes use of an Postgress RDS database. There are also EC2 instances in this account that run GitLab. These EC2s are configured for reference implementation purposes and are not intended for production use, as is.
 
-This architecture illustrates a high level overview of the AWS backstage.io app development solution. The diagram below shows 3 different AWS environments(one for backstage solution , and two to support applications created by backstage platform). each environment has its own network VPC, subnets and ECS Cluster. In the future it will also contain the Cloudformation stacks(application stacks) that will be deploy in the particular environment.
+The second row of the below diagram depicts runtime environments that have been set up to run workloads on various AWS accounts and regions. Each workload account has an IAM role configured for operations and provisioning. The Backstage back end and the CICD pipelines running on the top row account will assume the IAM roles in the workload accounts in order to interact with them.
 
-We are deploying Backstage into AWS Fargate to use with Amazon ECS to run containers without having to manage clusters of Amazon EC2 instances. The diagram shows that two Backstage services tasks will be running at all times. We are using **Amazon Aurora** as a database to store all of the entities that Backstage is managing.
+Depending on the workload type (ECS, EKS, Serverless), different resources will be created in the workload accounts. Each type has a VPC and an audit table, but only the containerized workload types will include a cluster.
 
-*High level diagram of the AWS [backstage.io](http://backstage.io) app development solution*\
-![BAWSSolution_2_.png](../docs/images/BAWSSolution_2_.png)
+![OPA_on_AWS_white_bg.jpg](../docs/diagrams/images/OPA_on_AWS_white_bg.jpg)
 
-We are also using a Gitlab instance running on EC2 instances. Gitlab is used for several use cases:
-
-1. To store the application code for the developers
-
-2. To store reference repo for backstage - where we can easily manage entities, templates and catalog
-
-3. To establish a pipeline to build and deploy code changes to ECR.
-
-*Internal illustration of AWS backstage.io app development solution*
-
-![image-2023-3-2_8-8-27.png](../docs/images/image-2023-3-2_8-8-27.png)
 
 ### GitLab CICD Runner
 This architecture illustrates how a GitLab CICD pipeline executes in order to build an application container image and publish it to an Elastic Container Registry repository.
@@ -51,56 +38,18 @@ This architecture illustrates how a GitLab CICD pipeline executes in order to bu
 
 **Developer creates new app**
 
-1. Using backstage UI the developer choose an application type they want to build
+1. Using Backstage UI, the developer chooses an application type they want to build
 
-2. Once selected the developer fill all the reuired details of the template including ownership and AWS environment
+2. Once selected, the developer fills in all the required details of the template including ownership and AWS environment
 
-3. The action trigger by the developer start the authentication process(see more details on auth use case below) which assumes the appropriate role for the user and return temporary credentials which in turn invoke the provisioning step function.
+3. The action triggered by the developer results in a new Git repository being created and an accompanying CICD pipeline. The pipeline will assume the IAM provisioning role for the the workload account and will execute Infrastructure as Code that is configured in the application template. After running the IaC, the pipeline will build the app and make it available for deployment by pushing an image into the ECR container registry or storing built artifacts in S3.
 
-4. The provisioning step function is responsible in execute a series of Cloud formation stack, collect their outputs and respond them back to backstage.
+4. When the developer commits new changes to the Git repository, the CICD pipeline will automatically be triggered.
 
-5. The next step is to create a gitlab repository for the application and a dedicated application pipeline.
+The below diagram depicts the creation and deployment of a serverless application.
 
-![image-2023-3-2_8-27-15.png](../docs/images/image-2023-3-2_8-27-15.png)
+![ServerlessCreateAndDeploy.jpg](../docs/images/ServerlessCreateAndDeploy.jpg)
 
-**Developer develops their application**
+**Multi Stage/Environment CICD**
 
-1. The developer commit change to the application gitlab repository
-
-2. The commit execute a pre-configured pipeline which trigger the build & deploy process
-
-3. The pipeline push the new container image to the application ECR
-
-4. The developer restart the application using backstage UI to see the effect of his code changes.
-
-![image-2023-3-2_9-55-3.png](../docs/images/image-2023-3-2_9-55-3.png)
-
-**Auth Process**
-
-1. Resolve security mapping table name
-
-2. Resolve the IAM role from the auth provider mapping
-
-3. Fetch temporary credentials for the designated role
-
-4. Use Credentials to access appropriate AWS Services
-
-![image-2023-3-2_9-56-4.png](../docs/images/image-2023-3-2_9-56-4.png)
-
-**Admin workflow - Updating templates and app skeleton**
-
-Admin workflow for updating templates and boilerplates:
-
-![BackstageAdminPersona.png](../docs/images/BackstageAdminPersona.png)
-
-"Templates" are a [backstage concept](https://backstage.io/docs/features/software-templates/software-templates-index) we are leveraging for resource and infrastructure deployment. Backstage can pull this from any url so we leverage the gitlab host for this. Additionally we use gitlab to enable step functions to pull from a central repository for infrastructure deployment.
-
-### Backstage Pipeline
-
-<span style="color: red">FIXME: Keep this section for public GitHub repo??  If so, there should be an introductory paragraph about what this is.</span>
-
-![Backstage%20Template%20Steps.png](../docs/images/Backstage%20Template%20Steps.png)
-
-Step Functions Zoom in
-
-![Step%20Functions%20Pipeline.png](../docs/images/Step%20Functions%20Pipeline.png)
+![MultiStageCICD.jpg](../docs/images/MultiStageCICD.jpg)

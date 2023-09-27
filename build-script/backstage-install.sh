@@ -36,7 +36,7 @@ fi
 echo "" #intentional blank line
 echo "Copying AWS Apps plugins"
 echo "" #intentional blank line
-echo "installMode is \"$installMode\"\n"
+echo "installMode is \"$installMode\""
 if [[ "$installMode" == "from-source" ]]; then
     cp -R $opaHomeDir/backstage-plugins/ $backstageDir
 
@@ -47,10 +47,10 @@ if [[ "$installMode" == "from-source" ]]; then
     AWS_APPS_DEMO_VERSION=$(cat $backstageDir/plugins/aws-apps-demo/package.json | jq -r '.version')
     AWS_APPS_SCAFFOLDER_VERSION=$(cat $backstageDir/plugins/scaffolder-backend-module-aws-apps/package.json | jq -r '.version')
 else
-    AWS_APPS_VERSION=^$(cat $backstageDir/plugins/aws-apps/package.json | jq -r '.version')
-    AWS_APPS_BACKEND_VERSION=^$(cat $backstageDir/plugins/aws-apps-backend/package.json | jq -r '.version')
-    AWS_APPS_DEMO_VERSION=^$(cat $backstageDir/plugins/aws-apps-demo/package.json | jq -r '.version')
-    AWS_APPS_SCAFFOLDER_VERSION=^$(cat $backstageDir/plugins/scaffolder-backend-module-aws-apps/package.json | jq -r '.version')
+    AWS_APPS_VERSION=^$(cat $opaHomeDir/backstage-plugins/plugins/aws-apps/package.json | jq -r '.version')
+    AWS_APPS_BACKEND_VERSION=^$(cat $opaHomeDir/backstage-plugins/plugins/aws-apps-backend/package.json | jq -r '.version')
+    AWS_APPS_DEMO_VERSION=^$(cat $opaHomeDir/backstage-plugins/plugins/aws-apps-demo/package.json | jq -r '.version')
+    AWS_APPS_SCAFFOLDER_VERSION=^$(cat $opaHomeDir/backstage-plugins/plugins/scaffolder-backend-module-aws-apps/package.json | jq -r '.version')
 fi
 
 cd $backstageDir

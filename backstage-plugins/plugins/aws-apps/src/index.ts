@@ -2,17 +2,28 @@
 // SPDX-License-Identifier: Apache-2.0
 
 export {
+  AwsEnvironmentPage,
+  AwsEnvironmentProviderPage,
+  AwsComponentPage,
   AwsAppPage,
-  bawsPlugin,
+  opaPlugin,
   EntityAnnotationTypeTable,
   EntityAppStateCard,
+  EntityAppPromoCard,
   EntityAppStateCardCloudFormation,
-  EntityCustomGitlabContent,
   EntityLabelTable,
   EntityGeneralInfoCard,
+  EntityDeleteAppCard,
+  EntityDeleteProviderCard,
+  EntityDeleteEnvironmentCard,
+  EntityResourceBindingCard,
   AppCatalogPage,
   EntityCloudwatchLogsTable,
   EntityInfrastructureInfoCard,
+  EntityProviderInfoCard,
+  EntityEnvironmentInfoCard,
   EntityAppConfigCard,
   EntityAuditTable,
+  EntityEnvironmentSelector,
+  EntityAwsEnvironmentProviderSelectorCard
 } from './plugin';

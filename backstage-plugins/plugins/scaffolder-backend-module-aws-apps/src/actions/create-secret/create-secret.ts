@@ -2,22 +2,23 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
-import { getAWScreds, AwsAppsApi, createAuditRecord } from '@aws/plugin-aws-apps-backend-for-backstage';
+import { createSecret } from '../../helpers/action-context';
+import { Config } from '@backstage/config'
 
-export function createSecretAction() {
+export function createSecretAction(options: { envConfig: Config }) {
+  const { envConfig } = options;
   return createTemplateAction<{
     secretName: string;
     description?: string;
-    accountId: string;
-    region: string;
-    tags?: {Key: string, Value: string | number | boolean}[];
+    region?: string;
+    tags?: { Key: string, Value: string | number | boolean }[];
   }>({
-    id: 'baws:create-secret',
+    id: 'opa:create-secret',
     description: 'Creates secret in Secret Manager',
     schema: {
       input: {
         type: 'object',
-        required: ['secretName', 'accountId', 'region'],
+        required: ['secretName'],
         properties: {
           secretName: {
             title: 'Secret Name',
@@ -27,11 +28,6 @@ export function createSecretAction() {
           description: {
             title: 'Description',
             description: 'An optional description of the secret',
-            type: 'string',
-          },
-          accountId: {
-            title: 'AWS Account Id',
-            description: 'The AWS account where the new secret should be created',
             type: 'string',
           },
           region: {
@@ -49,7 +45,7 @@ export function createSecretAction() {
                 type: 'object',
                 properties: {
                   Key: { type: 'string' },
-                  Value: { type: ['string','number','boolean']}
+                  Value: { type: ['string', 'number', 'boolean'] }
                 }
               },
             ],
@@ -67,33 +63,20 @@ export function createSecretAction() {
       },
     },
     async handler(ctx) {
-      const { secretName, description, accountId, region, tags } = ctx.input;
-      const creds = await getAWScreds(accountId, region, ctx.user!.entity!);
+      let { secretName, description, region, tags } = ctx.input;
+      if (!region) {
+        region = envConfig.getString('backend.platformRegion')
+      }
+      const secretDescription = description ?? 'Secret created from Backstage scaffolder action';
 
-      const apiClient = new AwsAppsApi(ctx.logger, creds.credentials, region, accountId);
-      const secretDescription = description ?? 'Secret created from Backstage';
       try {
-        const response = await apiClient.createSecret(secretName, secretDescription, tags);
-        ctx.output('awsSecretArn', response.ARN!);
+        const ARN = await createSecret(secretName, secretDescription, region, tags, ctx.logger);
+        ctx.output('awsSecretArn', ARN!);
 
-        const auditResponse = await createAuditRecord({
-          actionType: 'Create Secret',
-          actionName: response.Name!,
-          apiClient: apiClient,
-          roleArn: creds.roleArn,
-          awsAccount: accountId,
-          awsRegion: region,
-          logger: ctx.logger,
-          requester: ctx.user!.entity!.metadata.name,
-          status: response.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED',
-          owner: creds.owner || '',
-        });
-        if (auditResponse.status === 'FAILED') {
-          throw Error;
-        }
       } catch (e) {
         throw new Error(e instanceof Error ? e.message : JSON.stringify(e));
-      }
+      };
     },
+
   });
 }

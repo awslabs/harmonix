@@ -1,0 +1,47 @@
+iac-deployment-env-provider:
+  stage: build
+  before_script:
+    - cat /etc/os-release
+    - apt-get update
+    - apt install nodejs npm git python3-pip yq jq -y
+    - export PIP_BREAK_SYSTEM_PACKAGES=1
+    - pip3 install awscli --upgrade
+    - yarn global add aws-cli typescript@latest aws-cdk@2.88.0
+    - yarn --version
+    - aws --version
+    - aws sts get-caller-identity
+    # Store the access token before assuming the environment provisioning role
+    - ACCESS_TOKEN=`aws secretsmanager get-secret-value --secret-id opa-admin-gitlab-secrets --region ${OPA_PLATFORM_REGION} | jq --raw-output '.SecretString' | jq -r .apiToken`
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ROLE_ARN" --role-session-name "pipelineJob-$AWS_ACCOUNT" --duration-second=3600 --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    - aws sts get-caller-identity
+  script:
+    # Export environment variables
+    - set -a && source stack-parameters.properties && set +a
+    - cd .iac/opa-ecs-environment
+    - yarn install
+    - cdk deploy --outputs-file cdk-output.json --require-approval never
+    # once CDK finished - extract output params
+    - jq '.[] ' cdk-output.json | jq -r 'to_entries[]|"\(.key)=\"\(.value)\""' > cdk-output.properties
+    # export the new variables
+    - cat cdk-output.properties
+    - set -a && source cdk-output.properties && set +a
+    # alter entity details
+    - cd $CI_PROJECT_DIR/.backstage
+    - yq -Yi ".metadata.vpc =\"${VPC}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"cluster-name\"] = \"${ClusterName}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"audit-table\"] = \"${AuditTable}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"operation-role\"] = \"${OperationsRoleARN}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"provisioning-role\"] = \"${ProvisioningRoleARN}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"stack-name\"] = \"${StackName}\"" catalog-info.yaml
+    - cat catalog-info.yaml
+    - git config --global user.email "fsi-pace-pe@amazon.com"
+    - git config --global user.name "OPA CICD User"
+    - git add catalog-info.yaml
+    - git status
+    - UPDATE_COUNT=$(git diff --cached --numstat | wc -l | sed 's/ *$//g')
+    - echo "The number of files that will be committed is $UPDATE_COUNT"
+    - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git commit -m "updating entity details" --quiet; fi
+    - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git push -o ci.skip https://oauth2:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME HEAD:main; fi

@@ -2,12 +2,12 @@
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0 
 -->
-# AWS Apps Backend
+# OPA on AWS Backend
 
-This is the backend part of the AWS Apps plugin.  It has four primary responsibilities:
+This is the backend part of the OPA on AWS plugin.  Its key responsibilities:
 
 1. **Catalog contributions** - the plugin provides the AWSEnvironment and AWSEnvironmentProvider entity Kinds, including processing and validation of the entities.
-2. **Authentication and Role Mapping** - the plugin provides API services to map a user's idP group membership (e.g. Okta group) to an AWS IAM role.  
+2. **Authentication / Authorization** - the plugin assumes defined roles with permisisons for provisioning infrastructure resources for a target environment account.
 3. **Audit** - the plugin provides services to record requested actions, user id and IAM role, timestamps, success/failure results, and additional information for the purpose of capturing audit-level information about the actions performed by the AWS Apps Backstage plugin against AWS.
 4. **Proxying AWS requests** - the plugin provides API endpoints for specific AWS service actions.  It receives requests on these endpoints, validates the request, and proxies the request and response between Backstage and a specified AWS account and region.
 
@@ -15,7 +15,7 @@ This is the backend part of the AWS Apps plugin.  It has four primary responsibi
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/backend @aws/plugin-aws-apps-backend-for-backstage@^0.1.0
+yarn add --cwd packages/backend @aws/plugin-aws-apps-backend-for-backstage@0.2.0
 ```
 
 ## Configuration
@@ -24,18 +24,30 @@ Setup for the AWS Apps backend requires a router for Backstage, making the catal
 
 ### Configure a router
 
-Create a `awsApps.ts` file in the `packages/backend/src/plugins/`directory.  This file creates a router for the AWS Apps backend.
+Create a `awsApps.ts` file in the `packages/backend/src/plugins/`directory.  This file creates a router for the OPA on AWS backend.
 
 ```ts
 // packages/backend/src/plugins/awsApps.ts
 
-import { createRouter } from '@aws/plugin-aws-apps-backend-for-backstage'
+import {createRouter} from '@aws/plugin-aws-apps-backend-for-backstage'
 import { Router } from 'express';
 import { PluginEnvironment } from '../types';
-export default async function createPlugin(env: PluginEnvironment): Promise<Router> {
+import {DefaultIdentityClient } from '@backstage/plugin-auth-node';
+
+export default async function createPlugin({
+  logger,
+  discovery,
+  config,
+  permissions,
+}: PluginEnvironment): Promise<Router> {
   return await createRouter({
-    logger: env.logger,
-    userIdentity: env.identity,
+    logger: logger,
+    userIdentity: DefaultIdentityClient.create({
+      discovery,
+      issuer: await discovery.getExternalBaseUrl('auth'),
+    }),
+    config,
+    permissions,
   });
 }
 ```
@@ -100,7 +112,38 @@ export default async function createPlugin(
   return router;
 ```
 
-## Links
+### Permission Framework Policy
 
-- [AWS Apps plugin overview](../../../README.md)
-- [Frontend part of aws-apps](../aws-apps/README.md)
+The OPA on AWS backend plugin leverages the [Backstage permissions framework](https://backstage.io/docs/permissions/overview) to contribute a permission decision for access to audit entries.  If you would like to implement a policy for your Backstage instance to control access to audit entries you will start with the [Permission framework getting started documentation](https://backstage.io/docs/permissions/getting-started) to set up the base framework.  
+With the framework in place, you can leverage the `readOpaAppAuditPermission` permission in your policy definition to restrict access to audit entries.
+
+```ts
+// Example of policy decision in a policy
+
+import { readOpaAppAuditPermission } from '@aws/plugin-aws-apps-common-for-backstage';
+...
+
+export class permissionPolicy implements PermissionPolicy {
+  async handle(
+    request: PolicyQuery,
+    user?: BackstageIdentityResponse
+  ): Promise<PolicyDecision> {
+    ...
+    // restrict access to audit entries if the user is only a member of the Villians group
+    const VILLIANS_GROUP = stringifyEntityRef({ kind: 'Group', namespace: DEFAULT_NAMESPACE, name: "villians" });
+    const ownershipGroups = user?.identity.ownershipEntityRefs || [];
+    if (
+      isPermission(request.permission, readOpaAppAuditPermission) && 
+      ownershipGroups.length === 1 && 
+      ownershipGroups.includes(VILLIANS_GROUP)
+    ) {
+      return { result: AuthorizationResult.DENY };
+    }
+
+    ...
+  }
+}
+
+```
+
+Additional permission decisions and resources are planned for future releases.

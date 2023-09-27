@@ -48,8 +48,8 @@ spec:
           description: Owner of the component
           ui:field: OwnerPicker
           ui:options:
-            allowedKinds:
-              - Group
+            catalogFilter:
+              kind: [Group]
     - title: Provide environment information for the application
       required:
         - environment
@@ -62,7 +62,8 @@ spec:
           ui:options:
             allowedKinds:
               - AWSEnvironment
-    - title: Choose a location
+            defaultKind: AWSEnvironment
+    - title: Choose a git repository location
       required:
         - repoUrl
       properties:
@@ -79,69 +80,92 @@ spec:
   # These steps are executed in the scaffolder backend, using data that we gathered
   # via the parameters above.
   steps:
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+      
     - id: getComponentInfo
       name: Get Component Info
-      action: baws:get-component-info
+      action: opa:get-component-info
       input:
         componentName: ${{ parameters.component_id }}
 
-    - id: bawsGetAwsEnvProviders
+    - id: opaGetAwsEnvProviders
       name: Get AWS Environment Providers
-      action: baws:get-env-providers
+      action: opa:get-env-providers
       input:
         environmentRef: ${{ parameters.environment }}
 
-    - id: bawsGetSsmParams
-      name: Get parameter values
-      action: baws:get-ssm-parameters
+    - id: debugEnvironment
+      name: Print the environment entity info
+      action: debug:log
       input:
-        paramKeys:
-          - '/baws/domain'
-        envProviders: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders }}
+        message: ${{ steps['opaGetAwsEnvProviders'].output | dump }}
 
-    - id: createS3Bucket
-      name: Create an S3 bucket
-      action: baws:create-s3-bucket
+    - id: createProviderPropsFiles
+      each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
+      name: Store environment provider parameters
+      action: roadiehq:utils:fs:write
       input:
-        bucketName: ${{ steps['getComponentInfo'].output.kebabCaseComponentName }}-${{ steps['bawsGetAwsEnvProviders'].output.envShortName }}
-        envProviders: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders }}
-        tags:
-          - Key: "aws-apps:${{ parameters.component_id }}"
-            Value: ${{ parameters.component_id }}
+        path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
+        content: |
+          TARGET_VPCID=${{ each.value.vpcId }}
+          TARGET_PRIVATE_SUBNETS=${{ each.value.privateSubnets }}
+          TARGET_PUBLIC_SUBNETS=${{ each.value.publicSubnets }}
+          TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
+          ACCOUNT=${{ each.value.accountId }}
+          REGION=${{ each.value.region }}
+          PREFIX=${{ each.value.envProviderPrefix }}
+          ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
+          OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
+          OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{% else %}false{% endif %}
 
     - id: createSecretManager
       name: Create a Secret
-      action: baws:create-secret
+      action: opa:create-secret
       input:
         secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
-        region: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].region }}
-        accountId: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].accountId }}
-        description: "Gitlab repo access token"
-        tags:
-          - Key: "aws-apps:${{ parameters.component_id }}"
-            Value: ${{ parameters.component_id }}
+
+    - id: fetchIac
+      name: Fetch Serverless Infrastructure as Code
+      action: fetch:template
+      input: 
+        url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_serverless_api
+        targetPath: ./.iac
+        values:
+          component_id: ${{ parameters.component_id }}
+          app_env_plaintext: ""
 
     - id: fetchBase
       name: Fetch Base
       action: fetch:template
       input:
-        url: ./skeleton
+        url: ./content
         values:
           component_id: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
-          owner: ${{ parameters.owner }}
           destination: ${{ parameters.repoUrl | parseRepoUrl }}
-          aws_environment: ${{ parameters.environment }}
-          aws_environment_short_name: ${{ steps['bawsGetAwsEnvProviders'].output.envShortName }}
-          aws_region: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].region }}
-          aws_account: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].accountId }}
+          owner: ${{ parameters.owner }}
+          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          aws_environment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          aws_environment_name: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          aws_environment_short_name: ${{ steps['opaGetAwsEnvProviders'].output.envShortName }}
           aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
-          aws_bucket_name: ${{ steps['createS3Bucket'].output.awsBucketName }}
-          aws_hosted_zone_domain: ${{ steps['bawsGetSsmParams'].output.params[steps['bawsGetAwsEnvProviders'].output.envProviders[0].envProviderName]['/baws/domain'] }}
-          aws_kebab_component_id: ${{ steps['getComponentInfo'].output.kebabCaseComponentName }}
-          aws_vpc_id: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].vpcId }}
-          aws_vpc_public_subnets: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].publicSubnets|join(',') }}
-          aws_vpc_private_subnets: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].privateSubnets|join(',') }}
+          kebabName: ${{ steps['getComponentInfo'].output.kebabCaseComponentName }}
+
+    - id: entityDetail
+      name: Get AWSEnvironment entity details
+      action: catalog:fetch
+      input:
+        entityRef: ${{ parameters.environment }}
+
+    - id: debugEntity
+      name: Print the workspace
+      action: debug:log
+      input:
+        message: ${{ steps['entityDetail'].output.entity | dump }}
+        listWorkspace: true
           
     # This step publishes the contents of the working directory to GitLab.
     - id: publish
@@ -152,15 +176,14 @@ spec:
         repoVisibility: internal
         defaultBranch: main
 
+    # Create a gitlab repository access token and store it in a SecretsManager secret
     - id: createRepoToken
-      name: Create Repo Access Token
-      action: baws:createRepoAccessToken:gitlab
+      name: Create Repo Token
+      action: opa:createRepoAccessToken:gitlab
       input:
         repoUrl: ${{ parameters.repoUrl }}
         projectId: ${{ steps['publish'].output.projectId}}
         secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
-        region: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].region }}
-        accountId: ${{ steps['bawsGetAwsEnvProviders'].output.envProviders[0].accountId }}
 
     # The final step is to register our new component in the catalog.
     - id: register

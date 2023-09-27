@@ -9,10 +9,10 @@ const app = new cdk.App();
 // If an application short name was provided, associate the AWS resources
 // created in this app with it through tagging
 if (process.env['APP_SHORT_NAME']) {
-    // Tag all resources so that they can be grouped together in a Resource Group
-    const appShortName = process.env['APP_SHORT_NAME'];
-    const tagKey = `aws-apps:${appShortName}`;
-    cdk.Tags.of(app).add(tagKey, appShortName);
+  // Tag all resources so that they can be grouped together in a Resource Group
+  const appShortName = process.env['APP_SHORT_NAME'];
+  const tagKey = `aws-apps:${appShortName}`;
+  cdk.Tags.of(app).add(tagKey, appShortName);
 }
 
 const account = app.node.tryGetContext("account") || process.env.CDK_DEPLOY_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
@@ -33,7 +33,7 @@ if (process.env.SECRET_ID) {
 }
 
 new CdkSecretsManagerStack(app, stackName, {
-  secretId: process.env.SECRET_ID || "baws-generated-secret",
+  secretId: process.env.SECRET_ID || "opa-generated-secret",
   secretDescription: process.env.SECRET_DESCRIPTION || "Secret created from Backstage",
   env,
 });

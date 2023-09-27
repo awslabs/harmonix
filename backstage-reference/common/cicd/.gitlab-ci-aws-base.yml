@@ -1,0 +1,31 @@
+create-ci-stages:
+  stage: env-creation
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: never
+    - if: "$CI_COMMIT_TITLE =~ /^Added CICD environment stage/ || $CI_COMMIT_TITLE =~ /^Reprocessed CICD jobs. No new stages added./ || $CI_COMMIT_TITLE =~ /^Added multiple environment stages/"
+      when: never
+    - if: "$CI_COMMIT_TITLE =~ /initial commit/ || $CI_COMMIT_TITLE =~ /generate CICD stages/"
+    - changes:
+      - .awsdeployment/providers/**/*
+  script:
+    - cat $CI_PROJECT_DIR/cicd/scripts/$APP_TEMPLATE_NAME/create-ci-stages.sh
+    - $CI_PROJECT_DIR/cicd/scripts/$APP_TEMPLATE_NAME/create-ci-stages.sh
+
+create-ci-resource-binding:
+  stage: env-creation
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: never
+    - if: "$CI_COMMIT_TITLE =~ /^Bind Resource/"
+  script:
+    - $CI_PROJECT_DIR/cicd/scripts/resource-binding/bind-resource.sh
+
+create-ci-resource-unbinding:
+  stage: env-creation
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: never
+    - if: "$CI_COMMIT_TITLE =~ /^UnBind Resource/"
+  script:
+    - $CI_PROJECT_DIR/cicd/scripts/resource-binding/unbind-resource.sh

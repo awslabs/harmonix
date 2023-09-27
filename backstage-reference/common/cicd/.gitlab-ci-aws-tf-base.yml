@@ -1,0 +1,18 @@
+# TODO: Add abstraction for TF creation and pass only terraform output to another process - ECS/EKS/Serverless etc.
+# create-ci-tf-iac:
+#   stage: env-creation
+#   rules:
+#     - if: $CI_PIPELINE_SOURCE == "web"
+#       when: never
+#     - if: "$CI_COMMIT_TITLE =~ /^Create TF Infrastructure/"
+#   script:
+#     - $CI_PROJECT_DIR/cicd/scripts/terraform/create-tf.sh
+
+destroy-ci-tf-iac:
+  stage: env-creation
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: never
+    - if: "$CI_COMMIT_TITLE =~ /^Destroy TF Infrastructure/"
+  script:
+    - $CI_PROJECT_DIR/cicd/scripts/terraform/destroy-tf.sh

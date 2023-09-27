@@ -16,7 +16,8 @@
         "type": "aws-environment",
         "lifecycle": "experimental",
         "owner": "group:dev-ops",
-        "system": "demo"
+        "system": "demo",
+        "dependsOn": ["awsenvironmentprovider:default/dev-ecs"]
       }
     }
   ],
@@ -59,6 +60,14 @@
               "type": "string",
               "description": "An entity reference to the system that the Environment belongs to.",
               "minLength": 1
+            },
+            "dependsOn": {
+              "type": "array",
+              "description": "An array of references to awsenvironmentprovider entities that this environment depends on.",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
             }
           }
         }

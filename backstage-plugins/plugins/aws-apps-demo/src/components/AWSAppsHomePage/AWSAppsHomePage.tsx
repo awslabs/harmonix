@@ -27,6 +27,9 @@ const useStyles = makeStyles(theme => ({
     borderRadius: '50px',
     margin: 'auto',
   },
+  searchBarOutline: {
+    borderStyle: 'none',
+  },
 }));
 
 const useLogoStyles = makeStyles(theme => ({
@@ -56,7 +59,10 @@ export const AWSAppsHomePage = () => {
               <Header title={<WelcomeTitle />} pageTitleOverride="Home" />
             </Grid>
             <Grid container item xs={12} alignItems="center" direction="row">
-              <HomePageSearchBar classes={{ root: classes.searchBar }} placeholder="Search" />
+              <HomePageSearchBar 
+                classes={{ root: classes.searchBar }} 
+                InputProps={{ classes: { notchedOutline: classes.searchBarOutline } }}
+                placeholder="Search" />
             </Grid>
             <Grid container item xs={12}>
               <Grid item xs={12} md={6}>

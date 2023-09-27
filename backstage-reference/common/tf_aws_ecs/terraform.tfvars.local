@@ -1,0 +1,7 @@
+REGION = "us-east-1"
+TARGET_ENV_NAME="dev"
+TARGET_ENV_PROVIDER_NAME="dev-p1"
+PREFIX="hr"
+APP_NAME="tf-test-1"
+TARGET_VPCID="vpc-0d46ca5da6ff0f89c"
+TARGET_ECS_CLUSTER_ARN="hr-dev-p1-cluster"

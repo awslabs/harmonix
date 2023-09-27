@@ -7,10 +7,8 @@ import {
   parseEntityRef,
   RELATION_OWNED_BY,
   RELATION_OWNER_OF,
-  RELATION_DEPENDS_ON,
-  RELATION_DEPENDENCY_OF,
 } from '@backstage/catalog-model';
-import { CatalogProcessor, CatalogProcessorEmit, processingResult } from '@backstage/plugin-catalog-backend';
+import { CatalogProcessor, CatalogProcessorEmit, processingResult } from '@backstage/plugin-catalog-node';
 import { LocationSpec } from '@backstage/plugin-catalog-common';
 import { AWSEnvironmentProviderEntityV1, awsEnvironmentProviderEntityV1Validator } from '../kind';
 
@@ -67,38 +65,6 @@ export class AWSEnvironmentProviderEntitiesProcessor implements CatalogProcessor
             target: selfRef,
           }),
         );
-      }
-      if (template.spec.dependsOn) {
-        template.spec.dependsOn.forEach(awsEnv => {
-          const targetRef = parseEntityRef(awsEnv, {
-            defaultKind: 'awsenvironment',
-            defaultNamespace: selfRef.namespace,
-          });
-          if (targetRef.kind == 'awsenvironment') {
-            emit(
-              processingResult.relation({
-                source: selfRef,
-                type: RELATION_DEPENDS_ON,
-                target: {
-                  kind: targetRef.kind,
-                  namespace: targetRef.namespace,
-                  name: targetRef.name,
-                },
-              }),
-            );
-            emit(
-              processingResult.relation({
-                source: {
-                  kind: targetRef.kind,
-                  namespace: targetRef.namespace,
-                  name: targetRef.name,
-                },
-                type: RELATION_DEPENDENCY_OF,
-                target: selfRef,
-              }),
-            );
-          }
-        });
       }
     }
 

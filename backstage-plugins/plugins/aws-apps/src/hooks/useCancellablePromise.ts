@@ -81,7 +81,7 @@ export function makeCancellable(promise: Promise<any>): {
  * @returns a function that wraps a promise so that it is canceled automatically
  * when the component unmounts. 
  */
-export function useCancellablePromise({rejectOnCancel = false}): {
+export function useCancellablePromise({ rejectOnCancel = false }): {
   cancellablePromise: <T>(p: Promise<T>) => Promise<T>;
 } {
   const cancellable = rejectOnCancel ? makeCancellableWithErrors : makeCancellable;

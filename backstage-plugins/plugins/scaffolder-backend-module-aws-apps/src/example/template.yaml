@@ -10,11 +10,12 @@ metadata:
 spec:
   owner: group:developers
   type: website
+  
   parameters:
-    # Get information about the Backstage component name and ownership
     - title: Provide basic component information
       required:
         - component_id
+        - owner
       properties:
         component_id:
           title: Name
@@ -22,6 +23,10 @@ spec:
           description: Unique name of the component
           ui:field: EntityNamePicker
           ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Help others understand what this service is for
         owner:
           title: Owner
           type: string
@@ -30,20 +35,21 @@ spec:
           ui:options:
             catalogFilter:
               kind: [Group]
-    # Get the AWS Environment where the user would like to deploy new AWS resources
-    - title: Provide AWS environment information for the application
+    - title: Provide environment information for the application
       required:
         - environment
       properties:
         environment:
           title: AWS Environment
           type: string
-          description: The AWS Environment where the database is created
+          description: The AWS Environment where the application is created
           ui:field: EntityPicker
           ui:options:
             allowedKinds:
-              - AWSEnvironment  
-    # Get the Gitlab repository for source code management
+              - AWSEnvironment
+            defaultKind: AWSEnvironment
+
+   # Get the Gitlab repository for source code management
     - title: Choose a git repository location
       required:
         - repoUrl
@@ -54,51 +60,62 @@ spec:
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts:
-              - gitlab.mycompany.com
+              - {{ gitlab_hostname }}
             allowedOwners:
-              - dev-group
+              - aws-app
+
   steps:
-    # Deploy the ESC resources to run the application.  
-    # Here, we invoke the `baws:deploy-boilerplate` action and specify 
-    # the 'ecs_resources' repository as the location of the boilerplate IaC code.  
-    - id: deployECSResources
-      name: Deploy AWS ECS Resources
-      action: baws:deploy-boilerplate
+    # Get environment provider data based on the user-selected environment
+    - id: opaGetAwsEnvProviders
+      name: Get AWS Environment Providers
+      action: opa:get-env-providers
       input:
-        boilerplateRepositories:
-          - ecs_resources
-        inputParameters:
-          APP_SHORT_NAME: ${{ parameters.component_id}}
-          APP_ENV_PLAINTEXT:
-            PORT: "3001"
-          # Example for adding tags to resources created via the boilerplate
-          AWS_RESOURCE_TAGS:
-            - Key: CostCenter
-              Value: HR-1234
         environmentRef: ${{ parameters.environment }}
-        actionType: "Create App"
+
+    # Configure a properties file for each environment provider that relates to the environment selected by the user
+    # These properties files are referenced by the application's CICD pipeline
+    - id: createProviderPropsFiles
+      each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
+      name: Store environment provider parameters
+      action: roadiehq:utils:fs:write
+      input:
+        path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
+        content: |
+          TARGET_VPCID=${{ each.value.vpcId }}
+          TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
+          ACCOUNT=${{ each.value.accountId }}
+          REGION=${{ each.value.region }}
+          PREFIX=${{ each.value.envProviderPrefix }}
+          ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
+          OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY_IMAGE=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com/${{ parameters.component_id }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com
+          OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{% else %}false{% endif %}
+
     # Create an empty Secrets Manager secret
     # In this example, we're creating a new secret where a Gitlab
-    # repository access token string will be stored (this occurs in the
-    # subsequent createRepoAccessToken step).
-    # We leverage the output from the previous deployECSResources step
-    # to pass the account and region where we want the secret to be created.
-    # We also pass a tag Key/Value so that the new Secret is tagged with a 
-    # key starting with "aws-apps:" so that it is included in the resource
-    # group created to track AWS resources associated with the application.
+    # repository access token string will be stored.
     - id: createSecretManager
-      name: Creates a Secret
-      action: baws:create-secret
+      name: Create a Secret
+      action: opa:create-secret
       input:
-        secretName: ${{ parameters.component_id }}-gitlab-access-token
-        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
-        description: "Gitlab repo access token"
-        tags:
-          - Key: "aws-apps:${{ parameters.component_id }}"
-            Value: ${{ parameters.component_id }}
+        secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
+
+    # Retrieves Infrastructure as Code (IaC) that should be executed (by the CICD pipeline) before the applicaiton 
+    # is deployed. The below example retrieves AWS ECS CDK code
+    - id: fetchIac
+      name: Fetch ECS Infrastructure as Code
+      action: fetch:template
+      input: 
+        url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_ecs
+        targetPath: ./.iac
+        values:
+          component_id: ${{ parameters.component_id }}
+          app_env_plaintext: ""
+
     # Fetches the template code from the remote repo where this template resides
-    # In a real template, the input values which start with "aws_" would be used to 
+    # In a real template, the input values which start with "aws_" would be used to
     # record AWS-specific annotations into the catalog.yaml file for the entity.
     - id: fetchBase
       name: Fetch Base
@@ -109,13 +126,10 @@ spec:
           component_id: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
           owner: ${{ parameters.owner }}
-          destination: ${{ parameters.repoUrl | parseRepoUrl }}
-          pipeline_arn: ${{ steps['bawsDeployECSBoilerplate'].output.executionArn }}
-          aws_environment: ${{ parameters.environment }}
-          aws_region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-          aws_account: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
-          aws_bp_outputs: ${{ steps['bawsDeployECSBoilerplate'].output.cfnOutputs }}
+          aws_environment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          aws_environment_name: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
           aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+
     # Publishes the contents of the working directory to a new GitLab repo
     - id: publish
       name: Publish
@@ -124,15 +138,18 @@ spec:
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: internal
         defaultBranch: main
+
     # Create a new Gitlab repository access token for the newly created repo
     # and store the access token in the Secret that we created earlier
     - id: createRepoToken
       name: Create Repo Token
-      action: baws:createRepoAccessToken:gitlab
+      action: opa:createRepoAccessToken:gitlab
       input:
         repoUrl: ${{ parameters.repoUrl }}
         projectId: ${{ steps['publish'].output.projectId }}
         secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+        region: us-east-1
+
     # The final step is to register our new component in the catalog.
     - id: register
       name: Register

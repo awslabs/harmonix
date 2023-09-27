@@ -5,7 +5,7 @@ import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { kebabCase } from 'lodash';
 import yaml from 'yaml';
 
-const ID = 'baws:get-component-info';
+const ID = 'opa:get-component-info';
 
 const examples = [
   {
@@ -14,7 +14,7 @@ const examples = [
       steps: [
         {
           action: ID,
-          id: 'bawsGetAwsComponentInfo',
+          id: 'getComponentInfo',
           name: 'Get Component Info',
           input: {
             componentName: 'myComponent',

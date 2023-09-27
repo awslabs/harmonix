@@ -1,0 +1,37 @@
+.abstract-build-image:
+  inherit:
+    default: false
+  image: docker:20.10.16
+  services:
+    - docker:20.10.16-dind
+  before_script:
+    - cat /etc/os-release
+    - docker info
+    - '[[ ! -z "$PROVIDER_PROPS_FILE" ]] || { echo >&2 "PROVIDER_PROPS_FILE must be set"; exit 1; }'
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    - apk update
+    - apk add aws-cli
+    - apk add jq
+    - aws --version
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=3600 --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    - aws sts get-caller-identity
+    - aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $OPA_CI_REGISTRY
+    - echo Successfully logged in to ECR!
+    - apk add curl
+    - apk add tar
+    - apk add openjdk17
+    - apk add maven
+  script:
+    # - (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.28.0/pack-v0.28.0-linux.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack)
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    - TAG=$(date +%m-%d-%Y_%H-%M-%S)
+    - mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$APP_SHORT_NAME:$TAG
+    # - pack build $APP_SHORT_NAME -t $APP_SHORT_NAME:$TAG --builder paketobuildpacks/builder:base
+    # - docker build -t $APP_SHORT_NAME:$TAG .
+    - docker tag $APP_SHORT_NAME:$TAG $OPA_CI_REGISTRY_IMAGE:$TAG
+    - docker tag $APP_SHORT_NAME:$TAG $OPA_CI_REGISTRY_IMAGE:latest
+    - echo Pushing Docker image to ECR...
+    - docker push $OPA_CI_REGISTRY_IMAGE --all-tags

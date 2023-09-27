@@ -1,0 +1,8 @@
+backstage/.git
+backstage/.yarn/cache
+backstage/.yarn/install-state.gz
+backstage/node_modules
+backstage/packages/*/src
+backstage/packages/*/node_modules
+backstage/plugins
+backstage/*.local.yaml

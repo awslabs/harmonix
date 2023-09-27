@@ -22,7 +22,11 @@ function filterTypes(allTypes: string[], allowedTypes?: string[]): Record<string
     );
   }
 
-  availableTypes.sort();
+  availableTypes.sort((a, b) => {
+    if (a < b) { return -1; }
+    if (a > b) { return 1; }
+    return 0;
+  });
   const typesMap = availableTypes.reduce((acc, kind) => {
     acc[kind.toLocaleLowerCase('en-US')] = kind;
     return acc;

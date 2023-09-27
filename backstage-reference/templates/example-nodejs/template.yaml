@@ -2,8 +2,8 @@ apiVersion: scaffolder.backstage.io/v1beta3
 # https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
 kind: Template
 metadata:
-  name: example-nodejs-template
-  title: Node.js Express webapp
+  name: example-nodejs2-template
+  title: Node.js Express Web App
   description: >-
     Create a starter Node.js web application running on
     an Express server.
@@ -21,6 +21,7 @@ spec:
     - title: Provide basic component information
       required:
         - component_id
+        - owner
       properties:
         component_id:
           title: Name
@@ -47,51 +48,12 @@ spec:
         environment:
           title: AWS Environment
           type: string
-          description: The AWS Environment where the database is created
+          description: The AWS Environment where the application is created
           ui:field: EntityPicker
           ui:options:
             allowedKinds:
               - AWSEnvironment
-    # - title: Specify database information
-    # required:
-    #   - db_type
-    #   - instance_size
-    # properties:
-    # db_type:
-    #   title: Database engine
-    #   type: string
-    #   description: The type of database to create
-    #   default: aurora_postgresql
-    #   enum:
-    #     - aurora_mysql
-    #     - aurora_postgresql
-    #     - mysql
-    #     - postgresql
-    #     - mariadb
-    #   enumNames:
-    #     - "Aurora MySQL"
-    #     - "Aurora PostgreSQL"
-    #     - "MySQL"
-    #     - "PostgreSQL"
-    #     - "MariaDB"
-    # instance_size:
-    #   title: Database size
-    #   type: string
-    #   description: The size of the database required
-    #   default: small
-    #   enum:
-    #     - small
-    #     - medium
-    #     - large
-    #   enumNames:
-    #     - "Small (20 GB) - development/prototypes"
-    #     - "Medium (100 GB) - dev/test scenarios"
-    #     - "Large (500 GB) - production scenarios"
-    # db_name:
-    #   title: Database name
-    #   type: string
-    #   description: The name of a default database to create
-    #   default: sampledb
+            defaultKind: AWSEnvironment
 
     - title: Choose a git repository location
       required:
@@ -110,54 +72,86 @@ spec:
   # These steps are executed in the scaffolder backend, using data that we gathered
   # via the parameters above.
   steps:
-    # Each step executes an action, in this case one templates files into the working directory.
-    - id: bawsDeployECSBoilerplate
-      name: Deploy BAWS Boilerplate
-      action: baws:deploy-boilerplate
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+
+    - id: opaGetAwsEnvProviders
+      name: Get AWS Environment Providers
+      action: opa:get-env-providers
       input:
-        boilerplateRepositories:
-          - aws_ecs
-        inputParameters:
-          APP_SHORT_NAME: ${{ parameters.component_id}}
-          APP_ENV_PLAINTEXT:
-            PORT: "3001"
-          # Example for adding tags to resources created by CDK/CodeBuild (via the boilerplate)
-          # AWS_RESOURCE_TAGS:
-          #   - Key: CostCenter
-          #     Value: HR-1234
         environmentRef: ${{ parameters.environment }}
-        actionType: "Create App"
-        # tags:
-        #   - Key: "key1"
-        #     Value: "value1"
+
+    - id: debugEnvironment
+      name: Print the environment entity info
+      action: debug:log
+      input:
+        message: ${{ steps['opaGetAwsEnvProviders'].output | dump }}
+
+    - id: createProviderPropsFiles
+      each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
+      name: Store environment provider parameters
+      action: roadiehq:utils:fs:write
+      input:
+        path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
+        content: |
+          TARGET_VPCID=${{ each.value.vpcId }}
+          TARGET_ECS_CLUSTER_ARN=${{ each.value.clusterArn }}
+          TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
+          ACCOUNT=${{ each.value.accountId }}
+          REGION=${{ each.value.region }}
+          PREFIX=${{ each.value.envProviderPrefix }}
+          ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
+          OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY_IMAGE=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com/${{ parameters.component_id }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com
+          OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{% else %}false{% endif %}
+          
     - id: createSecretManager
       name: Create a Secret
-      action: baws:create-secret
+      action: opa:create-secret
       input:
         secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
-        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
-        description: "Gitlab repo access token"
-        tags:
-          - Key: "aws-apps:${{ parameters.component_id }}"
-            Value: ${{ parameters.component_id }}
+
+    - id: fetchIac
+      name: Fetch ECS Infrastructure as Code
+      action: fetch:template
+      input: 
+        url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_ecs
+        targetPath: ./.iac
+        values:
+          component_id: ${{ parameters.component_id }}
+          app_env_plaintext: ""
+
     - id: fetchBase
       name: Fetch Base
       action: fetch:template
       input:
         url: ./content
         values:
+          app_port: "8080"
           component_id: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
           owner: ${{ parameters.owner }}
-          aws_environment: ${{ parameters.environment }}
-          aws_region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-          aws_account: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
-          destination: ${{ parameters.repoUrl | parseRepoUrl }}
-          aws_pipeline_arn: ${{ steps['bawsDeployECSBoilerplate'].output.executionArn }}
-          aws_bp_outputs: ${{ steps['bawsDeployECSBoilerplate'].output.cfnOutputs }}
+          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          aws_environment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          aws_environment_name: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
           aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
-          app_port: "3002"
+
+    - id: entityDetail
+      name: Get AWSEnvironment entity details
+      action: catalog:fetch
+      input:
+        entityRef: ${{ parameters.environment }}
+
+    - id: debugEntity
+      name: Print the workspace
+      action: debug:log
+      input:
+        message: ${{ steps['entityDetail'].output.entity | dump }}
+        listWorkspace: true
+
     # This step publishes the contents of the working directory to GitLab.
     - id: publish
       name: Publish
@@ -166,15 +160,16 @@ spec:
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: internal
         defaultBranch: main
+
+    # Create a gitlab repository access token and store it in a SecretsManager secret
     - id: createRepoToken
       name: Create Repo Token
-      action: baws:createRepoAccessToken:gitlab
+      action: opa:createRepoAccessToken:gitlab
       input:
         repoUrl: ${{ parameters.repoUrl }}
         projectId: ${{ steps['publish'].output.projectId }}
         secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
-        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+        
     # The final step is to register our new component in the catalog.
     - id: register
       name: Register

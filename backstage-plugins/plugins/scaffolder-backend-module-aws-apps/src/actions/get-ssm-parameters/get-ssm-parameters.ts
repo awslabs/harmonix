@@ -10,7 +10,7 @@ import {
 } from '../../helpers/action-context';
 import { EnvironmentProvider, EnvironmentProviderConnection } from '../../types';
 
-const ID = 'baws:get-ssm-parameters';
+const ID = 'opa:get-ssm-parameters';
 
 const examples = [
   {
@@ -19,10 +19,10 @@ const examples = [
       steps: [
         {
           action: ID,
-          id: 'bawsGetSsmParams',
+          id: 'opaGetSsmParams',
           name: 'Get parameter values',
           input: {
-            envProviders: "${{ steps['bawsGetAwsEnvProviders'].output.envProviders }}",
+            envProviders: "${{ steps['opaGetAwsEnvProviders'].output.envProviders }}",
             paramKeys:
               - '/my/ssm/parameter'
           },

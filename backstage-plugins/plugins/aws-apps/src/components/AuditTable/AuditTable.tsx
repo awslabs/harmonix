@@ -3,35 +3,32 @@
 
 import React, { useEffect, useState } from 'react';
 import { EmptyState, Table, TableColumn } from '@backstage/core-components';
-import { useEntity } from '@backstage/plugin-catalog-react';
 import { LinearProgress } from '@material-ui/core';
 import { useApi } from '@backstage/core-plugin-api';
-import { AuditRecord, bawsApiRef } from '../../api';
+import { opaApiRef } from '../../api';
 import { Typography } from '@mui/material';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
+import { AuditRecord } from '@aws/plugin-aws-apps-common-for-backstage';
 
-const AuditTable = ({
-  input: { account, region, appName },
-}: {
-  input: { account: string; region: string; appName: string };
-}) => {
-  const bawsApi = useApi(bawsApiRef);
+const AuditTable = () => {
+  const api = useApi(opaApiRef);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
   const [items, setItems] = useState<AuditRecord[]>([]);
 
   useEffect(() => {
-    getAuditDetails(account, region)
+    getAuditDetails()
       .then(results => {
         setLoading(false);
         if (results.Count! > 0 && results.Items) {
           const items = results.Items.map(item => {
-            console.log(item);
             const auditRecord: AuditRecord = {
               id: item['id'].S || '',
               origin: item['origin'].S || '',
               actionType: item['actionType'].S || '',
-              name: item['name'].S || '',
+              actionName: item['actionName'].S || '',
+              appName: item['appName'].S || '',
               createdDate: item['createdDate'].S || '',
               createdAt: item['createdAt'].S || '',
               initiatedBy: item['initiatedBy'].S || '',
@@ -39,6 +36,8 @@ const AuditTable = ({
               assumedRole: item['assumedRole'].S || '',
               targetAccount: item['targetAccount'].S || '',
               targetRegion: item['targetRegion'].S || '',
+              prefix: item['prefix'].S || '',
+              providerName: item['providerName'].S || '',
               request: item['request'].S || '',
               status: item['status'].S || '',
               message: item['message'].S || '',
@@ -56,13 +55,8 @@ const AuditTable = ({
       });
   }, []);
 
-  async function getAuditDetails(awsAccount: string, awsRegion: string) {
-    // console.log(region, account)
-    return await bawsApi.getAuditDetails({
-      appName: appName,
-      account: awsAccount,
-      region: awsRegion,
-    });
+  async function getAuditDetails() {
+    return api.getAuditDetails();
   }
 
   const columns: TableColumn[] = [
@@ -80,8 +74,8 @@ const AuditTable = ({
       field: 'actionType',
     },
     {
-      title: 'Name',
-      field: 'name',
+      title: 'Action Name',
+      field: 'actionName',
     },
     {
       title: 'Create Date',
@@ -113,6 +107,14 @@ const AuditTable = ({
       field: 'targetRegion',
     },
     {
+      title: 'Prefix',
+      field: 'prefix',
+    },
+    {
+      title: 'Provider Name',
+      field: 'providerName',
+    },
+    {
       title: 'Request',
       field: 'request',
     },
@@ -137,20 +139,15 @@ const AuditTable = ({
 };
 
 export const AuditWidget = () => {
-  const { entity } = useEntity();
   const awsAppLoadingStatus = useAsyncAwsApp();
 
   if (awsAppLoadingStatus.loading) {
     return <LinearProgress />;
-  } else if (awsAppLoadingStatus.deployments) {
-    const env1 = awsAppLoadingStatus.deployments
-      .environments[Object.keys(awsAppLoadingStatus.deployments.environments)[0]];
-    const input = {
-      appName: entity.metadata.name,
-      account: env1.accountNumber,
-      region: env1.region,
-    };
-    return <AuditTable input={input} />;
+  } else if (awsAppLoadingStatus.component) {
+    // const input = {
+    //   awsComponent: awsAppLoadingStatus.component
+    // };
+    return <AuditTable />;
   } else {
     return <EmptyState missing="data" title="No audit data to show" description="Audit data would show here" />;
   }

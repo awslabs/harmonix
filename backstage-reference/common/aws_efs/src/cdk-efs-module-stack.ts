@@ -55,19 +55,19 @@ export class CdkEfsModuleStack extends cdk.Stack {
     );
 
     // Provide CFN Output values relevant for the newly created File System
-    new cdk.CfnOutput(this, "bawsEfsArn", {
+    new cdk.CfnOutput(this, "opaEfsArn", {
       description: "Arn for the EFS file system",
       value: this.efsInstance.fileSystemArn,
     });
-    new cdk.CfnOutput(this, "bawsEfsId", {
+    new cdk.CfnOutput(this, "opaEfsId", {
       description: "ID of the EFS file system",
       value: this.efsInstance.fileSystemId,
     });
-    new cdk.CfnOutput(this, "bawsEfsSecurityGroupId", {
+    new cdk.CfnOutput(this, "opaEfsSecurityGroupId", {
       description: "Security Group for the EFS instance",
       value: this.efsInstance.connections.securityGroups[0].securityGroupId,
     });
-    new cdk.CfnOutput(this, "bawsEfsAccessPointId", {
+    new cdk.CfnOutput(this, "opaEfsAccessPointId", {
       description: "ID of the EFS access point",
       value: accessPoint.accessPointId,
     });

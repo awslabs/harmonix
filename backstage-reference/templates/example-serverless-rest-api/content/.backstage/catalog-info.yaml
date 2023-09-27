@@ -1,0 +1,28 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.component_id | dump }}
+  kebabName: ${{ values.kebabName | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - rest
+    - swagger
+    - openapi
+    - apigateway
+    - serverless
+  annotations:
+    aws.amazon.com/opa-repo-secret-arn: ${{ values.aws_secret_repo_arn | dump }}
+    aws.amazon.com/opa-component-subtype: "serverless-rest-api"
+  # links:
+  #   - title: Example Title
+  #     url: http://www.example.com
+  iac-type: cdk
+  repo-secret-arn: ${{ values.aws_secret_repo_arn | dump }}
+spec:
+  type: aws-app
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn: []

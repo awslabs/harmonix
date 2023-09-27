@@ -1,0 +1,23 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ${{ values.component_id | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - rds
+    - aws-resource
+    - database
+  annotations:
+  iac-type: cdk
+  resource-type: "aws-rds"
+  db-name: ${{ values.db_name | dump }}
+  db-object-name: ${{ values.db_object_name | dump }}
+  aws-arn: ""
+spec:
+  type: aws-resource
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn: []

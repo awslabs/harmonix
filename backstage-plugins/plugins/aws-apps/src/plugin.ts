@@ -5,40 +5,24 @@ import {
   createPlugin,
   createApiFactory,
   configApiRef,
-  identityApiRef,
   createComponentExtension,
-  discoveryApiRef,
+  fetchApiRef,
 } from '@backstage/core-plugin-api';
 import { Entity } from '@backstage/catalog-model';
 import { rootRouteRef } from './routes';
-import { BawsApiClient, bawsApiRef } from './api';
-import { GitlabCIApiRef, GitlabCIClient } from '@immobiliarelabs/backstage-plugin-gitlab';
+import { OPAApiClient, opaApiRef } from './api';
 
-export const isBAWSAppAvailable = (entity: Entity) => entity?.spec?.type === 'aws-app';
+export const isOPAAppAvailable = (entity: Entity) => entity?.spec?.type === 'aws-app';
 export const isAnnotationsAvailable = (entity: Entity) => entity?.metadata?.annotations;
 export const isLabelsAvailable = (entity: Entity) => entity?.metadata?.labels;
 
-export const bawsPlugin = createPlugin({
+export const opaPlugin = createPlugin({
   id: 'aws-apps',
   apis: [
     createApiFactory({
-      api: GitlabCIApiRef,
-      deps: {
-        configApi: configApiRef,
-        discoveryApi: discoveryApiRef,
-        identityApi: identityApiRef,
-      },
-      factory: ({ configApi, discoveryApi, identityApi }) =>
-        GitlabCIClient.setupAPI({
-          discoveryApi,
-          identityApi,
-          codeOwnersPath: configApi.getOptionalString('gitlab.defaultCodeOwnersPath'),
-        }),
-    }),
-    createApiFactory({
-      api: bawsApiRef,
-      deps: { configApi: configApiRef, identityApi: identityApiRef },
-      factory: ({ configApi, identityApi }) => new BawsApiClient({ configApi, identityApi }),
+      api: opaApiRef,
+      deps: { configApi: configApiRef, fetchApi: fetchApiRef },
+      factory: ({ configApi, fetchApi }) => new OPAApiClient({ configApi, fetchApi }),
     }),
   ],
   routes: {
@@ -46,7 +30,7 @@ export const bawsPlugin = createPlugin({
   },
 });
 
-export const EntityLabelTable = bawsPlugin.provide(
+export const EntityLabelTable = opaPlugin.provide(
   createComponentExtension({
     name: 'EntityLabelTable',
     component: {
@@ -55,7 +39,7 @@ export const EntityLabelTable = bawsPlugin.provide(
   }),
 );
 
-export const EntityAuditTable = bawsPlugin.provide(
+export const EntityAuditTable = opaPlugin.provide(
   createComponentExtension({
     name: 'EntityAuditTable',
     component: {
@@ -64,7 +48,16 @@ export const EntityAuditTable = bawsPlugin.provide(
   }),
 );
 
-export const EntityAnnotationTypeTable = bawsPlugin.provide(
+export const EntityEnvironmentSelector = opaPlugin.provide(
+  createComponentExtension({
+    name: 'EnvironmentSelector',
+    component: {
+      lazy: () => import('./components/EnvironmentSelector/EnvironmentSelector').then(m => m.EnvironmentSelectorWidget),
+    },
+  }),
+);
+
+export const EntityAnnotationTypeTable = opaPlugin.provide(
   createComponentExtension({
     name: 'EntityAnnotationTypeTable',
     component: {
@@ -73,16 +66,7 @@ export const EntityAnnotationTypeTable = bawsPlugin.provide(
   }),
 );
 
-export const EntityCustomGitlabContent = bawsPlugin.provide(
-  createComponentExtension({
-    name: 'EntityCustomGitlabContent',
-    component: {
-      lazy: () => import('./components/GitLab/GitLab').then(m => m.GitLabWidget),
-    },
-  }),
-);
-
-export const EntityAppStateCard = bawsPlugin.provide(
+export const EntityAppStateCard = opaPlugin.provide(
   createComponentExtension({
     name: 'AppStateCard',
     component: {
@@ -91,7 +75,7 @@ export const EntityAppStateCard = bawsPlugin.provide(
   }),
 );
 
-export const EntityAppStateCardCloudFormation = bawsPlugin.provide(
+export const EntityAppStateCardCloudFormation = opaPlugin.provide(
   createComponentExtension({
     name: 'AppStateCardCloudFormation',
     component: {
@@ -100,7 +84,7 @@ export const EntityAppStateCardCloudFormation = bawsPlugin.provide(
   }),
 );
 
-export const EntityGeneralInfoCard = bawsPlugin.provide(
+export const EntityGeneralInfoCard = opaPlugin.provide(
   createComponentExtension({
     name: 'GeneralInfoCard',
     component: {
@@ -109,7 +93,25 @@ export const EntityGeneralInfoCard = bawsPlugin.provide(
   }),
 );
 
-export const AppCatalogPage = bawsPlugin.provide(
+export const EntityAppPromoCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AppPromoCard',
+    component: {
+      lazy: () => import('./components/AppPromoCard/AppPromoCard').then(m => m.AppPromoWidget),
+    },
+  }),
+);
+
+export const EntityAppLinksCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AppLinksCard',
+    component: {
+      lazy: () => import('./components/AppLinksCard/AppLinksCard').then(m => m.AppLinksCard),
+    },
+  }),
+);
+
+export const AppCatalogPage = opaPlugin.provide(
   createComponentExtension({
     name: 'AppCatalogPage',
     component: {
@@ -118,7 +120,7 @@ export const AppCatalogPage = bawsPlugin.provide(
   }),
 );
 
-export const EntityCloudwatchLogsTable = bawsPlugin.provide(
+export const EntityCloudwatchLogsTable = opaPlugin.provide(
   createComponentExtension({
     name: 'EntityCloudwatchLogsTable',
     component: {
@@ -127,7 +129,7 @@ export const EntityCloudwatchLogsTable = bawsPlugin.provide(
   }),
 );
 
-export const EntityInfrastructureInfoCard = bawsPlugin.provide(
+export const EntityInfrastructureInfoCard = opaPlugin.provide(
   createComponentExtension({
     name: 'InfrastructureInfoCard',
     component: {
@@ -135,7 +137,27 @@ export const EntityInfrastructureInfoCard = bawsPlugin.provide(
     },
   }),
 );
-export const EntityAppConfigCard = bawsPlugin.provide(
+
+
+export const EntityProviderInfoCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'ProviderInfoCard',
+    component: {
+      lazy: () => import('./components/ProviderInfoCard/ProviderInfoCard').then(m => m.ProviderInfoCard),
+    },
+  }),
+);
+
+export const EntityEnvironmentInfoCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'EnvironmentInfoCard',
+    component: {
+      lazy: () => import('./components/EnvironmentInfoCard/EnvironmentInfoCard').then(m => m.EnvironmentInfoCard),
+    },
+  }),
+);
+
+export const EntityAppConfigCard = opaPlugin.provide(
   createComponentExtension({
     name: 'AppConfigCard',
     component: {
@@ -144,11 +166,83 @@ export const EntityAppConfigCard = bawsPlugin.provide(
   }),
 );
 
-export const AwsAppPage = bawsPlugin.provide(
+export const EntityDeleteAppCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'DeleteAppCard',
+    component: {
+      lazy: () => import('./components/DeleteComponentCard/DeleteComponentCard').then(m => m.DeleteComponentCard),
+    },
+  }),
+);
+
+export const EntityDeleteProviderCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'DeleteProviderCard',
+    component: {
+      lazy: () => import('./components/DeleteProviderCard/DeleteProviderCard').then(m => m.DeleteProviderCard),
+    },
+  }),
+);
+
+export const EntityDeleteEnvironmentCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'DeleteEnvironmentCard',
+    component: {
+      lazy: () => import('./components/DeleteEnvironmentCard/DeleteEnvironmentCard').then(m => m.DeleteEnvironmentCard),
+    },
+  }),
+);
+
+export const EntityResourceBindingCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'ResourceBindingCard',
+    component: {
+      lazy: () => import('./components/ResourceBindingCard/ResourceBinding').then(m => m.ResourceBindingCardWidget),
+    },
+  }),
+);
+
+export const EntityAwsEnvironmentProviderSelectorCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsEnvironmentProviderSelectorCard',
+    component: {
+      lazy: () => import('./components/AwsEnvironmentProviderCard/AwsEnvironmentProviderCard').then(m => m.AwsEnvironmentProviderCardWidget),
+    },
+  }),
+);
+
+export const AwsAppPage = opaPlugin.provide(
   createComponentExtension({
     name: 'AwsAppPage',
     component: {
-      lazy: () => import('./components/AwsAppPage/AwsAppPage').then(m => m.AwsAppPage),
+      lazy: () => import('./pages/AwsAppPage/AwsAppPage').then(m => m.AwsAppPage),
+    },
+  }),
+);
+
+export const AwsComponentPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsComponentPage',
+    component: {
+      lazy: () => import('./pages/AwsComponentPage/AwsComponentPage').then(m => m.AwsComponentPage),
+    },
+  }),
+);
+
+export const AwsEnvironmentPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsEnvironmentPage',
+    component: {
+      lazy: () => import('./pages/AwsEnvironmentPage/AwsEnvironmentPage').then(m => m.AwsEnvironmentPage),
+    },
+  }),
+);
+
+export const AwsEnvironmentProviderPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsEnvironmentProviderPage',
+    component: {
+      lazy: () => import('./pages/AwsEnvironmentProviderPage/AwsEnvironmentProviderPage').then(m => m.AwsEnvironmentProviderPage),
     },
   }),
 );

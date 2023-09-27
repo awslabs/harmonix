@@ -13,7 +13,7 @@ This plugin provides scaffolder actions to create AWS resources and utility acti
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/backend @aws/plugin-scaffolder-backend-aws-apps-for-backstage@^0.1.0
+yarn add --cwd packages/backend @aws/plugin-scaffolder-backend-aws-apps-for-backstage@0.2.0
 ```
 
 ## Configuration
@@ -23,19 +23,29 @@ Configure the action(s) you would like to use in your Backstage app.
 ```ts
 // packages/backend/src/plugins/scaffolder.ts
 
-import { 
-  createBawsDeployBoilerplateAction, 
-  createRepoAccessTokenAction, 
+import {
+  createRepoAccessTokenAction,
   createSecretAction,
+  createS3BucketAction,
+  getEnvProvidersAction,
+  getComponentInfoAction,
+  getSsmParametersAction,
+  getPlatformParametersAction,
+  getPlatformMetadataAction,
 } from '@aws/plugin-scaffolder-backend-aws-apps-for-backstage';
 
 ...
 
 const actions = [
   ...builtInActions,
-  createBawsDeployBoilerplateAction({ catalogClient }),
-  createRepoAccessTokenAction({ integrations }),
-  createSecretAction(),
+  createRepoAccessTokenAction({ integrations, envConfig:env.config }),
+  createS3BucketAction(),
+  createSecretAction( {envConfig:env.config}),
+  getEnvProvidersAction({ catalogClient }),
+  getComponentInfoAction(),
+  getSsmParametersAction(),
+  getPlatformParametersAction({envConfig:env.config}),
+  getPlatformMetadataAction({envConfig:env.config}),
 ];
 ...
 ```
@@ -49,15 +59,9 @@ For full documentation of the scaffolder action inputs and outputs, see the http
 The scaffolder actions which create AWS resources will leverage the AWS Environments and Environments Provider model provided in the `@aws/plugin-aws-apps-backend-for-backstage` plugin.
 Reference the plugin documentation to understand how to create and surface AWS Environments for use in scaffolder actions and the UI.
 
-### Deploy boilerplate
+### Get Environment Providers
 
-The `baws:deploy-boilerplate` scaffolder action invoke a provisioning pipeline in AWS to execute the code contained in a "boilerplate" repository.  "Boilerplate" repository references the name of a git repository containing Infrastructure as Code (CDK, Terraform, or CloudFormation) and a [`buildspec.yaml` build specification file][buildspec_ref] which drives an AWS CodeBuild build.
-
-This action is often one of the first actions included in a Software Template since it is responsible for provisioning AWS resources required to run an application.  For example, the action's referenced boilerplate may be responsible for provisioning an ECS task definition, container definition, ECS service, Application Load Balancer, Security Groups, and other resources to run an application in a Fargate ECS cluster.
-
-Values specified through the `inputParameters` input will be passed to the CodeBuild project as environment variables.  The boilerplate repository's code will be responsible for defining any expected environment variables.  All environment variables values will be passed as strings, so the boilerplate repository will also be responsible for deserializing any values to convert them into numbers, objects, booleans, or arrays.
-
-The template snippet below demonstrates this action in the `steps` section of a Backstage Software Template.  See the example in the plugin's [src/example/template.yaml][example_template] file to better understand the action in the context of a full template.
+The `opa:get-env-providers` scaffolder action retreives AWS environment providers so that their configurations can be used by other template actions.  Refer to the `/create/actions` path of your Backstage instance for details on the returned output.
 
 ```yaml
 # template.yaml
@@ -65,39 +69,18 @@ The template snippet below demonstrates this action in the `steps` section of a 
 ...
   steps:
     ...
-    # Deploy the ESC resources to run the application.  
-    # Here, we invoke the `baws:deploy-boilerplate` action and specify 
-    # the 'ecs_resources' repository as the location of the boilerplate IaC code.  
-    - id: deployECSResources
-      name: Deploy AWS ECS Resources
-      action: baws:deploy-boilerplate
+    - id: opaGetAwsEnvProviders
+      name: Get AWS Environment Providers
+      action: opa:get-env-providers
       input:
-        boilerplateRepositories:
-          # Invoke the boilerplate which creates resources to run an application as an ECS container
-          - ecs_resources
-        inputParameters:
-          # The ecs_resources boilerplate uses APP_SHORT_NAME as part of naming AWS resources
-          APP_SHORT_NAME: ${{ parameters.component_id}}
-          # APP_ENV_PLAINTEXT values are passed as plaintext env vars to the container
-          # by the ecs_resources boilerplate
-          APP_ENV_PLAINTEXT:
-            PORT: "3001"
-          # Example for adding tags to resources created via the boilerplate
-          AWS_RESOURCE_TAGS:
-            - Key: CostCenter
-              Value: HR-1234
-        # Specify the Backstage entity ref string for the AWS Environment 
-        # where the app should be deployed
         environmentRef: ${{ parameters.environment }}
-        # Specify the type of action being performed by the boilerplate (for audit purposes)
-        actionType: "Create App"
     ...
 
 ```
 
 ### Create AWS SecretsManager Secrets
 
-The `baws:create-secret` scaffolder action creates a new Secret in the [AWS Secrets Manager service](https://aws.amazon.com/secrets-manager/).  
+The `opa:create-secret` scaffolder action creates a new Secret in the [AWS Secrets Manager service](https://aws.amazon.com/secrets-manager/).  
 
 The template snippet below demonstrates this action in the `steps` section of a Backstage Software Template.  See the example in the plugin's [src/example/template.yaml][example_template] file to better understand the action in the context of a full template.
 
@@ -111,14 +94,14 @@ This action will generate a `awsSecretArn` output which can be referenced in sub
     ...
     - id: createSecretManager
       name: Creates a Secret
-      action: baws:create-secret
+      action: opa:create-secret
       input:
         # The name of the SecretsManager secret
         secretName: ${{ parameters.component_id }}-gitlab-access-token
         # The AWS region where the secret will be created
-        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
+        region: ${{ steps['opaDeployECSBoilerplate'].output.region }}
         # The AWS account in which the secret will be created
-        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+        accountId: ${{ steps['opaDeployECSBoilerplate'].output.account }}
         # a description of the secret
         description: "Gitlab repo access token"
         # AWS tags to apply to the Secret
@@ -131,7 +114,7 @@ This action will generate a `awsSecretArn` output which can be referenced in sub
 
 ### Create Gitlab Repo Access Token
 
-The `baws:createRepoAccessToken:gitlab` scaffolder action creates a [project access token][gitlab_pat] where access is restrited to a specific Gitlab repository.  
+The `opa:createRepoAccessToken:gitlab` scaffolder action creates a [project access token][gitlab_pat] where access is restrited to a specific Gitlab repository.  
 
 The template snippet below demonstrates this action in the `steps` section of a Backstage Software Template.  See the example in the plugin's [src/example/template.yaml][example_template] file to better understand the action in the context of a full template.
 
@@ -145,7 +128,7 @@ The template snippet below demonstrates this action in the `steps` section of a 
     # and store the access token in an AWS Secret
     - id: createRepoToken
       name: Create Repo Token
-      action: baws:createRepoAccessToken:gitlab
+      action: opa:createRepoAccessToken:gitlab
       input:
         # the url of the gitlab repository
         repoUrl: ${{ parameters.repoUrl }}
@@ -158,7 +141,96 @@ The template snippet below demonstrates this action in the `steps` section of a 
 
 ```
 
+### Get Platform Metadata
+
+The `opa:get-platform-metadata` scaffolder action retrieves information about the platform and environment on which OPA on AWS is running.  
+
+The action will return the AWS region where the platform is running.  Future metadata is also planned.
+
+```yaml
+# template.yaml
+
+...
+  steps:
+    ...
+    # Get data about the OPA on AWS platform
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+    ...
+
+```
+
+### Get Platform Parameters
+
+The `opa:get-platform-parameters` scaffolder action retrieve AWS SSM parameter values for the OPA on AWS platform so that their values can be used by other template actions.
+
+The action will return a `params` response as an object containing a map of SSM parameters.
+
+```yaml
+# template.yaml
+
+...
+  steps:
+    ...
+    # Get data about the OPA on AWS platform
+    - id: opaGetPlatformParams
+      name: Get parameter values
+      action: opa:get-platform-parameters
+      input:
+        paramKeys:
+          - '/my/ssm/parameter1'
+          - '/my/ssm/parameter2'
+    ...
+
+```
+The returned object for the example above:
+```json
+{
+  "/my/ssm/parameter1": "Parameter 1's value",
+  "/my/ssm/parameter2": "Parameter 2's value"
+}
+```
+
+### Get SSM Parameters
+
+The `opa:get-ssm-parameters` scaffolder action is very similar to the action above except that it will retrieve AWS SSM parameter values for each environment provider so that their configurations can be used by other template actions.  This action is often used in conjunction with the `opa:get-env-providers` action's response of an array of environment providers.
+
+The action will return a `params` response as an object containing a map of SSM parameters keyed off of the environment provider name.
+
+```yaml
+# template.yaml
+
+...
+  steps:
+    ...
+    # Get data about the OPA on AWS platform
+    - id: opaGetPlatformParams
+      name: Get parameter values
+      action: opa:get-platform-parameters
+      input:
+        paramKeys:
+          - '/my/ssm/parameter1'
+          - '/my/ssm/parameter2'
+        envProviders: "${{ steps['opaGetAwsEnvProviders'].output.envProviders }}",
+    ...
+
+```
+The returned object for the example above:
+```json
+{
+  "env-provider-A": {
+    "/A/parameter1": "Parameter 1's value in env-A",
+    "/A/parameter2": "Parameter 2's value in env-A"
+  },
+  "env-provider-B": {
+    "/B/parameter1": "Parameter 1's value in env-B",
+    "/B/parameter2": "Parameter 2's value in env-B"
+  },
+}
+```
+
+
 <!-- link definitions -->
 [gitlab_pat]: https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html 'Gitlab Project Access Tokens'
-[buildspec_ref]: https://docs.aws.amazon.com/codebuild/latest/userguide/build-spec-ref.html 'Build specification reference for CodeBuild'
 [example_template]: src/example/template.yaml

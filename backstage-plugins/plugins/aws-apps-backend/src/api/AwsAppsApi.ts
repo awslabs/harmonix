@@ -1,39 +1,20 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Logger } from 'winston';
-import { AwsCredentialIdentity } from '@aws-sdk/types';
 import {
-  ECSClient,
-  ListTasksCommand,
-  ListTasksCommandInput,
-  ListTasksCommandOutput,
-  UpdateServiceCommand,
-  UpdateServiceCommandInput,
-  UpdateServiceCommandOutput,
-  DescribeTasksCommand,
-  DescribeTasksCommandInput,
-  DescribeTasksCommandOutput,
-  TaskDefinition,
-  DescribeTaskDefinitionCommandInput,
-  DescribeTaskDefinitionCommand,
-  DescribeTaskDefinitionCommandOutput,
-  RegisterTaskDefinitionCommandOutput,
-  RegisterTaskDefinitionCommandInput,
-  RegisterTaskDefinitionCommand,
-} from '@aws-sdk/client-ecs';
-import {
-  SecretsManagerClient,
-  GetSecretValueCommand,
-  GetSecretValueCommandInput,
-  GetSecretValueCommandOutput,
-  CreateSecretCommandOutput,
-  CreateSecretCommandInput,
-  CreateSecretCommand,
-  PutSecretValueCommandOutput,
-  PutSecretValueCommandInput,
-  PutSecretValueCommand,
-} from '@aws-sdk/client-secrets-manager';
+  CloudFormationClient,
+  CreateStackCommand,
+  CreateStackCommandOutput,
+  DeleteStackCommand,
+  DeleteStackCommandOutput,
+  DescribeStackEventsCommand,
+  DescribeStackEventsCommandOutput,
+  DescribeStacksCommand,
+  DescribeStacksCommandOutput,
+  Parameter,
+  UpdateStackCommand,
+  UpdateStackCommandOutput
+} from '@aws-sdk/client-cloudformation';
 import {
   CloudWatchLogsClient,
   DescribeLogGroupsCommand,
@@ -50,15 +31,6 @@ import {
   GetLogRecordCommandOutput,
 } from '@aws-sdk/client-cloudwatch-logs';
 import {
-  S3Client,
-  CreateBucketCommand,
-  CreateBucketCommandInput,
-  CreateBucketCommandOutput,
-  HeadObjectCommand,
-  HeadObjectCommandOutput,
-  PutBucketTaggingCommand,
-} from '@aws-sdk/client-s3';
-import {
   DynamoDBClient,
   PutItemCommand,
   PutItemCommandInput,
@@ -68,32 +40,88 @@ import {
   ScanCommandOutput,
 } from '@aws-sdk/client-dynamodb';
 import {
-  ResourceGroupsClient,
+  DescribeTaskDefinitionCommand,
+  DescribeTaskDefinitionCommandInput,
+  DescribeTaskDefinitionCommandOutput,
+  DescribeTasksCommand,
+  DescribeTasksCommandInput,
+  DescribeTasksCommandOutput,
+  ECSClient,
+  ListTasksCommand,
+  ListTasksCommandInput,
+  ListTasksCommandOutput,
+  RegisterTaskDefinitionCommand,
+  RegisterTaskDefinitionCommandInput,
+  RegisterTaskDefinitionCommandOutput,
+  TaskDefinition,
+  UpdateServiceCommand,
+  UpdateServiceCommandInput,
+  UpdateServiceCommandOutput,
+} from '@aws-sdk/client-ecs';
+import {
+  DescribeClusterCommand,
+  DescribeClusterCommandInput,
+  DescribeClusterCommandOutput,
+  EKSClient,
+} from '@aws-sdk/client-eks';
+import {
   ListGroupResourcesCommand,
   ListGroupResourcesCommandInput,
   ListGroupResourcesCommandOutput,
+  ResourceGroupsClient,
 } from '@aws-sdk/client-resource-groups';
 import {
-  SSMClient,
+  CreateBucketCommand,
+  CreateBucketCommandInput,
+  CreateBucketCommandOutput,
+  HeadObjectCommand,
+  HeadObjectCommandOutput,
+  PutBucketTaggingCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
+import {
+  CreateSecretCommand,
+  CreateSecretCommandInput,
+  CreateSecretCommandOutput,
+  GetSecretValueCommand,
+  GetSecretValueCommandInput,
+  GetSecretValueCommandOutput,
+  PutSecretValueCommand,
+  PutSecretValueCommandInput,
+  PutSecretValueCommandOutput,
+  SecretsManagerClient,
+} from '@aws-sdk/client-secrets-manager';
+import {
   GetParameterCommand,
   GetParameterCommandInput,
   GetParameterCommandOutput,
+  SSMClient,
 } from '@aws-sdk/client-ssm';
-import {
-  CloudFormationClient,
-  DescribeStacksCommand,
-  DescribeStacksCommandOutput,
-  DescribeStackEventsCommand,
-  DescribeStackEventsCommandOutput,
-  CreateStackCommand,
-  CreateStackCommandOutput,
-  UpdateStackCommand,
-  UpdateStackCommandOutput,
-  DeleteStackCommand,
-  DeleteStackCommandOutput,
-} from "@aws-sdk/client-cloudformation";
+import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { parse as parseArn } from '@aws-sdk/util-arn-parser';
 import { AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
+import { KubeConfig, AppsV1Api } from '@kubernetes/client-node';
+import { response } from 'express';
+import { Logger } from 'winston';
+
+export type DynamoDBTableData = {
+  tableName: string
+  recordId: string
+  origin: string
+  prefix: string
+  appName:string
+  environmentProviderName: string
+  actionType: string
+  name: string
+  initiatedBy: string
+  owner: string
+  assumedRole: string
+  targetAccount: string
+  targetRegion: string
+  request: string
+  status: string
+  message: string
+}
 
 export class AwsAppsApi {
   public constructor(
@@ -119,12 +147,15 @@ export class AwsAppsApi {
    */
   public async getEcsServiceTask(clusterName: string, serviceName: string): Promise<ListTasksCommandOutput> {
     this.logger.info('Calling getEcsServiceTask');
+    // resolve ECS cluster param to value
+    const clusterRef = await this.getSSMParameter(clusterName)
+
     const client = new ECSClient({
       region: this.awsRegion,
       credentials: this.awsCredentials,
     });
     const params: ListTasksCommandInput = {
-      cluster: clusterName,
+      cluster: clusterRef.Parameter?.Value?.toString() || "",
       serviceName: serviceName,
     };
     const command = new ListTasksCommand(params);
@@ -144,12 +175,15 @@ export class AwsAppsApi {
    */
   public async describeClusterTasks(clusterName: string, taskArns: string[]): Promise<DescribeTasksCommandOutput> {
     this.logger.info('Calling describeClusterTasks');
+     // resolve ECS cluster param to value
+     const clusterRef = await this.getSSMParameter(clusterName);
+
     const client = new ECSClient({
       region: this.awsRegion,
       credentials: this.awsCredentials,
     });
     const params: DescribeTasksCommandInput = {
-      cluster: clusterName,
+      cluster: clusterRef.Parameter?.Value?.toString() || "",
       tasks: taskArns,
     };
     const command = new DescribeTasksCommand(params);
@@ -176,12 +210,15 @@ export class AwsAppsApi {
     numberOfTasks?: number | undefined,
   ): Promise<UpdateServiceCommandOutput> {
     this.logger.info('Calling updateServiceTask');
+    // resolve ECS cluster param to value
+    const clusterRef = await this.getSSMParameter(clusterName)
+
     const client = new ECSClient({
       region: this.awsRegion,
       credentials: this.awsCredentials,
     });
     const params: UpdateServiceCommandInput = {
-      cluster: clusterName,
+      cluster: clusterRef.Parameter?.Value?.toString() || "",
       service: serviceName,
       desiredCount: numberOfTasks,
       forceNewDeployment: restart,
@@ -246,8 +283,8 @@ export class AwsAppsApi {
     try {
       const response = await client.send(command);
       return response;
-    } catch (error) {
-      throw Error('Error creating Secret');
+    } catch (error: any) {
+      throw Error(`Error creating Secret - ${error.toString()}`);
     }
   }
   /**
@@ -351,9 +388,9 @@ export class AwsAppsApi {
       Key: fileName,
     };
     const command = new HeadObjectCommand(input);
-      const response = await client.send(command);
+    const response = await client.send(command);
 
-      return response;
+    return response;
   }
   /**
    * Get CloudWatch log groups metadata array based on the supplied logPrefix.
@@ -459,12 +496,12 @@ export class AwsAppsApi {
     const params: ScanCommandInput = {
       TableName: tableName,
       ExpressionAttributeValues: {
-        ':name': { S: appName },
+        ':appName': { S: appName },
       },
       ExpressionAttributeNames: {
-        '#name': 'name',
+        '#appName': 'appName',
       },
-      FilterExpression: '#name = :name',
+      FilterExpression: '#appName = :appName',
       //TODO: Add Query to fetch record by user for a giving time frame , use secondary index for time. need to calculate time backward
       // appName -> search critera , timeframe.
     };
@@ -473,44 +510,35 @@ export class AwsAppsApi {
     return resp;
   }
 
-  public async putDynamodbTableData(
-    tableName: string,
-    recordId: string,
-    origin: string,
-    actionType: string,
-    name: string,
-    initiatedBy: string,
-    owner: string,
-    assumedRole: string,
-    targetAccount: string,
-    targetRegion: string,
-    request: string,
-    status: string,
-    message: string,
-  ): Promise<PutItemCommandOutput> {
-    this.logger.info('Calling getDynamodbTable');
 
+
+  public async putDynamodbTableData(data: DynamoDBTableData): Promise<PutItemCommandOutput> {
+    this.logger.info('Calling getDynamodbTable');
+ 
     const client = new DynamoDBClient({
       region: this.awsRegion,
       credentials: this.awsCredentials,
     });
     const params: PutItemCommandInput = {
-      TableName: tableName,
+      TableName: data.tableName,
       Item: {
-        id: { S: recordId },
+        id: { S: data.recordId },
         createdAt: { S: new Date().toISOString() },
         createdDate: { S: new Date().toLocaleDateString() },
-        origin: { S: origin },
-        actionType: { S: actionType },
-        name: { S: name },
-        initiatedBy: { S: initiatedBy },
-        owner: { S: owner },
-        assumedRole: { S: assumedRole },
-        targetAccount: { S: targetAccount },
-        targetRegion: { S: targetRegion },
-        request: { S: request },
-        status: { S: status },
-        message: { S: message },
+        origin: { S: data.origin },
+        appName: {S: data.appName},
+        actionType: { S: data.actionType },
+        actionName: { S: data.name },
+        initiatedBy: { S: data.initiatedBy },
+        owner: { S: data.owner },
+        assumedRole: { S: data.assumedRole },
+        targetAccount: { S: data.targetAccount },
+        targetRegion: { S: data.targetRegion },
+        prefix: { S: data.prefix },
+        providerName: { S: data.environmentProviderName },
+        request: { S: data.request },
+        status: { S: data.status },
+        message: { S: data.message },
       },
     };
     const command = new PutItemCommand(params);
@@ -518,23 +546,6 @@ export class AwsAppsApi {
     return resp;
   }
 
-  public async getSSMParamer(paramName: string): Promise<GetParameterCommandOutput> {
-    this.logger.info('Calling getSSMParamer');
-
-    const client = new SSMClient({
-      region: this.awsRegion,
-      credentials: this.awsCredentials,
-    });
-
-    const params: GetParameterCommandInput = {
-      Name: paramName,
-      WithDecryption: true,
-    };
-
-    const command = new GetParameterCommand(params);
-    const resp = client.send(command);
-    return resp;
-  }
   /**
    * Get getResourceGroupResources.
    *
@@ -624,7 +635,7 @@ export class AwsAppsApi {
    *
    */
   public async getSSMParameter(ssmParamName: string): Promise<GetParameterCommandOutput> {
-    this.logger.info('Calling getSSMParameter');
+    this.logger.info(`Calling getSSMParameter - ${ssmParamName}`);
 
     const client = new SSMClient({
       region: this.awsRegion,
@@ -756,14 +767,18 @@ export class AwsAppsApi {
    * @param stackName - The stack name
    * @param s3BucketName - the S3 bucket
    * @param cfFileName - the SAM/CloudFormation template file name
+   * @param providerName - the environment provider name
+   * @param parameters - CloudFormation stack input parameters or undefined
+   * 
    * @returns The UpdateStackCommandOutput object
-   *
    */
   public async updateStack(
     componentName: string,
     stackName: string,
     s3BucketName: string,
     cfFileName: string,
+    providerName: string,
+    parameters?: Parameter[],
   ): Promise<UpdateStackCommandOutput> {
 
     this.logger.info('Calling updateStack');
@@ -776,13 +791,14 @@ export class AwsAppsApi {
     const input = {
       StackName: stackName,
       TemplateURL: `https://${s3BucketName}.s3.amazonaws.com/${cfFileName}`,
+      Parameters: parameters,
       Capabilities: [
         "CAPABILITY_NAMED_IAM",
         "CAPABILITY_AUTO_EXPAND",
       ],
       Tags: [
         {
-          Key: `aws-apps:${componentName}`,
+          Key: `aws-apps:${componentName}-${providerName}`,
           Value: componentName,
         },
       ],
@@ -803,14 +819,18 @@ export class AwsAppsApi {
    * @param stackName - The stack name
    * @param s3BucketName - the S3 bucket
    * @param cfFileName - the SAM/CloudFormation template file name
+   * @param providerName - the environment provider name
+   * @param parameters - CloudFormation stack input parameters or undefined
+   * 
    * @returns The CreateStackCommandOutput object
-   *
    */
   public async createStack(
     componentName: string,
     stackName: string,
     s3BucketName: string,
     cfFileName: string,
+    providerName: string,
+    parameters?: Parameter[],
   ): Promise<CreateStackCommandOutput> {
 
     this.logger.info('Calling createStack');
@@ -823,13 +843,14 @@ export class AwsAppsApi {
     const input = {
       StackName: stackName,
       TemplateURL: `https://${s3BucketName}.s3.amazonaws.com/${cfFileName}`,
+      Parameters: parameters,
       Capabilities: [
         "CAPABILITY_NAMED_IAM",
         "CAPABILITY_AUTO_EXPAND",
       ],
       Tags: [
         {
-          Key: `aws-apps:${componentName}`,
+          Key: `aws-apps:${componentName}-${providerName}`,
           Value: componentName,
         },
       ],
@@ -868,5 +889,74 @@ export class AwsAppsApi {
     const response = await client.send(command);
 
     return response;
+  }
+
+  /**
+ * Get EKS Cluster
+ *
+ * @remarks
+ * Get information about an EKS Cluster.
+ *
+ * @param clusterName - The EKS Cluster name
+ * @returns The DescribeClusterCommandOutput object
+ *
+ */
+public async getEksCluster(clusterName: string): Promise<DescribeClusterCommandOutput> {
+  this.logger.info('Calling getEksCluster');
+  const client = new EKSClient({
+    region: this.awsRegion,
+    credentials: this.awsCredentials,
+  });
+  const params: DescribeClusterCommandInput = {
+    name: clusterName,
+  };
+  const command = new DescribeClusterCommand(params);
+  const response = await client.send(command);
+  return response;
+}
+
+/**
+ * Scale Down EKS Deployment
+ *
+ * @remarks
+ * Scale a deployment in an EKS Cluster.
+ *
+ * @param deploymentName - The name of the deployment to scale
+ * @param namespace - The Kubernetes namespace
+ * @returns The result of scaling down the deployment
+ *
+ */
+public async scaleEKSDeployment(
+  deploymentName: string,
+  namespace: string,
+  replicaCount: number
+):Promise<any> {
+  const kc = new KubeConfig();
+  kc.loadFromDefault();
+
+  const k8sApi = kc.makeApiClient(AppsV1Api);
+  try {
+    const deployment = await k8sApi.readNamespacedDeployment(deploymentName, namespace);
+
+    if (deployment && deployment.body.spec){
+       // Set the replicas to 0 to pause the deployment
+      deployment.body.spec.replicas = replicaCount;
+    }
+    else{
+      this.logger.info("error when scaling deployment. check deployment name, body or specs")
+    }
+
+    const response = await k8sApi.replaceNamespacedDeployment(deploymentName, namespace, deployment.body);
+
+    console.log(`Deployment ${deploymentName} scaled down.`);
+    console.log(response);
+  } catch (error) {
+    console.error(`Error scaling down deployment: ${error}`);
+  }
+  
+  // Perform the scaling down operation, e.g., using Kubernetes client or AWS SDK
+
+  // Return the result of the scaling down operation
+  return response;
   }
 }

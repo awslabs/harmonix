@@ -5,17 +5,19 @@ import React, { useEffect, useState } from 'react';
 import { CodeSnippet, InfoCard, EmptyState } from '@backstage/core-components';
 import { LinearProgress } from '@material-ui/core';
 import { useApi } from '@backstage/core-plugin-api';
-import { bawsApiRef } from '../../api';
+import { OPAApi, opaApiRef } from '../../api';
 import { Typography, CardContent, IconButton, Grid } from '@mui/material';
 import { GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { SecretStringComponent } from '../common';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
+import { AWSECSAppDeploymentEnvironment } from '@aws/plugin-aws-apps-common-for-backstage';
+import { useEntity } from '@backstage/plugin-catalog-react';
 
-const BawsAppGeneralInfo = ({
-  input: { account, region, gitHost, gitApp, repoSecretArn }
-}: { input: { account: string, region: string, gitHost: string, gitApp: string, repoSecretArn: string } }) => {
-  const bawsApi = useApi(bawsApiRef);
+const OpaAppGeneralInfo = ({
+  input: { gitHostUrl, gitApp, repoSecretArn, api, appPending }
+}: { input: { account: string, region: string, gitHostUrl: string, gitApp: string, repoSecretArn: string, api: OPAApi, appPending: boolean } }) => {
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
   const secretOutput: GetSecretValueCommandOutput = {
@@ -28,12 +30,16 @@ const BawsAppGeneralInfo = ({
     VersionStages: undefined,
   };
   const [secretData, setSecretData] = useState(secretOutput);
+  const [gitHost, setGitHost] = useState("");
 
-  const gitAppUrl = gitHost + "/" + gitApp + ".git"
+  const getGitAppUrl = () => {
+    const gitAppUrl = gitHost + "/" + gitApp + ".git"
+    return gitAppUrl
+  }
 
   const HandleCopyGitClone = () => {
     const baseUrl = "git clone https://oauth2:"
-    const cloneUrl = baseUrl + secretData.SecretString + "@" + gitAppUrl;
+    const cloneUrl = baseUrl + secretData.SecretString + "@" + getGitAppUrl();
     navigator.clipboard.writeText(cloneUrl);
   };
 
@@ -42,16 +48,22 @@ const BawsAppGeneralInfo = ({
   };
 
   async function getData() {
-    const secrets = await bawsApi.getSecret({
-      account: account,
-      region: region,
+
+    const secrets = await api.getPlatformSecret({
       secretName: repoSecretArn,
     });
 
     setSecretData(secrets);
+
+    const gitHostParam = await api.getPlatformSSMParam({ paramName: "/opa/gitlab-hostname" });
+    setGitHost(gitHostParam.Parameter?.Value?.toString() || "");
   }
 
   useEffect(() => {
+    if (!appPending) {
+      setGitHost(gitHostUrl);
+    }
+
     getData()
       .then(() => {
         setLoading(false);
@@ -98,7 +110,7 @@ const BawsAppGeneralInfo = ({
                         <ContentCopyIcon></ContentCopyIcon>
                       </IconButton></td>
                       <td>
-                        <CodeSnippet language="text" text={"git clone https://oauth2:***@" + gitAppUrl} />
+                        <CodeSnippet language="text" text={"git clone https://oauth2:***@" + getGitAppUrl()} />
                       </td>
                     </tr>
                   </tbody>
@@ -112,23 +124,42 @@ const BawsAppGeneralInfo = ({
   );
 };
 
-export const GeneralInfoCard = () => {
+export const GeneralInfoCard = ({ appPending }: { appPending: boolean }) => {
+  const api = useApi(opaApiRef);
+  const { entity } = useEntity();
   const awsAppLoadingStatus = useAsyncAwsApp();
-
-  if (awsAppLoadingStatus.loading) {
-    return <LinearProgress />;
-  } else if (awsAppLoadingStatus.deployments) {
-    const env1 = awsAppLoadingStatus.deployments
-      .environments[Object.keys(awsAppLoadingStatus.deployments.environments)[0]];
+  if (appPending) {
     const input = {
-      account: env1.accountNumber,
-      region: env1.region,
-      gitApp: awsAppLoadingStatus.deployments.gitApp,
-      gitHost: awsAppLoadingStatus.deployments.gitHost,
-      repoSecretArn: awsAppLoadingStatus.deployments.repoSecretArn,
+      account: '',
+      region: '',
+      gitApp: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "",
+      gitHostUrl: '',
+      repoSecretArn: entity.metadata['repo-secret-arn']?.toString() || '',
+      api,
+      appPending
     };
-    return <BawsAppGeneralInfo input={input} />;
-  } else {
-    return <EmptyState missing="data" title="No info data to show" description="Info data would show here" />;
+    return <OpaAppGeneralInfo input={input} />;
   }
+  else {
+    if (awsAppLoadingStatus.loading) {
+      return <LinearProgress />;
+    } else if (awsAppLoadingStatus.component) {
+
+      const env = awsAppLoadingStatus.component.currentEnvironment as AWSECSAppDeploymentEnvironment;
+
+      const input = {
+        account: env.providerData.accountNumber,
+        region: env.providerData.region,
+        gitApp: awsAppLoadingStatus.component.gitRepo,
+        gitHostUrl: awsAppLoadingStatus.component.gitHost,
+        repoSecretArn: awsAppLoadingStatus.component.repoSecretArn,
+        api,
+        appPending
+      };
+      return <OpaAppGeneralInfo input={input} />;
+    } else {
+      return <EmptyState missing="data" title="No info data to show" description="Info data would show here" />;
+    }
+  }
+
 };

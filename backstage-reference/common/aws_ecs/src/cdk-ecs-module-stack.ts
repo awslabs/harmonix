@@ -11,6 +11,29 @@ import * as rg from "aws-cdk-lib/aws-resourcegroups";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
+import * as fs from 'fs'
+import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+
+
+
+interface PermissionList {
+  [key: string]: string[] // adjusting require this in order to some json data type
+}
+
+export function DeclareJSONStatements(readPermissionsPath:string): PermissionList {
+  const list: PermissionList = {} 
+  if (fs.existsSync(readPermissionsPath)) {
+    const fileNames = fs.readdirSync(readPermissionsPath).filter(file => file.match(/\.json$/))
+    fileNames.forEach((fileName: string)=> {
+      let typeName = fileName.match(/(^.*?)\.json/)
+      if(typeName){
+        list[typeName[1]] = JSON.parse(fs.readFileSync(readPermissionsPath + fileName, 'utf8').toString())
+      }
+    })
+  }
+  
+  return list
+}
 
 // Environment variables that can be passed in and used in this stack
 // The env var names must match the values passed in from scaffolder action(s) building this stack
@@ -27,19 +50,29 @@ export class EcsResourcesStack extends Stack {
     super(scope, id, props);
 
     // Validate that required env vars are provided
-    const appShortName = process.env[StackVarNames.appShortName];
+    const appShortName = "${{ values.component_id }}";
     const vpcId = process.env[StackVarNames.vpcId];
     const clusterArn = process.env[StackVarNames.clusterArn];
     const envName = process.env[StackVarNames.envName];
     const envProviderName = process.env[StackVarNames.envProviderName];
-    if (appShortName === undefined || vpcId === undefined || clusterArn === undefined) {
-      throw new Error("Required environment variables appShortName, vpcId, or clusterArn were not provided.");
+    if (!appShortName) {
+      throw new Error("Required environment variable: appShortName was not provided.");
+    }
+    if (!vpcId) {
+      throw new Error("Required environment variable: vpcId, was not provided.");
+    }
+    if (!clusterArn) {
+      throw new Error("Required environment variable: clusterArn was not provided.");
     }
 
     // Tag all resources so that they can be grouped together in a Resource Group
     // the prefix "aws-apps:" is a convention adopted for this implementation
-    const tagKey = `aws-apps:${appShortName}`;
+    const tagKey = `aws-apps:${appShortName}-${envProviderName}`;
     Tags.of(this).add(tagKey, appShortName);
+
+    // Search for the particular env/provider permissions to apply
+    const readPermissionsPath = `./permissions/${envName}/${envProviderName}/`
+
 
     // Add any tags passed as part of AWS_RESOURCE_TAGS input parameters
     const resourceTagsEnvVar = process.env.AWS_RESOURCE_TAGS;
@@ -51,7 +84,7 @@ export class EcsResourcesStack extends Stack {
     }
 
     const rscGroup = new rg.CfnGroup(this, `${appShortName}-resource-group`, {
-      name: `${appShortName}-rg`,
+      name: `${appShortName}-${envProviderName}-rg`,
       description: `Resource related to ${appShortName}`,
       resourceQuery: {
         type: "TAG_FILTERS_1_0",
@@ -78,10 +111,12 @@ export class EcsResourcesStack extends Stack {
     //       performed via SDK as part of any teardown/destroy actions
     // Create an ECR repository for the application container images
     const ecrRepository = new ecr.Repository(this, "ecr-repository", {
-      repositoryName: process.env[StackVarNames.appShortName],
+      repositoryName: `${appShortName}-${envProviderName}`.toLowerCase(),
       imageScanOnPush: true,
       encryption: ecr.RepositoryEncryption.KMS,
       encryptionKey: kmsKey,
+      removalPolicy:RemovalPolicy.DESTROY,
+      autoDeleteImages:true
     });
 
     // Get references to the existing cluster and Vpc for the environment where the app will be deployed
@@ -94,19 +129,25 @@ export class EcsResourcesStack extends Stack {
     });
 
     // Get application plaintext env vars from the APP_ENV_PLAINTEXT env var
-    const plaintextEnvVars = process.env.APP_ENV_PLAINTEXT;
-    let environment: Record<string, string> | undefined;
-    if (plaintextEnvVars) {
-      environment = (JSON.parse(plaintextEnvVars) as Record<string, string>);
-    }
+    let plaintextEnvVars: Record<string, string | number | boolean | Array<any>> = {};
+    let environment: Record<string, string> = {};
+    {%- if values.app_env_plaintext %}
+    plaintextEnvVars = ${{values.app_env_plaintext | dump}}
+    {%- endif %}
+    // convert all values to strings.  ECS container definition env vars require Record<string, string>
+    Object.keys(plaintextEnvVars).forEach(key => {
+      environment[key] = '' + plaintextEnvVars[key];
+    });
 
     // prefer that the app's port is specified via the PORT env var.  Default to 8080
-    const appPort = environment?.PORT || process.env["PORT"] || "8080";
+    const appPort = environment?.PORT || "8080";
+
 
     // Get application secrets from the APP_ENV_SECRETS env var
     let secrets: Record<string, ecs.Secret> | undefined;
-    if (process.env.APP_ENV_SECRETS) {
-      secrets = this.extractSecrets(process.env.APP_ENV_SECRETS);
+    const envSecrets = process.env.APP_ENV_SECRETS; // ${{ values.app_env_secrets }};
+    if (envSecrets) {
+      secrets = this.extractSecrets(envSecrets);
     }
 
     // Log stream prefix so that the stream is easily identifiable
@@ -136,7 +177,7 @@ export class EcsResourcesStack extends Stack {
     // Create an ECS service with an application load balancer in front
     const loadBalancedEcsService = new ALBService(this, `${appShortName}-ecspattern`, {
         cluster,
-        serviceName: appShortName,
+        serviceName: `${appShortName}-${envProviderName}`,
         taskDefinition,
         // enableExecuteCommand: true,  // Enable this for debugging and executing commands in the container
       }
@@ -147,12 +188,12 @@ export class EcsResourcesStack extends Stack {
 
     // ensure that the execution role can decrypt the key when pulling from the repo.
     kmsKey.grantDecrypt(loadBalancedEcsService.service.taskDefinition.executionRole!);
-
+    kmsKey.grantDecrypt(loadBalancedEcsService.service.taskDefinition.taskRole!);
     // ADD EFS SUPPORT
     // If EFS information was provided as input, then add the EFS instance to the ESC task definition
-    const efsId = process.env.EFS_ID;
+    const efsId = process.env.EFS_ID; // ${{ values.efs_id }};
     if (efsId ) {
-      const volumeName = `${appShortName}-efs`;
+      const volumeName = `${appShortName}-${envProviderName}-efs`;
       
       loadBalancedEcsService.taskDefinition.addVolume({
         name: volumeName,
@@ -161,17 +202,18 @@ export class EcsResourcesStack extends Stack {
           fileSystemId: efsId,
           rootDirectory: "/",
           authorizationConfig: {
-            accessPointId: process.env.EFS_ACCESS_POINT_ID,
+            accessPointId: process.env.EFS_ACCESS_POINT_ID, // ${{ values.efs_access_point_id }},
           },  
         },  
       });  
       
       containerDefinition.addMountPoints({
-        containerPath: process.env.EFS_MOUNT_PATH || "/data",
+        containerPath: process.env.EFS_MOUNT_PATH || "/data", // ${{ values.efs_mount_path }} || "/data",
         sourceVolume: volumeName,
         readOnly: false,
       });  
       
+
       // TODO: get a reference to the EFS file system, then connections (securityGroups)
       // TODO: verify that this works as expected.
       const fstest = efs.FileSystem.fromFileSystemAttributes(this, 'fstest', {
@@ -181,35 +223,58 @@ export class EcsResourcesStack extends Stack {
       fstest.connections.allowDefaultPortFrom(loadBalancedEcsService.service);
     }  
     
+    // Add custom permissions
+    const fileStatements = DeclareJSONStatements(readPermissionsPath);
+    Object.keys(fileStatements).forEach(key=> {
+      if (loadBalancedEcsService.service.taskDefinition.executionRole)
+      {
+        console.log(key)
+        console.log(fileStatements[key])
+        const statement:PolicyStatement = PolicyStatement.fromJson(fileStatements[key]);
+        loadBalancedEcsService.service.taskDefinition.executionRole.addToPrincipalPolicy(statement);
+        loadBalancedEcsService.service.taskDefinition.taskRole.addToPrincipalPolicy(statement);
+      }
+    })
 
     // Output parameters
-    new CfnOutput(this, "bawsEcrRepositoryUri", {
+    new CfnOutput(this, "EcrRepositoryUri", {
       description: `The ECR repository Uri for ${appShortName}`,
       value: ecrRepository.repositoryUri,
     });
-    new CfnOutput(this, "bawsEcrRepositoryArn", {
+    new CfnOutput(this, "EcrRepositoryArn", {
       description: `The ECR repository Arn for ${appShortName}`,
       value: ecrRepository.repositoryArn,
     });
-    new CfnOutput(this, "bawsEcsServiceArn", {
+    new CfnOutput(this, "EcsServiceArn", {
       description: `The ECS service for ${appShortName}`,
       value: loadBalancedEcsService.service.serviceArn,
     });
-    new CfnOutput(this, "bawsEcsTaskDefinitionArn", {
+    new CfnOutput(this, "EcsTaskDefinitionArn", {
       description: `The ECS task definition for ${appShortName}`,
       value: loadBalancedEcsService.taskDefinition.taskDefinitionArn,
     });
-    new CfnOutput(this, "bawsAlbEndpoint", {
+    new CfnOutput(this, "AlbEndpoint", {
       description: `The endpoint for the ALB where the service can be reached for ${appShortName}`,
       value: `http://${loadBalancedEcsService.loadBalancer.loadBalancerDnsName}`,
     });
-    new CfnOutput(this, "bawsTaskLogGroup", {
+    new CfnOutput(this, "TaskLogGroup", {
       description: `The LogGroup stream prefix for ${appShortName}`,
       value: `${logGroupName}`,
     });
-    new CfnOutput(this, "bawsAppResourceGroup", {
+    new CfnOutput(this, "AppResourceGroup", {
       description: `The tag-based resource group to identify resources related to ${appShortName}`,
       value: `${rscGroup.attrArn}`,
+    });
+
+    new CfnOutput(this, "TaskExecutionRoleArn", {
+      description: `The task execution role identify resources related to ${appShortName}`,
+      value: `${loadBalancedEcsService.service.taskDefinition.executionRole}`,
+    });
+
+    // print the stack name as a Cloudformation output
+    new CfnOutput(this, `StackName`, {
+      value: this.stackName,
+      description: "The ECS App CF Stack name",
     });
   }
 

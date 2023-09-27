@@ -95,23 +95,24 @@ app.delete(`${serviceEndpoint}/:id`, (req, res) => {
 app.get("/", (req, res) => {
   const resObject = {
     hostname: process.env.HOSTNAME,
-    efs_resource_id: ${{ values.aws_efs_bp_outputs['baws-efs-id'] | dump }},
-    region: ${{ values.aws_region | dump }},
-    account: ${{ values.aws_account | dump }},
-    resource_path: serviceEndpoint,
+    efs_resource_id: ${{ values.aws_efs_bp_outputs['opa-efs-id'] | dump
+}},
+  region: ${{ values.aws_region | dump }},
+  account: ${{ values.aws_account | dump }},
+  resource_path: serviceEndpoint,
   };
 
-  // check access to the user's home directory
-  // const homeAccess = new Promise((resolve, reject) => {
-  fs.access(journalPath, fs.constants.R_OK | fs.constants.W_OK, (err) => {
-    resObject.filesystemAccess = !err;
-    if (err) {
-      resObject.err = err.message;
-      console.log(err);
-    }
-    res.json(resObject);
-    
-  });
+// check access to the user's home directory
+// const homeAccess = new Promise((resolve, reject) => {
+fs.access(journalPath, fs.constants.R_OK | fs.constants.W_OK, (err) => {
+  resObject.filesystemAccess = !err;
+  if (err) {
+    resObject.err = err.message;
+    console.log(err);
+  }
+  res.json(resObject);
+
+});
 });
 
 app.listen(port, () => {

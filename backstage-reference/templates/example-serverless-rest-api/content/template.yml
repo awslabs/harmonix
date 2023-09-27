@@ -1,0 +1,215 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: "${{ values.description }}"
+  
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Api:
+    OpenApiVersion: 3.0.3
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'content-type'"
+      AllowOrigin: "'*'"
+  Function:
+    Timeout: 5
+
+Parameters:
+  AppName:
+    Type: String
+    Description: "Application name in kebab case"
+  ComponentId:
+    Type: String
+    Description: "Backstage component ID"
+  Stage:
+    Type: String
+    Description: "API stage"
+  Domain:
+    Type: String
+    Default: "na"
+    Description: "The base domain, which will be prepended automatically with $Stage.api."
+  VpcId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>'
+    Description: "ID of the VPC that the lambda functions will run in"
+  VpcSubnetIds:
+    Type: 'AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>'
+    Description: The subnets that the lambda functions should run in.
+  ResourcePolicyArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: SSM param key for param that holds the ARN of the resource binding managed policy
+
+  LogRetentionDays:
+    Type: 'String'
+    Default: '14'
+    Description: "The number of days to retain Cloudwatch Logs"
+
+Conditions:
+  UseCustomDomain: !Not [!Equals [!Ref Domain, na]]
+
+Resources:
+
+  ApiRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: 
+        Fn::Sub: /${Stage}/${AppName}/serviceRoles/
+      RoleName: 
+        Fn::Sub: ${AppName}-api-execution-role-${Stage}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service:
+                - 'apigateway.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: !Sub '${AppName}-${Stage}-api-execution-role-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: 'lambda:InvokeFunction'
+                Resource: 
+                  - !GetAtt GetEquipmentFunction.Arn
+                  - !GetAtt PersistDataFunction.Arn
+              - Effect: 'Allow'
+                Action: 
+                    - 'logs:CreateLogGroup'
+                    - 'logs:CreateLogStream'
+                    - 'logs:DescribeLogGroups'
+                    - 'logs:DescribeLogStreams'
+                    - 'logs:PutLogEvents'
+                    - 'logs:GetLogEvents'
+                    - 'logs:FilterLogEvents'
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:API-Gateway-Execution-Logs_*'
+
+  AppApiBasePathMapping:
+    Condition: UseCustomDomain
+    Type: AWS::ApiGateway::BasePathMapping
+    Properties:
+      BasePath: !Ref AppName
+      DomainName: !Sub '${Stage}.api.${Domain}'
+      RestApiId: !Ref Api
+      Stage: !Ref Stage
+    DependsOn:
+      - ApiStage
+
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      EndpointConfiguration: REGIONAL
+      Name: !Sub '${AppName}-api-${Stage}'
+      MethodSettings:
+        - ResourcePath: '/*' # allows for logging on any resource
+          HttpMethod: '*' # allows for logging on any method
+      StageName: !Ref Stage
+      CacheClusterEnabled: false
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: swagger.yaml
+      Variables:
+        Stage:
+          Fn::Sub: ${Stage}
+
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    # Cant delete since it is attached to network interfaces managed by lambda service
+    DeletionPolicy: Retain
+    Properties:
+      GroupName: !Sub '${AppName}-lambda-sg'
+      GroupDescription: !Sub 'A Security Group for ${AppName} lambda functions'
+      VpcId: !Ref VpcId
+
+  GetEquipmentFunctionLogGroup:
+    DependsOn: GetEquipmentFunction
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${GetEquipmentFunction}'
+      RetentionInDays: !Ref LogRetentionDays  # Optional: define the number of days to retain logs (default to 30 when not defined as with other AWS services)
+
+  GetEquipmentFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: sports-equipment/
+      Handler: lambda-get-equipment.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Policies:
+        - CloudWatchPutMetricPolicy: {}
+        - VPCAccessPolicy: {}
+        - !Ref ResourcePolicyArn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: !Ref VpcSubnetIds
+      Environment:
+        Variables:
+          environment: !Ref Stage
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - lambda-get-equipment.ts
+
+  PersistDataFunctionLogGroup:
+    DependsOn: PersistDataFunction
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${PersistDataFunction}'
+      RetentionInDays: !Ref LogRetentionDays  # Optional: define the number of days to retain logs (default to 30 when not defined as with other AWS services)
+
+  PersistDataFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: sports-equipment/
+      Handler: lambda-persist-data.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      Policies:
+        - CloudWatchPutMetricPolicy: {}
+        - VPCAccessPolicy: {}
+        - !Ref ResourcePolicyArn
+      VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: !Ref VpcSubnetIds
+      Environment:
+        Variables:
+          environment: !Ref Stage
+    Metadata: # Manage esbuild properties
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: "es2020"
+        Sourcemap: true
+        EntryPoints: 
+        - lambda-persist-data.ts
+
+Outputs:
+  ApiGatewayEndpoint:
+    Description: 'API Gateway endpoint URL for stage'
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}'
+  ApiGatewayEndpointWithPath:
+    Description: 'API Gateway endpoint URL with Open API path for stage'
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/equipment'
+  GetEquipmentFunction:
+    Description: Get Equipment Lambda Function ARN
+    Value: !GetAtt GetEquipmentFunction.Arn
+  PersistDataFunction:
+    Description: Success Response Lambda Function ARN
+    Value: !GetAtt PersistDataFunction.Arn
+  LogGroupsArray:
+    Description: JSON Array of Log Group Names
+    Value: !Sub '
+      [
+        "${GetEquipmentFunctionLogGroup}",
+        "${PersistDataFunctionLogGroup}"
+      ]'

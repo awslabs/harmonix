@@ -1,0 +1,17 @@
+{
+  "name": "${{ values.component_id }}",
+  "private": true,
+  "version": "0.1.0",
+  "description": "${{ values.description }}",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "${{ values.owner }}",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "aws-sdk": "^2.1444.0",
+    "pg": "^8.11.3"
+  }
+}

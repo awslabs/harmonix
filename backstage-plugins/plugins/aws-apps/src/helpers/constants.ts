@@ -8,6 +8,12 @@ export enum ExtraStackDeployStatus {
   UNSTAGED = "UNSTAGED"
 }
 
+export enum ProviderType {
+  ECS = "ecs",
+  EKS = "eks",
+  SERVERLESS = "serverless"
+}
+
 export type DeployStackStatus = StackStatus | ExtraStackDeployStatus;
 
 export enum APP_SUBTYPE {

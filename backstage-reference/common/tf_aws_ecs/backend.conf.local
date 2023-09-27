@@ -1,0 +1,3 @@
+bucket="opa-tf-state-bucket-dev-hr-dev-p1-tf-test-1"
+dynamodb_table="terraform-state-dev-hr-dev-p1-tf-test-1-lock"
+region="us-east-1"

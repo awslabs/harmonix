@@ -6,20 +6,11 @@ import { CdkRdsModuleStack } from "./cdk-rds-module-stack";
 
 const app = new cdk.App();
 
-// If an application short name was provided, associate the AWS resources
-// created in this app with it through tagging
-if (process.env['APP_SHORT_NAME']) {
-    // Tag all resources so that they can be grouped together in a Resource Group
-    const appShortName = process.env['APP_SHORT_NAME'];
-    const tagKey = `aws-apps:${appShortName}`;
-    cdk.Tags.of(app).add(tagKey, appShortName);
-}
-
 const account = app.node.tryGetContext("account") || process.env.CDK_DEPLOY_ACCOUNT || process.env.CDK_DEFAULT_ACCOUNT;
 
 const region =
-  app.node.tryGetContext("region") || process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION || "us-east-1";
-
+  app.node.tryGetContext("region") || process.env.REGION || process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION || "us-east-1";
+console.log(`Selected region: ${region}`)
 const env = { region, account };
 
 let stackName; 
@@ -31,9 +22,4 @@ if (process.env.RDS_ID) {
   stackName = `rds-resource-${uuid()}`;
  }
 
-new CdkRdsModuleStack(app, stackName, {
-  vpcId: process.env.TARGET_VPCID || "missing",
-  dbName: process.env.DB_NAME,
-  rdsId: process.env.RDS_ID,
-  env,
-});
+new CdkRdsModuleStack(app, stackName, {env});

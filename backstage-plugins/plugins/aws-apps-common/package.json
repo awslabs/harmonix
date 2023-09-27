@@ -1,7 +1,7 @@
 {
   "name": "@aws/plugin-aws-apps-common-for-backstage",
   "description": "Common functionalities for the aws-apps plugin",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
@@ -34,10 +34,15 @@
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack"
   },
+  "dependencies": {
+    "@backstage/plugin-permission-common": "^0.7.7"
+  },
   "devDependencies": {
-    "@backstage/cli": "^0.22.6"
+    "@backstage/cli": "^0.22.12"
   },
   "files": [
-    "dist"
-  ]
+    "dist",
+    "config.d.ts"
+  ],
+  "configSchema": "config.d.ts"
 }

@@ -3,9 +3,9 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: example-springboot-template
-  title: Spring Boot REST service
+  title: Java Spring Boot Web Service
   description: >-
-    Create a starter service using the Java-based Spring Boot framework
+    Create sample Java Spring Boot web service.
   tags:
     - java
     - springboot
@@ -17,17 +17,16 @@ spec:
   # These parameters are used to generate the input form in the frontend, and are
   # used to gather input data for the execution of the template.
   parameters:
-    - title: Provide some basic service information
+    - title: Provide basic component information
       required:
         - component_id
-        - owner
       properties:
         component_id:
           title: Name
           type: string
           description: Unique name of the component
           ui:field: EntityNamePicker
-          default: springboot-service-name
+          ui:autofocus: true
         description:
           title: Description
           type: string
@@ -38,8 +37,8 @@ spec:
           description: Owner of the component
           ui:field: OwnerPicker
           ui:options:
-            allowedKinds:
-              - Group
+            catalogFilter:
+              kind: [Group]
     - title: Provide environment information for the application
       required:
         - environment
@@ -52,11 +51,13 @@ spec:
         environment:
           title: AWS Environment
           type: string
-          description: The AWS Environment where the service and database are deployed
+          description: The AWS Environment where the database is created
           ui:field: EntityPicker
           ui:options:
             allowedKinds:
               - AWSEnvironment
+            defaultKind: AWSEnvironment
+
     - title: Choose a git repository location
       required:
         - repoUrl
@@ -74,67 +75,105 @@ spec:
   # These steps are executed in the scaffolder backend, using data that we gathered
   # via the parameters above.
   steps:
-    # Each step executes an action, in this case one templates files into the working directory.
-    - id: bawsDeployECSBoilerplate
-      name: Deploy BAWS Boilerplate
-      action: baws:deploy-boilerplate
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+      
+    - id: opaGetAwsEnvProviders
+      name: Get AWS Environment Providers
+      action: opa:get-env-providers
       input:
-        boilerplateRepositories:
-          # - aws_rds
-          - aws_ecs
-        inputParameters:
-          APP_SHORT_NAME: ${{ parameters.component_id}}
-          APP_ENV_PLAINTEXT:
-            PORT: "8081"
         environmentRef: ${{ parameters.environment }}
-        actionType: "Create App"
+
+    - id: debugEnvironment
+      name: Print the environment entity info
+      action: debug:log
+      input:
+        message: ${{ steps['opaGetAwsEnvProviders'].output | dump }}
+
+    - id: createProviderPropsFiles
+      each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
+      name: Store environment provider parameters
+      action: roadiehq:utils:fs:write
+      input:
+        path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
+        content: |
+          TARGET_VPCID=${{ each.value.vpcId }}
+          TARGET_ECS_CLUSTER_ARN=${{ each.value.clusterArn }}
+          TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
+          ACCOUNT=${{ each.value.accountId }}
+          REGION=${{ each.value.region }}
+          PREFIX=${{ each.value.envProviderPrefix }}
+          ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
+          OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY_IMAGE=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com/${{ parameters.component_id }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com
+          OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{% else %}false{% endif %}
+          
     - id: createSecretManager
       name: Create a Secret
-      action: baws:create-secret
+      action: opa:create-secret
       input:
         secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
-        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
-        description: "Gitlab repo access token"
-        tags:
-          - Key: "aws-apps:${{ parameters.component_id }}"
-            Value: ${{ parameters.component_id }}
+
+    - id: fetchIac
+      name: Fetch ECS Infrastructure as Code
+      action: fetch:template
+      input: 
+        url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_ecs
+        targetPath: ./.iac
+        values:
+          component_id: ${{ parameters.component_id }}
+          app_env_plaintext: ""
+
     - id: fetchBase
       name: Fetch Base
       action: fetch:template
       input:
-        url: ./skeleton
+        url: ./content
         values:
-          greetee: ${{ parameters.greetee }}
-          port: "8081"
+          app_port: "8080"
           component_id: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
-          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          greetee: ${{ parameters.greetee }}
           owner: ${{ parameters.owner }}
-          aws_environment: ${{ parameters.environment }}
-          aws_region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-          aws_account: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
-          aws_pipeline_arn: ${{ steps['bawsDeployECSBoilerplate'].output.executionArn }}
-          aws_bp_outputs: ${{ steps['bawsDeployECSBoilerplate'].output.cfnOutputs }}
+          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          aws_environment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          aws_environment_name: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
           aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+          
+    - id: entityDetail
+      name: Get AWSEnvironment entity details
+      action: catalog:fetch
+      input:
+        entityRef: ${{ parameters.environment }}
+
+    - id: debugEntity
+      name: Print the workspace
+      action: debug:log
+      input:
+        message: ${{ steps['entityDetail'].output.entity | dump }}
+        listWorkspace: true
+
     # This step publishes the contents of the working directory to GitLab.
     - id: publish
       name: Publish
       action: publish:gitlab
       input:
-        description: This is ${{ parameters.component_id }}
         repoUrl: ${{ parameters.repoUrl }}
-        defaultBranch: main
         repoVisibility: internal
+        defaultBranch: main
+
+    # Create a gitlab repository access token and store it in a SecretsManager secret    
     - id: createRepoToken
-      name: Create Repo Access Token
-      action: baws:createRepoAccessToken:gitlab
+      name: Create Repo Token
+      action: opa:createRepoAccessToken:gitlab
       input:
         repoUrl: ${{ parameters.repoUrl }}
-        projectId: ${{ steps['publish'].output.projectId}}
+        projectId: ${{ steps['publish'].output.projectId }}
         secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
-        region: ${{ steps['bawsDeployECSBoilerplate'].output.region }}
-        accountId: ${{ steps['bawsDeployECSBoilerplate'].output.account }}
+
     # The final step is to register our new component in the catalog.
     - id: register
       name: Register

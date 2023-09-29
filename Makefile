@@ -42,8 +42,7 @@ ifndef AWS_DEFAULT_REGION
 endif
 
 set-gitlab-token-env-var:
-	@GITLAB_API_TOKEN=$(shell aws secretsmanager get-secret-value --secret-id opa-admin-gitlab-secrets --output text --query 'SecretString' | jq -r '.apiToken'); \
-  sed -i.bak "s/^\(SECRET_GITLAB_CONFIG_PROP_apiToken=\).*$$/\1\"$$GITLAB_API_TOKEN\"/g" ./config/.env
+	./build-script/set-gitlab-token.sh
 
 clean:  ## deletes generated files and dependency modules
 	./build-script/clean.sh

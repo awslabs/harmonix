@@ -79,6 +79,7 @@ export class CdkRdsModuleStack extends Stack {
       maxAllocatedStorage: 200,
 
       databaseName: dbName,
+      storageEncrypted: true,
     };
 
     // create the instance

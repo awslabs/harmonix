@@ -22,7 +22,7 @@ phases:
       - chmod -R +x build-script 
       - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
       - echo "Set Okta user parameters"
-      - OKTA_USER_EMAIL=$(echo "$OKTA_EMAIL_ROOT" | sed "s/@/-${AWS_ACCOUNT_ID}@/")
+      - OKTA_USER_EMAIL="${AWS_ACCOUNT_ID}@amazon.com"
       - echo "Set git config settings"
       - git config --global user.email "example@amazon.com"
       - git config --global user.name "opa-admin"

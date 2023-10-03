@@ -1,0 +1,39 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - echo "Installing Node.js 18"
+      - n 18
+      - npm --version
+      - echo "Installing yarn"
+      - npm install -g yarn
+      - yarn --version
+      - echo "Installing jq"
+      - sudo apt-get install -y jq
+      - jq --version
+      - npm install -g aws-cdk
+      - cdk --version
+
+
+  build:
+    commands:
+      - echo "Build commands go here"
+      - chmod -R +x build-script 
+      - AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+      - echo "Set Okta user parameters"
+      - OKTA_USER_EMAIL=$(echo "$OKTA_EMAIL_ROOT" | sed "s/@/-${AWS_ACCOUNT_ID}@/")
+      - echo "Set git config settings"
+      - git config --global user.email "example@amazon.com"
+      - git config --global user.name "opa-admin"
+      - make install
+
+
+
+# artifacts:
+#   files:
+#     - '/config/.env'
+#   name: env
+
+
+

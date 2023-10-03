@@ -10,7 +10,8 @@ LOGFILE := $(shell date +'install_%Y%m%d-%H%M.log')
 
 ##@ Local Tasks
 
-install: verify-env
+install:
+	@$(MAKE) generate-workshop-env
 	@echo -e "\nStarting the Backstage installation\n====================" 2>&1 | tee -a $(LOGFILE)
 	@$(MAKE) backstage-install 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nBootstrapping CDK\n====================" 2>&1 | tee -a $(LOGFILE)
@@ -19,8 +20,10 @@ install: verify-env
 	@$(MAKE) deploy-platform 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nUpdating configuration with platform values\n====================" 2>&1 | tee -a $(LOGFILE)
 	@$(MAKE) set-gitlab-token-env-var 2>&1 | tee -a $(LOGFILE)
+	@$(MAKE) set-gitlab-hostname 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nPushing the backstage reference repository\n====================" 2>&1 | tee -a $(LOGFILE)
 	@$(MAKE) push-backstage-reference-repo 2>&1 | tee -a $(LOGFILE)
+	@$(MAKE) create-okta-user 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nBuilding the backstage image\n====================" 2>&1 | tee -a $(LOGFILE)
 	@$(MAKE) build-backstage 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nDeploying the backstage image\n====================" 2>&1 | tee -a $(LOGFILE)
@@ -29,20 +32,31 @@ install: verify-env
 	@echo -e "Installation complete and the application is starting!" 2>&1 | tee -a $(LOGFILE)
 	@echo -e "Visit the application at https://${R53_HOSTED_ZONE_NAME}" 2>&1 | tee -a $(LOGFILE)
 
-verify-env:
-ifeq (,$(wildcard ./config/.env))
-    $(error The configuration file at ./config/.env is missing.  Please configure the .env file first.)
-endif
-	@echo "Found a ./config/.env file.  Proceeding..."
-ifndef AWS_ACCOUNT_ID
-	$(error AWS_ACCOUNT_ID is undefined.  Please ensure this is set in the config/.env file)
-endif
-ifndef AWS_DEFAULT_REGION
-	$(error AWS_DEFAULT_REGION is undefined.  Please ensure this is set in the config/.env file)
-endif
+# verify-env:
+# ifeq (,$(wildcard ./config/.env))
+#     $(error The configuration file at ./config/.env is missing.  Please configure the .env file first.)
+# endif
+# 	@echo "Found a ./config/.env file.  Proceeding..."
+# ifndef AWS_ACCOUNT_ID
+# 	$(error AWS_ACCOUNT_ID is undefined.  Please ensure this is set in the config/.env file)
+# endif
+# ifndef AWS_DEFAULT_REGION
+# 	$(error AWS_DEFAULT_REGION is undefined.  Please ensure this is set in the config/.env file)
+# endif
+
+generate-workshop-env:
+	. ./build-script/generate-workshop-env.sh
+
+create-okta-user:
+	. ./build-script/okta-create-user-api.sh
 
 set-gitlab-token-env-var:
-	./build-script/set-gitlab-token.sh
+	@GITLAB_API_TOKEN=$(shell aws secretsmanager get-secret-value --secret-id opa-admin-gitlab-secrets --output text --query 'SecretString' | jq -r '.apiToken'); \
+  sed -i.bak "s/^\(SECRET_GITLAB_CONFIG_PROP_apiToken=\).*$$/\1\"$$GITLAB_API_TOKEN\"/g" ./config/.env
+
+set-gitlab-hostname:
+	@GITLAB_HOSTNAME=$(shell aws ssm get-parameter --name "/opa/gitlab-hostname" --query "Parameter.Value" --output text); \
+  sed -i.bak "s/^\(SSM_GITLAB_HOSTNAME=\).*$$/\1\"$$GITLAB_HOSTNAME\"/g" ./config/.env
 
 clean:  ## deletes generated files and dependency modules
 	./build-script/clean.sh
@@ -60,7 +74,7 @@ yarn-install:  ## Initialize your local development environment
 	./build-script/yarn-install.sh
 
 build-backstage:  ## Builds the backstage frontend and backend app
-	./build-script/build-backstage.sh
+	. ./build-script/build-backstage.sh
 
 deploy-backstage:
 	./build-script/deploy-backstage.sh

@@ -47,7 +47,7 @@ fi
 
 
 # if the system is using git-defender and the repo is not configured, configure it
-if [ -z "$(type \"git-defender\" 2>/dev/null)" ] && ! grep -q "\[defender\]" .git/config ; then
+if [ ! -z "$(type \"git-defender\" 2>/dev/null)" ] && ! grep -q "\[defender\]" .git/config ; then
   echo "Found git-defender, but repo is not configured.  Proceeding to configure repo for git-defender"
   (sleep 1; echo -e "y\n"; sleep 1; echo -e "y\n";)|git defender --setup
   echo ""

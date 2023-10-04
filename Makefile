@@ -11,6 +11,8 @@ LOGFILE := $(shell date +'install_%Y%m%d-%H%M.log')
 ##@ Local Tasks
 
 install: verify-env
+	@echo -e "\nStarting with 'clean' to remove any previously installed local dependencies\n====================" 2>&1 | tee -a $(LOGFILE)
+	@$(MAKE) clean 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nStarting the Backstage installation\n====================" 2>&1 | tee -a $(LOGFILE)
 	@$(MAKE) backstage-install 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nBootstrapping CDK\n====================" 2>&1 | tee -a $(LOGFILE)

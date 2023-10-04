@@ -15,6 +15,8 @@ BACKSTAGE_CREATE_APP_VERSION="0.5.4"
 # Set installMode to "from-source" to build/install OPA plugins from source
 # or set installMode to "npm" to install the latest published OPA NPM packages.
 installMode="npm"
+NC='\033[0m' # No Color
+RED='\033[1;31m'
 
 biScriptDir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 opaHomeDir=$biScriptDir/..
@@ -29,7 +31,7 @@ if [ ! -d "$backstageDir" ]; then
     echo "Installing the latest Backstage app using Create App version $BACKSTAGE_CREATE_APP_VERSION"
     BACKSTAGE_APP_NAME=backstage npx -y -q @backstage/create-app@$BACKSTAGE_CREATE_APP_VERSION --path $backstageDir
 else
-    echo "Backstage app already exists. Continuing..."
+    echo "Backstage app directory already exists. Continuing..."
 fi
 
 # Copy the backstage-plugins into the backstage/plugins directory
@@ -87,4 +89,5 @@ cd -
 # A preferred approach is to be intentional in the customization of Backstage and follow the instructions in the 
 # plugins' README files to manually modify the Backstage source files
 # patch -d$(basename ${backstageDir}) -p1 < $opaHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch
-git apply --directory=$(basename $backstageDir) --verbose --whitespace=nowarn $opaHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch
+git apply --directory=$(basename $backstageDir) --verbose --whitespace=nowarn $opaHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch || \
+    (echo "${RED}Error applying OPA diff patch to Backstage. This error can be ignored if the patch was already successfully applied previously. If not, the patch will need to be applied manually before proceeding.${NC}")

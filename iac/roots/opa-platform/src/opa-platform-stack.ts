@@ -40,10 +40,9 @@ export class OPAPlatformStack extends cdk.Stack {
     super(scope, id, props);
 
     const sAllowedIPs = getEnvVarValue(process.env.ALLOWED_IPS);
-    const allowedIPs =
-      sAllowedIPs?.split(",").map((s) => {
-        return s.trim();
-      }) || [];
+    const allowedIPs = !sAllowedIPs ? [] : sAllowedIPs?.split(",").map((s) => {
+      return s.trim();
+    });
 
     // Creating environment params
     const opaParams: OPAEnvironmentParams = {

@@ -43,11 +43,9 @@ else
     find . -type f -name "*.yaml" -exec sed -i "s/{{ *aws-account *}}/$AWS_ACCOUNT_ID/g" {} +; 
 fi
 
-
-
-
+IS_DEFENDER=$(type "git-defender" 2>/dev/null)
 # if the system is using git-defender and the repo is not configured, configure it
-if [ -z "$(type \"git-defender\" 2>/dev/null)" ] && ! grep -q "\[defender\]" .git/config ; then
+if [[ ! -z "$IS_DEFENDER" ]] && ! grep -q "\[defender\]" .git/config ; then
   echo "Found git-defender, but repo is not configured.  Proceeding to configure repo for git-defender"
   (sleep 1; echo -e "y\n"; sleep 1; echo -e "y\n";)|git defender --setup
   echo ""
@@ -62,4 +60,5 @@ if [ -n "$(git status --porcelain=v1 2>/dev/null)" ]; then
 else
   echo "No changes to commit."
 fi
+cd -
 echo "Finished setting up the backstage reference repo."

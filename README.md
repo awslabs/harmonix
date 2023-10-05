@@ -40,6 +40,7 @@ See [ARCHITECTURE.md](./docs/ARCHITECTURE.md) for details about the solution arc
 The following software is required to perform the installation of the platform solution:
 - [node.js](https://nodejs.org/en/) - 18.16 or higher
 - [yarn](https://classic.yarnpkg.com/en/docs/install) - v1.x
+- [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 - [aws-cdk](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_install)
 - [jq](https://stedolan.github.io/jq/)
 - [docker](https://www.docker.com/)

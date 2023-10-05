@@ -306,12 +306,12 @@ export class GitlabHostingConstruct extends Construct {
     // allow traffic to the ALB from the restricted IP security group
     gitlabAlb.connections.addSecurityGroup(props.network.allowedIpsSg);
 
-    new cdk.CfnOutput(this, `GITLab loadBalancer Domain Name Param`, {
-      value: lbDNSParam.parameterName,
-    });
-    new cdk.CfnOutput(this, `GITLab loadBalancer URL Param`, {
-      value: lbUrlParam.parameterName,
-    });
+    // new cdk.CfnOutput(this, `GITLab loadBalancer Domain Name Param`, {
+    //   value: lbDNSParam.parameterName,
+    // });
+    // new cdk.CfnOutput(this, `GITLab loadBalancer URL Param`, {
+    //   value: lbUrlParam.parameterName,
+    // });
     this.alb = gitlabAlb;
   }
 }

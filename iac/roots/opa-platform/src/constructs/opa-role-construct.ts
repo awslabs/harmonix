@@ -91,9 +91,9 @@ export class OPARootRoleConstruct extends Construct {
       }
     );
 
-    new cdk.CfnOutput(this, `Backstage Platform Role Arn Parameter`, {
-      value: roleParam.parameterName,
-    });
+    // new cdk.CfnOutput(this, `Backstage Platform Role Arn Parameter`, {
+    //   value: roleParam.parameterName,
+    // });
   }
 
   /**
@@ -256,6 +256,7 @@ export class OPARootRoleConstruct extends Construct {
       resources: [`arn:aws:iam::${account}:role/opa*`],
     });
 
+    
     // Allow assmumption of application operations roles
     const operationsAssumptionPolicy = new iam.PolicyStatement({
       sid: "AllowAssumeOperationsRoles",

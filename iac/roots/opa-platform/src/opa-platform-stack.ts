@@ -4,6 +4,7 @@
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecr from "aws-cdk-lib/aws-ecr";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as kms from "aws-cdk-lib/aws-kms";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as ssm from "aws-cdk-lib/aws-ssm";
@@ -226,6 +227,42 @@ export class OPAPlatformStack extends cdk.Stack {
     // wait till gitlab host is done.
     gitlabRunner.node.addDependency(gitlabHostingConstruct);
 
+    // create the environment provisioning role.
+    const envProvisioningRole = new iam.Role(this, "EnvProvisioningRole", {
+      assumedBy: new iam.CompositePrincipal(
+        new iam.ArnPrincipal(backstageRootRole.IAMRole.roleArn),
+        new iam.ArnPrincipal(gitlabRunner.gitlabEc2Role.roleArn)
+      ),
+      roleName: "opa-envprovisioning-role", // Optional: specify a role name
+    });
+
+    // Attach the AdministratorAccess policy to the role
+    const customAdminPolicy = new iam.ManagedPolicy(this, "CustomAdministratorAccess", {
+      statements: [
+        new iam.PolicyStatement({
+          actions: ["*"],
+          resources: ["*"],
+        }),
+      ],
+    });
+    envProvisioningRole.addManagedPolicy(customAdminPolicy);
+
+    NagSuppressions.addResourceSuppressions(customAdminPolicy, [
+      {
+        id: "AwsSolutions-IAM5",
+        reason:
+          "The CustomAdministratorAccess policy is intentionally designed to grant full administrative access to AWS services for specific administrative roles. This use case has been reviewed and accepted by our security team.",
+      },
+    ]);
+
+    // store the provisioning role arn to ssm
+    new ssm.StringParameter(this, `${opaParams.prefix}-provisioning-role`, {
+      allowedPattern: ".*",
+      description: "This role is assumed by platform to provision environments",
+      parameterName: `/${opaParams.prefix}/provisioning-role`,
+      stringValue: envProvisioningRole.roleArn,
+    });
+
     // Create a regional WAF Web ACL for load balancers
     const wafConstruct = new Wafv2BasicConstruct(this, `${opaParams.prefix}-regional-wafAcl`, {
       wafScope: WafV2Scope.REGIONAL,
@@ -243,9 +280,9 @@ export class OPAPlatformStack extends cdk.Stack {
       gitlabHostingConstruct.alb.loadBalancerArn
     );
 
-    new cdk.CfnOutput(this, `${opaParams.prefix}-ecr-output`, {
-      value: backstageECRParam.parameterName,
-      description: "ECR repository for backstage platform images",
+    new cdk.CfnOutput(this, `${opaParams.prefix}-envprovisioning-role-arn`, {
+      value: envProvisioningRole.roleArn,
+      description: "Role will be assumed to provision environments",
     });
   }
 }

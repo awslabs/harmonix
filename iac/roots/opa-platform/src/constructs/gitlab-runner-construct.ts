@@ -37,6 +37,7 @@ const defaultProps: Partial<GitlabRunnerConstructProps> = {};
  * Deploys the GitlabRunnerConstruct construct
  */
 export class GitlabRunnerConstruct extends Construct {
+  public gitlabEc2Role: iam.Role;
   constructor(parent: Construct, name: string, props: GitlabRunnerConstructProps) {
     super(parent, name);
 
@@ -125,7 +126,7 @@ export class GitlabRunnerConstruct extends Construct {
       ],
     });
 
-    const gitlabEc2Role = new iam.Role(this, "GitlabRunnerIamRole", {
+     this.gitlabEc2Role = new iam.Role(this, "GitlabRunnerIamRole", {
       assumedBy: new iam.ServicePrincipal("ec2.amazonaws.com"),
       description: "Iam Role assumed by the Gitlab Runner",
       managedPolicies: [
@@ -135,7 +136,7 @@ export class GitlabRunnerConstruct extends Construct {
       inlinePolicies: { GitlabIamRolePolicy: gitlabIamRolePolicy },
     });
 
-    NagSuppressions.addResourceSuppressions(gitlabEc2Role, [
+    NagSuppressions.addResourceSuppressions(this.gitlabEc2Role, [
       { id: "AwsSolutions-IAM4", reason: "Assumed roles will use AWS managed policies for demonstration purposes.  Customers will be advised/required to assess and apply custom policies based on their role requirements" },
       { id: "AwsSolutions-IAM5", reason: "Assumed roles will require permissions to perform multiple ecs, ddb, and ec2 for demonstration purposes.  Customers will be advised/required to assess and apply minimal permission based on role mappings to their idP groups" },
     ], true);
@@ -157,7 +158,7 @@ export class GitlabRunnerConstruct extends Construct {
       userData,
       securityGroup: instanceSecurityGroup,
       requireImdsv2: true,
-      role: gitlabEc2Role,
+      role: this.gitlabEc2Role,
       machineImage: ec2.MachineImage.genericLinux(props.GitlabAmi),
       httpPutResponseHopLimit: 2,
       blockDevices: [blockDevice],
@@ -184,11 +185,11 @@ export class GitlabRunnerConstruct extends Construct {
       allowedPattern: ".*",
       description: `The OPA Platform Pipeline Role Arn`,
       parameterName: `/${props.opaEnv.prefix}/pipeline-role`,
-      stringValue: gitlabEc2Role.roleArn,
+      stringValue: this.gitlabEc2Role.roleArn,
     });
 
-    new cdk.CfnOutput(this, `The OPA Platform Pipeline Role Arn Parameter`, {
-      value: roleParam.parameterName,
-    });
+    // new cdk.CfnOutput(this, `The OPA Platform Pipeline Role Arn Parameter`, {
+    //   value: roleParam.parameterName,
+    // });
   }
 }

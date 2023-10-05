@@ -272,5 +272,6 @@ export class BackstageFargateServiceConstruct extends Construct {
     this.loadBalancer = albFargateService.loadBalancer;
     this.lbSSMParam = lbDNSParam;
     this.cluster = cluster;
+    
   }
 }

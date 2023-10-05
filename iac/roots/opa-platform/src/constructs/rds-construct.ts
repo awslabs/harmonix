@@ -86,13 +86,13 @@ export class RdsConstruct extends Construct {
     });
 
     // Post params to output
-    new cdk.CfnOutput(this, "DB Param", {
-      value: dbParam.parameterName,
-    });
+    // new cdk.CfnOutput(this, "DB Param", {
+    //   value: dbParam.parameterName,
+    // });
 
-    new cdk.CfnOutput(this, "DB Secret Param", {
-      value: secretParam.parameterName,
-    });
+    // new cdk.CfnOutput(this, "DB Secret Param", {
+    //   value: secretParam.parameterName,
+    // });
 
   }
 }

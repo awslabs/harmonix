@@ -18,6 +18,16 @@ echo -e "\nDone installing AWS CLI\n"
 
 echo "Begin custom steps"
 
+for i in {1..60}; do  # Try for up to 10 minutes
+    if curl --output /dev/null --silent --head --fail http://localhost/-/readiness; then
+        echo "GitLab is ready!"
+        break
+    else
+        echo "Waiting for GitLab to be ready..."
+        sleep 10
+    fi
+done
+
 for i in {1..1001..1}
 do
   echo ""

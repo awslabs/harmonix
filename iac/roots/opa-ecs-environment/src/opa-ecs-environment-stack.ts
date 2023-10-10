@@ -64,7 +64,7 @@ export class OPAECSEnvStack extends cdk.Stack {
       cidrRange: cidrInput,
       isIsolated: false,
       publicVpcNatGatewayCount: 1,
-      vpcAzCount: 3,
+      vpcAzCount: 1,
     });
 
     // Create ECS Cluster

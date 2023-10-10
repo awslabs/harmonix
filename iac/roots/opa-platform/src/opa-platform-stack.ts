@@ -129,7 +129,7 @@ export class OPAPlatformStack extends cdk.Stack {
       isIsolated: false,
       allowedIPs,
       publicVpcNatGatewayCount: 1,
-      vpcAzCount: 1,
+      vpcAzCount: 2,
     });
 
     // Create DB for backstage platform

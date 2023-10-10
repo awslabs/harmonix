@@ -46,7 +46,10 @@ do
     echo "Updating GitLab admin user name, password and token"
     gitlab-rails runner "u = User.new(username: '$ADMIN_USERNAME', email: 'example@amazon.com', name: '$ADMIN_USERNAME', password: '$ADMIN_GITLAB_PASSWORD', password_confirmation: '$ADMIN_GITLAB_PASSWORD'); u.skip_confirmation!; u.admin = true; u.save!; token = User.find_by_username('$ADMIN_USERNAME').personal_access_tokens.create(scopes: [:read_user, :read_repository, :api, :read_api, :write_repository], name: '$ADMIN_USERNAME-token', expires_at: 365.days.from_now); token.set_token('$ADMIN_TOKEN'); token.save!;"
 
-    GROUP_ID=$(curl --location --request POST 'localhost/api/v4/groups/' --header "PRIVATE-TOKEN: $ADMIN_TOKEN" --header 'Content-Type: application/json' --data-raw '{ "path": "aws-app", "name": "aws-app", "visibility": "internal" }' | jq .id)
+    #GROUP_ID=$(curl --location --request POST 'localhost/api/v4/groups/' --header "PRIVATE-TOKEN: $ADMIN_TOKEN" --header 'Content-Type: application/json' --data-raw '{ "path": "aws-app", "name": "aws-app", "visibility": "internal" }' | jq .id)
+    RESPONSE=$(curl --location --request POST 'localhost/api/v4/groups/' --header "PRIVATE-TOKEN: $ADMIN_TOKEN" --header 'Content-Type: application/json' --data-raw '{ "path": "aws-app", "name": "aws-app", "visibility": "internal" }')
+    echo "Response from gitlab to creating appgroup $RESPONSE"
+    GROUP_ID=$(echo "$RESPONSE" | jq .id)
     ENV_GROUP_ID=$(curl --location --request POST 'localhost/api/v4/groups/' --header "PRIVATE-TOKEN: $ADMIN_TOKEN" --header 'Content-Type: application/json' --data-raw '{ "path": "aws-environments", "name": "aws-environments", "visibility": "internal" }' | jq .id)
     ENV_PRO_GROUP_ID=$(curl --location --request POST 'localhost/api/v4/groups/' --header "PRIVATE-TOKEN: $ADMIN_TOKEN" --header 'Content-Type: application/json' --data-raw '{ "path": "aws-environment-providers", "name": "aws-environment-providers", "visibility": "internal" }' | jq .id)
     RESOURCE_GROUP_ID=$(curl --location --request POST 'localhost/api/v4/groups/' --header "PRIVATE-TOKEN: $ADMIN_TOKEN" --header 'Content-Type: application/json' --data-raw '{ "path": "aws-resources", "name": "aws-resources", "visibility": "internal" }' | jq .id)

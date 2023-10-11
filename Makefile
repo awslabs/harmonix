@@ -23,7 +23,7 @@ install:
 	@$(MAKE) set-gitlab-hostname 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nPushing the backstage reference repository\n====================" 2>&1 | tee -a $(LOGFILE)
 	@$(MAKE) push-backstage-reference-repo 2>&1 | tee -a $(LOGFILE)
-	@$(MAKE) create-okta-user 2>&1 | tee -a $(LOGFILE)
+	# @$(MAKE) create-okta-user 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nBuilding the backstage image\n====================" 2>&1 | tee -a $(LOGFILE)
 	@$(MAKE) build-backstage 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nDeploying the backstage image\n====================" 2>&1 | tee -a $(LOGFILE)

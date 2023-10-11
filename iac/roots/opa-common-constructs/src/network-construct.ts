@@ -3,12 +3,12 @@
 
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import * as ssm from "aws-cdk-lib/aws-ssm";
-import * as s3 from "aws-cdk-lib/aws-s3";
-import { Construct } from "constructs";
 import { SubnetType } from "aws-cdk-lib/aws-ec2";
-import { OPAEnvironmentParams } from "./opa-environment-params";
+import * as s3 from "aws-cdk-lib/aws-s3";
+import * as ssm from "aws-cdk-lib/aws-ssm";
 import { NagSuppressions } from "cdk-nag";
+import { Construct } from "constructs";
+import { OPAEnvironmentParams } from "./opa-environment-params";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 export interface NetworkConstructProps extends cdk.StackProps {
@@ -16,8 +16,8 @@ export interface NetworkConstructProps extends cdk.StackProps {
   readonly cidrRange: string;
   readonly isIsolated: boolean;
   readonly allowedIPs?: string[];
-  readonly publicVpcNatGatewayCount: number
-  readonly vpcAzCount: number
+  readonly publicVpcNatGatewayCount: number;
+  readonly vpcAzCount: number;
 }
 
 const defaultProps: Partial<NetworkConstructProps> = {};
@@ -58,16 +58,15 @@ export class NetworkConstruct extends Construct {
 
       publicSubnetIds = "[]";
       privateSubnetIds = JSON.stringify(
-        vpc.selectSubnets({ subnetType: SubnetType.PRIVATE_ISOLATED }).subnets
-          .map(subnet => subnet.subnetId));
-
+        vpc.selectSubnets({ subnetType: SubnetType.PRIVATE_ISOLATED }).subnets.map((subnet) => subnet.subnetId)
+      );
     } else {
       // Public VPC
       const allocationIds: string[] = [];
       this.publicEIPref = [];
 
       // Create as many EIP as there are AZ/Subnets and store their allocIds & refs.
-      for (let i = 0; i < props.vpcAzCount; i++) {
+      for (let i = 0; i < props.vpcAzCount - 1; i++) {
         const eip = new ec2.CfnEIP(this, `VPCPublicSubnet${i + 1}NATGatewayEIP${i}`, {
           domain: "vpc",
           tags: [
@@ -94,8 +93,8 @@ export class NetworkConstruct extends Construct {
         defaultInstanceTenancy: ec2.DefaultInstanceTenancy.DEFAULT,
       });
 
-      publicSubnetIds = JSON.stringify(vpc.publicSubnets.map(subnet => subnet.subnetId));
-      privateSubnetIds = JSON.stringify(vpc.privateSubnets.map(subnet => subnet.subnetId));
+      publicSubnetIds = JSON.stringify(vpc.publicSubnets.map((subnet) => subnet.subnetId));
+      privateSubnetIds = JSON.stringify(vpc.privateSubnets.map((subnet) => subnet.subnetId));
     }
 
     // now save the VPC in SSM Param
@@ -110,14 +109,14 @@ export class NetworkConstruct extends Construct {
       allowedPattern: ".*",
       description: `The VPC public subnetIds for OPA Solution: ${props.opaEnv.envName} Environment`,
       parameterName: `${envPathIdentifier}/vpc/public-subnets`,
-      stringListValue: (JSON.parse(publicSubnetIds) as string[]),
+      stringListValue: JSON.parse(publicSubnetIds) as string[],
     });
 
     const vpcPriSubnetParam = new ssm.StringListParameter(this, `${envIdentifier}-priv-subnet-param`, {
       allowedPattern: ".*",
       description: `The VPC Private subnetIds for OPA Solution: ${props.opaEnv.envName} Environment`,
       parameterName: `${envPathIdentifier}/vpc/private-subnets`,
-      stringListValue: (JSON.parse(privateSubnetIds) as string[]),
+      stringListValue: JSON.parse(privateSubnetIds) as string[],
     });
 
     // Create an S3 bucket to use for network logs
@@ -136,7 +135,11 @@ export class NetworkConstruct extends Construct {
     });
 
     NagSuppressions.addResourceSuppressions(accessLogBucket, [
-      { id: "AwsSolutions-S1", reason: "Access log bucket will not record access since that will introduce cyclic behavior preventing deletion of the bucket" },
+      {
+        id: "AwsSolutions-S1",
+        reason:
+          "Access log bucket will not record access since that will introduce cyclic behavior preventing deletion of the bucket",
+      },
     ]);
 
     // TODO: enable S3 bucket loggingin PROD.  For prototype, default logging to CloudWatch Logs will be sufficient
@@ -206,11 +209,23 @@ export class NetworkConstruct extends Construct {
 
     if (props.allowedIPs) {
       for (const ip of props.allowedIPs) {
-        if (ip.startsWith('pl-')) {
+        if (ip.startsWith("pl-")) {
           // add the prefix list to the security group
-          allowedIpsSg.addIngressRule(ec2.Peer.prefixList(ip), ec2.Port.tcp(5432), "allow DB access from Allowed Prefix List");
-          allowedIpsSg.addIngressRule(ec2.Peer.prefixList(ip), ec2.Port.tcp(80), "allow HTTP access from Allowed Prefix List");
-          allowedIpsSg.addIngressRule(ec2.Peer.prefixList(ip), ec2.Port.tcp(443), "allow HTTPS access from Allowed Prefix List");
+          allowedIpsSg.addIngressRule(
+            ec2.Peer.prefixList(ip),
+            ec2.Port.tcp(5432),
+            "allow DB access from Allowed Prefix List"
+          );
+          allowedIpsSg.addIngressRule(
+            ec2.Peer.prefixList(ip),
+            ec2.Port.tcp(80),
+            "allow HTTP access from Allowed Prefix List"
+          );
+          allowedIpsSg.addIngressRule(
+            ec2.Peer.prefixList(ip),
+            ec2.Port.tcp(443),
+            "allow HTTPS access from Allowed Prefix List"
+          );
         } else {
           // add the ip to the security group
           allowedIpsSg.addIngressRule(ec2.Peer.ipv4(ip), ec2.Port.tcp(5432), "allow DB access from Allowed IP");
@@ -222,6 +237,5 @@ export class NetworkConstruct extends Construct {
     this.allowedIpsSg = allowedIpsSg;
     this.vpc = vpc;
     this.vpcParam = vpcParam;
-
   }
 }

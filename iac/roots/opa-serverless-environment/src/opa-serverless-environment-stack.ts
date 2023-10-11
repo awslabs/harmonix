@@ -59,7 +59,7 @@ export class OPAServerlessEnvStack extends cdk.Stack {
       cidrRange: cidrInput,
       isIsolated: false,
       publicVpcNatGatewayCount: 1,
-      vpcAzCount: 1,
+      vpcAzCount: 2,
     });
 
     //create audit table

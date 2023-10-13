@@ -4,6 +4,7 @@
   "description": "Constructs collection for OPA",
   "main": "index.ts",
   "types": "index.d.ts",
+  "private": true,
   "files": [
     "/dist"
   ],

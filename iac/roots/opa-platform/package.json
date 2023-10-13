@@ -1,6 +1,7 @@
 {
     "name": "@aws-app-development/platform",
     "version": "0.1.0",
+    "private": true,
     "bin": {
         "opa-platform-stack": "src/opa-platform-stack.js"
     },

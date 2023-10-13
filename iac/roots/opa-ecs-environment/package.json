@@ -2,6 +2,7 @@
   "name": "@aws-app-development/ecs-environment",
   "version": "0.1.0",
   "description": "A stack to create an ECS environment for OPA",
+  "private": true,
   "license": "Apache-2.0",
   "scripts": {
     "build": "tsc",

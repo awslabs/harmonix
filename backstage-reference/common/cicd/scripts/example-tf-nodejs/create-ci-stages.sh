@@ -37,8 +37,8 @@ do
     fi
     
     # Create bucket for state and resource group
-    ENV_IDENTIFIER="$TARGET_ENV_NAME-$PREFIX-$TARGET_ENV_PROVIDER_NAME-$APP_NAME"
-    STATE_BUCKET_NAME="opa-tf-state-bucket-$ENV_IDENTIFIER"
+    ENV_IDENTIFIER=$(echo "$PREFIX-$TARGET_ENV_PROVIDER_NAME-$APP_NAME" | tr '[:upper:]' '[:lower:]')
+    STATE_BUCKET_NAME="opa-tf-state-$ENV_IDENTIFIER"
     # limit bucket name to 63 characters max
     STATE_BUCKET_NAME=$(echo "${STATE_BUCKET_NAME:0:63}")
     echo "STATE_BUCKET_NAME for $TARGET_ENV_PROVIDER_NAME is $STATE_BUCKET_NAME"

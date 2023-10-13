@@ -1,5 +1,5 @@
 {
-  "name": "@aws-app-development/serverless-environment",
+  "name": "@aws/aws-app-development-serverless-environment",
   "version": "1.0.0",
   "description": "A stack to create an Serverless environment for OPA",
   "main": "dist/index.js",
@@ -27,7 +27,7 @@
     "typescript": "~5.0.4"
   },
   "dependencies": {
-    "@aws-app-development/common-constructs": "1.0.0",
+    "@aws/aws-app-development-common-constructs": "1.0.0",
     "aws-cdk-lib": "2.88.0",
     "constructs": "^10.0.0"
   }

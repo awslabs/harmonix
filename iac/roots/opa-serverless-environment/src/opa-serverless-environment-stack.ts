@@ -5,7 +5,7 @@ import * as cdk from "aws-cdk-lib";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import * as kms from "aws-cdk-lib/aws-kms";
 import { Construct } from "constructs";
-import { NetworkConstruct, OPAEnvironmentParams, DynamoDBConstruct, } from '@aws-app-development/common-constructs'
+import { NetworkConstruct, OPAEnvironmentParams, DynamoDBConstruct, } from '@aws/aws-app-development-common-constructs'
 import { ServerlessAPIProvisioningConstruct } from './constructs/serverless-api-env-provisioning-role-construct'
 import { ServerlessAPIOperationsConstruct } from "./constructs/serverless-api-env-operations-role-construct";
 

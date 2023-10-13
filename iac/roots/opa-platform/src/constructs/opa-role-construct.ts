@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { OPAEnvironmentParams, NetworkConstruct } from "@aws-app-development/common-constructs";
+import { OPAEnvironmentParams, NetworkConstruct } from "@aws/aws-app-development-common-constructs";
 import * as cdk from "aws-cdk-lib";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as kms from "aws-cdk-lib/aws-kms";

@@ -8,8 +8,8 @@ import {
   NetworkConstruct,
   RdsConstruct,
   Wafv2BasicConstruct,
-} from "@aws-app-development/common-constructs";
-import { WafV2Scope } from "@aws-app-development/common-constructs/src/wafv2-basic-construct";
+} from "@aws/aws-app-development-common-constructs";
+import { WafV2Scope } from "@aws/aws-app-development-common-constructs/src/wafv2-basic-construct";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecr from "aws-cdk-lib/aws-ecr";

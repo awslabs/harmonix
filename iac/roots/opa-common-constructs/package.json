@@ -1,5 +1,5 @@
 {
-  "name": "@aws-app-development/common-constructs",
+  "name": "@aws/aws-app-development-common-constructs",
   "version": "1.0.0",
   "description": "Constructs collection for OPA",
   "main": "index.ts",

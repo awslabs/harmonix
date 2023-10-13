@@ -1,5 +1,5 @@
 {
-  "name": "@aws-app-development/ecs-environment",
+  "name": "@aws/aws-app-development-ecs-environment",
   "version": "0.1.0",
   "description": "A stack to create an ECS environment for OPA",
   "private": true,
@@ -18,12 +18,12 @@
     "aws-cdk": "2.88.0",
     "ts-node": "^10.9.1",
     "typescript": "~5.0.4",
-    "@aws-app-development/common-constructs": "1.0.0"
+    "@aws/aws-app-development-common-constructs": "1.0.0"
   },
   "dependencies": {
     "aws-cdk-lib": "2.88.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21",
-    "@aws-app-development/common-constructs": "1.0.0"
+    "@aws/aws-app-development-common-constructs": "1.0.0"
   }
 }

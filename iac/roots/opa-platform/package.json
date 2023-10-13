@@ -1,5 +1,5 @@
 {
-    "name": "@aws-app-development/platform",
+    "name": "@aws/aws-app-development-platform",
     "version": "0.1.0",
     "private": true,
     "bin": {
@@ -25,7 +25,7 @@
         "typescript": "^5.1.3"
     },
     "dependencies": {
-        "@aws-app-development/common-constructs": "1.0.0",
+        "@aws/aws-app-development-common-constructs": "1.0.0",
         "@aws-sdk/client-route-53": "^3.370.0",
         "@aws-sdk/client-s3": "^3.370.0",
         "@aws-sdk/client-ssm": "^3.370.0",

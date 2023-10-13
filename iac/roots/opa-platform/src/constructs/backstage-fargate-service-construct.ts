@@ -3,7 +3,7 @@
 
 import { aws_ecs_patterns as ecsPatterns, SecretValue, StackProps } from "aws-cdk-lib";
 
-import { OPAEnvironmentParams, HostedZoneConstruct, NetworkConstruct } from "@aws-app-development/common-constructs";
+import { OPAEnvironmentParams, HostedZoneConstruct, NetworkConstruct } from "@aws/aws-app-development-common-constructs";
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elb from "aws-cdk-lib/aws-elasticloadbalancingv2";

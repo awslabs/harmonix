@@ -7,7 +7,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
 
-import { OPAEnvironmentParams, NetworkConstruct } from "@aws-app-development/common-constructs";
+import { OPAEnvironmentParams, NetworkConstruct } from "@aws/aws-app-development-common-constructs";
 import * as autoscaling from "aws-cdk-lib/aws-autoscaling";
 import { BlockDeviceVolume } from "aws-cdk-lib/aws-autoscaling";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";

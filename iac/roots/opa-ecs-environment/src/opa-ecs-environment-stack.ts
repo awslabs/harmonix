@@ -5,7 +5,7 @@ import * as cdk from "aws-cdk-lib";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import * as kms from "aws-cdk-lib/aws-kms";
 import { Construct } from "constructs";
-import { NetworkConstruct, OPAEnvironmentParams, EcsClusterConstruct, DynamoDBConstruct, } from '@aws-app-development/common-constructs'
+import { NetworkConstruct, OPAEnvironmentParams, EcsClusterConstruct, DynamoDBConstruct, } from '@aws/aws-app-development-common-constructs'
 import { ECSProvisioningConstruct } from './constructs/ecs-env-provisioning-role-construct'
 import { ECSOperationsConstruct } from "./constructs/ecs-env-operations-role-construct";
 

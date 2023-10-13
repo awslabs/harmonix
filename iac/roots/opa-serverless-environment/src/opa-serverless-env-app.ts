@@ -6,7 +6,7 @@
 import * as cdk from "aws-cdk-lib";
 import "source-map-support/register";
 import { OPAServerlessEnvStack } from "./opa-serverless-environment-stack";
-import { makeRandom } from "@aws-app-development/common-constructs";
+import { makeRandom } from "@aws/aws-app-development-common-constructs";
 
 function serverlessMandatory(propertyName: string) {
   if (!process.env[propertyName])

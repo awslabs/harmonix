@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { OPAEnvironmentParams, HostedZoneConstruct, NetworkConstruct } from "@aws-app-development/common-constructs";
+import { OPAEnvironmentParams, HostedZoneConstruct, NetworkConstruct } from "@aws/aws-app-development-common-constructs";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as elb from "aws-cdk-lib/aws-elasticloadbalancingv2";

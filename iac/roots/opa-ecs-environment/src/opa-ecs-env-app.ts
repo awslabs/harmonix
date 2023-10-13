@@ -6,7 +6,7 @@
 import * as cdk from "aws-cdk-lib";
 import "source-map-support/register";
 import { OPAECSEnvStack } from "./opa-ecs-environment-stack";
-import { makeRandom } from "@aws-app-development/common-constructs";
+import { makeRandom } from "@aws/aws-app-development-common-constructs";
 
 /**
  * Main application function, make it async so it can call asnyc functions properly.

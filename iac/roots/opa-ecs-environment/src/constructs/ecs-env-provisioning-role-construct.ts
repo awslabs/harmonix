@@ -8,7 +8,7 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as kms from "aws-cdk-lib/aws-kms";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
-import { OPAEnvironmentParams } from "@aws-app-development/common-constructs";
+import { OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 export interface ECSProvisioningConstructProps extends cdk.StackProps {

@@ -140,6 +140,10 @@ export function AwsAppPage(_props: AwsAppPageProps) {
       </EntitySwitch>
     );
   } else {
+    if (awsAppLoadingStatus.error) {
+      console.log(awsAppLoadingStatus.error);
+    }
+
     return (
       <EmptyState
         missing="data"

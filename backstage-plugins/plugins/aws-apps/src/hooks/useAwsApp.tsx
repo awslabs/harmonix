@@ -404,11 +404,19 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
       gitRepo: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "",
       platformRegion: config.getString('backend.platformRegion'),
       environments: deployEnvs,
-      currentEnvironment: !!_change_to_env_name ? deployEnvs[_change_to_env_name] : getLowerEnvironment(deployEnvs),
+      currentEnvironment: !!_change_to_env_name ? deployEnvs[_change_to_env_name.toLowerCase()] : getLowerEnvironment(deployEnvs),
       setCurrentProvider: (envName: string, providerName: string) => {
         _setCurrentProvider(envName, providerName);
       }
     };
+
+    if (!awsComponent.currentEnvironment) {
+      if (_change_to_env_name) {
+        console.log(`Attempting to set current environment to ${_change_to_env_name}`);
+      }
+      console.log(`Failed to retrieve currentEnvironment from data set:`);
+      console.log(deployEnvs);
+    }
 
     api.setBackendParams({
       appName: awsComponent.componentName,

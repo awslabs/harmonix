@@ -7,6 +7,7 @@ spec:
     targets:
         # APPS
         - ./example-nodejs/template.yaml
+        - ./example-nodejs-microservice/template.yaml
         - ./example-springboot/template.yaml
         # - ./example-eks-note-app/template.yaml
         - ./example-serverless-rest-api/template.yaml

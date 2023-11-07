@@ -1,0 +1,19 @@
+.features {
+  display: flex;
+  align-items: center;
+  padding: 3rem 8rem;
+  width: 100%;
+}
+
+.featureSvg {
+  height: 200px;
+  width: 200px;
+}
+
+.featureRow {
+  /* width: 100%; */
+  margin: auto;
+}
+.featureRow:nth-child(even) {
+  background-color: #eee;
+}

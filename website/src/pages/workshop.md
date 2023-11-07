@@ -3,10 +3,10 @@
 We can offer customers a hands-on workshop to get familiar with the OPA on AWS platform.
 <!-- If you wish to run the workshop on your own - you will first need to [deploy the platform](/docs/category/getting-started). -->
 
-For scheduled events please reach out to fsi-pace-pe@amazon.com
+For scheduling events please reach out to fsi-pace-pe@amazon.com
 
 ## Target Audience
-We currently address the workshop for:
+The workshop targets two key roles:
 
 * Application Developers
 * Platform /Dev-ops Engineers
@@ -15,7 +15,7 @@ We currently address the workshop for:
 
 * Timing - about 1 hour.
 * A room that supports the number of attendees - each will log-in to their own account/platform.
-* Optional: Whiteboard to illustrate answers/questions.
+* Optional: Whiteboard to illustrate architecture and facilitate question and answer sessions.
 
 ## Workshop Offering
 

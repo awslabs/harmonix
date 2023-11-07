@@ -11,7 +11,7 @@ sidebar_position: 8
 | Feature |  Description |
 | :- | :- |
 | **Dynamic environment provider provisioning** |  Create unlimited number of providers on multiple accounts and regions |
-| **ECS environment provider**  | Create an ECS(Elastic container servicer) based provider |
+| **ECS environment provider**  | Create an ECS (Elastic container servicer) based provider |
 | **Serverless environment provider**  | Create a serverless based provider |
 | **Abstracted AWS environment**  | Create a environment of which applications and resources can be created |
 | **Application pipeline**  | Create a pipeline for each application to support IAC provisioning and code change stage |

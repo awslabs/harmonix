@@ -44,7 +44,7 @@ export default function Home(): JSX.Element {
   return (
     <Layout
       title={siteConfig.title}
-      description="Homepage for the Orchestrate Platforms and Applications (OPA) on AWS solution"> 
+      description="Fast, secure, and at-scale. A developer portal to meet your Enterprise needs."> 
       <HomepageHeader />
       <main>
         <HomepageFeatures />

@@ -1,0 +1,9 @@
+{
+  "label": "DIY",
+  "position": 5,
+  "link": {
+    "type": "generated-index",
+    "description": "Do It Yourself - build your own platform"
+  },
+  "className": "hidden"
+}

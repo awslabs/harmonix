@@ -159,7 +159,7 @@ const config: Config = {
       respectPrefersColorScheme: false,
     },
     zoom: {
-      selector: 'img',
+      selector: 'img:not(.opa-nav-logo)',
       background: {
         light: 'rgb(255, 255, 255)',
         dark: 'rgb(50, 50, 50)'

@@ -54,7 +54,8 @@
 
   --ifm-image-portal: url("/img/squid_OPA_text02.png");
 }
-header {
+
+.hero--primary {
   min-height: 450px;
 }
 
@@ -111,7 +112,7 @@ header {
   .sectionItem {
     padding: 0 !important;
   }
-  
+
   .logoWrapper {
     max-width: 100% !important;
     width: 100% !important;

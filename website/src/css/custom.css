@@ -108,6 +108,10 @@ header {
   .features_src-components-HomepageFeatures-module {
     padding: 0 !important;
   }
+  .sectionItem {
+    padding: 0 !important;
+  }
+  
   .logoWrapper {
     max-width: 100% !important;
     width: 100% !important;

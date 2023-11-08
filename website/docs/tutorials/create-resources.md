@@ -29,7 +29,7 @@ This tutorial assumes that you have run the [Create an Environment](/docs/tutori
 | **Description** | `A database for demonstration data` | Describes the database's purpose |
 | **Owner** | _Select a group from the drop-down list to own the Resource_ | The group or user that will be responsible for the entity |
 
-<center><img src={CreateResources2Img} width="60%" height="auto" /></center>
+<center><img src={CreateResources2Img} width="40%" height="auto" /></center>
 
 **3.** Next, provide deployment information for the resource and select **Next Step**
 
@@ -37,7 +37,7 @@ This tutorial assumes that you have run the [Create an Environment](/docs/tutori
 | :- | :- | :- |
 | **AWS Environment** | *the **ecs-dev** environment will be pre-selected since it is the only environment available* | The AWS Environment in which you want to deploy your application to. The environment that we created in a previous tutorial will already be selected for you |
 
-<center><img src={CreateResources3Img} width="60%" height="auto" /></center>
+<center><img src={CreateResources3Img} width="40%" height="auto" /></center>
 
 **4.**  Provide database configuration information and select **Next Step**
 
@@ -48,7 +48,7 @@ This tutorial assumes that you have run the [Create an Environment](/docs/tutori
 | **Database Engine** | Select **PostgreSQL** | The engine of the SQL database |
 | **Database Size** | Select **Small (20GB)** | The size of the database that will be deployed |
 
-<center><img src={CreateResources4Img} width="60%" height="auto" /></center>
+<center><img src={CreateResources4Img} width="55%" height="auto" /></center>
 
 **5.** Provide Repository information and select **Next Step**
 Choose a repository for this database's infrastructure source code and entity information - you can use `demo-db`

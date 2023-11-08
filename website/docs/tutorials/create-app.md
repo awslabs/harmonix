@@ -27,7 +27,7 @@ This tutorial assumes that you have run the [Create an Environment](/docs/tutori
 | **Owner** | _Select a group from the drop-down list to own the application_ | The group or user that will be responsible for the entity |
 | **AWS Environment** | *the **ecs-dev** environment will be pre-selected since it is the only environment available* | The AWS Environment in which you want to deploy your application to. The environment that we created in the previous step will already be selected for you |
 
-<center><img src={AppComponentInfoImg} width="60%" height="auto" /></center>
+<center><img src={AppComponentInfoImg} width="40%" height="auto" /></center>
 
 
 **3.** Provide Repository information and select **Next Step**

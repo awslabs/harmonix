@@ -14,7 +14,7 @@ export function Feature({title,noSVG, Svg, description, minHeight, customTextSty
   return (
     noSVG? (
     <div className={clsx('col')}>
-       <div className="padding-horiz--md" style={{textAlign:'center', minHeight:minHeight}}>
+       <div className="padding-horiz--md" style={{textAlign:'center', alignSelf: 'flex-start'}}>
         <p style={customTextStyle}>{description}</p>
       </div>
     </div>  

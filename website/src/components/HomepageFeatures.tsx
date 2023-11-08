@@ -216,10 +216,9 @@ const opaImageList : FeatureItem [] = [
     title: '',
     Svg: require('@site/static/img/dashboard.svg').default,
     noSVG: true,
-    minHeight:'38rem',
     description: (
       <>
-       <span class="imageSubtitle">AWS Software catalog in a click of a button </span> <img width={'100%'} src="img/opa/opa-screenshot11.png"/>
+       <span className="imageSubtitle">AWS Software catalog in a click of a button </span> <img width={'100%'} src="img/opa/opa-screenshot11.png"/>
       </>
     ),
   },
@@ -227,10 +226,9 @@ const opaImageList : FeatureItem [] = [
     title: '',
     Svg: require('@site/static/img/write_code.svg').default,
     noSVG: true,
-    minHeight:'38rem',
     description: (
       <>
-        <span class="imageSubtitle">Scale the use of AWS Services using templates</span> <img width={'100%'} src="img/opa/opa-screenshot22.png"/>
+        <span className="imageSubtitle">Scale the use of AWS Services using templates</span> <img width={'100%'} src="img/opa/opa-screenshot22.png"/>
       </>
     ),
   },
@@ -239,10 +237,9 @@ const opaImageList : FeatureItem [] = [
     title: '',
     Svg: require('@site/static/img/cloud_developer.svg').default,
     noSVG: true,
-    minHeight:'38rem',
     description: (
       <>
-      <span class="imageSubtitle">Manage your applications using a single interface </span> <img width={'100%'} src="img/opa/opa-screenshot33.png"/>
+      <span className="imageSubtitle">Manage your applications using a single interface </span> <img width={'100%'} src="img/opa/opa-screenshot33.png"/>
       </>
     ),
   },
@@ -275,7 +272,7 @@ export default function HomepageFeatures(): JSX.Element {
   return (
     <div>
       {FeatureRowList.map((props, idx1) => (
-        <section key={idx1} className={clsx("row", styles.features, styles.featureRow, "sectionItem")}>
+        <section key={idx1} className={clsx("row", styles.features, styles.featureRow, styles.sectionItem)}>
           {props.FeatureItems.map((props, idx2) => (
             <Feature key={idx2} {...props} />
           ))}

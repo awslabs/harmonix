@@ -16,7 +16,7 @@
 
   --ifm-toc-border-color: #dadde1;
   --ifm-navbar-link-color: #bbb;
-  --ifm-navbar-link-hover-color: #fff;
+  --ifm-navbar-link-hover-color: var(--ifm-color-white);
   --ifm-navbar-background-color: #0D317F;
 
   --ifm-code-font-size: 95%;
@@ -24,7 +24,7 @@
   --ifm-font-family-base: "Amazon Ember","Helvetica Neue",Roboto,Arial,sans-serif;
   /* --ifm-navbar-height: 80px; */
 
-  --ifm-footer-link-hover-color: #fff;
+  --ifm-footer-link-hover-color: var(--ifm-color-white);
 
   --ifm-image-portal: url("/img/opa_white.svg");
 }
@@ -33,9 +33,16 @@
 }
 .navbar .navbar__toggle,
     .navbar .navbar-sidebar__close,
-    .navbar .navbar-sidebar__back {
+    .navbar {
        color: var(--ifm-color-white);
      }
+
+.navbar-sidebar {
+  background-color: #e5e1e1;
+}
+.navbar-sidebar__back {
+  color: var(--ifm-color-primary)
+}
 
 [data-theme='dark'] .theme-doc-sidebar-container {
   background-color: #020610;
@@ -107,9 +114,6 @@
     color: #ff9900;
   }
   .features_src-components-HomepageFeatures-module {
-    padding: 0 !important;
-  }
-  .sectionItem {
     padding: 0 !important;
   }
 

@@ -17,3 +17,9 @@
 .featureRow:nth-child(even) {
   background-color: #eee;
 }
+
+.sectionItem {
+  /* padding: 0 !important; */
+  align-items: stretch;
+  margin: 2rem;
+}

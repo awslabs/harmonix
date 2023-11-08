@@ -11,7 +11,7 @@ type FeatureGroup = {
 const EnterpriseFeatureList: FeatureItem[] = [
   {
     title: 'Single Pane of Glass',
-    customTextStyle:{minHeight:'350px'},
+    customTextStyle:{minHeight:'23rem'},
     Svg: require('@site/static/img/dashboard.svg').default,
     description: (
       <>
@@ -21,7 +21,7 @@ const EnterpriseFeatureList: FeatureItem[] = [
   },
   {
     title: 'Enterprise Ready',
-    customTextStyle:{minHeight:'350px'},
+    customTextStyle:{minHeight:'23rem'},
     Svg: require('@site/static/img/global_enterprise.svg').default,
     description: (
       <>
@@ -32,7 +32,7 @@ const EnterpriseFeatureList: FeatureItem[] = [
   {
     // title: 'Pleasurable Developer Experience',
     title: 'Empower Your Developers',
-    customTextStyle:{minHeight:'350px'},
+    customTextStyle:{minHeight:'23rem'},
     Svg: require('@site/static/img/cloud_developer.svg').default,
     description: (
       <>
@@ -61,7 +61,7 @@ const opaDescription : FeatureItem[] = [
 const SpeedFeatureList: FeatureItem[] = [
   {
     title: 'Templated Environments',
-    customTextStyle:{minHeight:'350px'},
+    customTextStyle:{minHeight:'23rem'},
     Svg: require('@site/static/img/regulations.svg').default,
     description: (
       <>
@@ -71,7 +71,7 @@ const SpeedFeatureList: FeatureItem[] = [
   },
   {
     title: 'Cloud Acceleration',
-    customTextStyle:{minHeight:'350px'},
+    customTextStyle:{minHeight:'23rem'},
     Svg: require('@site/static/img/person_go_fast.svg').default,
     // Svg: require('@site/static/img/cloud_accelerate.svg').default,
     description: (
@@ -83,7 +83,7 @@ const SpeedFeatureList: FeatureItem[] = [
   {
     // title: 'Powered by Backstage.io',
     title: 'Pluggable Architecture',
-    customTextStyle:{minHeight:'350px'},
+    customTextStyle:{minHeight:'23rem'},
     Svg: require('@site/static/img/multi-feature.svg').default,
     description: (
       <>
@@ -96,6 +96,7 @@ const SpeedFeatureList: FeatureItem[] = [
 const ScaleFeatureList: FeatureItem[] = [
   {
     title: 'Increase Productivity, Reduce Costs',
+    customTextStyle:{minHeight:'23rem'},
     Svg: require('@site/static/img/time_savings.svg').default,
     description: (
       <>
@@ -105,6 +106,7 @@ const ScaleFeatureList: FeatureItem[] = [
   },
   {
     title: 'Focus on What Matters',
+    customTextStyle:{minHeight:'23rem'},
     Svg: require('@site/static/img/write_code.svg').default,
     description: (
       <>
@@ -114,6 +116,7 @@ const ScaleFeatureList: FeatureItem[] = [
   },
   {
     title: 'Scale Development',
+    customTextStyle:{minHeight:'23rem'},
     Svg: require('@site/static/img/scale.svg').default,
     description: (
       <>
@@ -213,7 +216,7 @@ const opaImageList : FeatureItem [] = [
     title: '',
     Svg: require('@site/static/img/dashboard.svg').default,
     noSVG: true,
-    minHeight:'570px',
+    minHeight:'38rem',
     description: (
       <>
        <span class="imageSubtitle">AWS Software catalog in a click of a button </span> <img width={'100%'} src="img/opa/opa-screenshot11.png"/>
@@ -224,7 +227,7 @@ const opaImageList : FeatureItem [] = [
     title: '',
     Svg: require('@site/static/img/write_code.svg').default,
     noSVG: true,
-    minHeight:'570px',
+    minHeight:'38rem',
     description: (
       <>
         <span class="imageSubtitle">Scale the use of AWS Services using templates</span> <img width={'100%'} src="img/opa/opa-screenshot22.png"/>
@@ -236,7 +239,7 @@ const opaImageList : FeatureItem [] = [
     title: '',
     Svg: require('@site/static/img/cloud_developer.svg').default,
     noSVG: true,
-    minHeight:'570px',
+    minHeight:'38rem',
     description: (
       <>
       <span class="imageSubtitle">Manage your applications using a single interface </span> <img width={'100%'} src="img/opa/opa-screenshot33.png"/>

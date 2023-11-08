@@ -28,13 +28,13 @@ sidebar_position: 9
 [![Introduction](https://img.youtube.com/vi/eEjV6cAGXCY/hqdefault.jpg)](https://youtu.be/eEjV6cAGXCY)
 
 ### Deploying Serverless APIs
-[![Introduction](https://img.youtube.com/vi/XYZD4fxlE7M/hqdefault.jpg)](https://youtu.be/XYZD4fxlE7M)
+[![Introduction](https://img.youtube.com/vi/9unAK0Xlc1k/hqdefault.jpg)](https://youtu.be/9unAK0Xlc1k)
 
 ### OPA Security and RBAC
 [![Introduction](https://img.youtube.com/vi/9f-7f0ynrZQ/hqdefault.jpg)](https://youtu.be/9f-7f0ynrZQ)
 
 ### Orchestrating and Managing CI/CD
-[![Introduction](https://img.youtube.com/vi/jP7zLghcFz8/hqdefault.jpg)](https://youtu.be/jP7zLghcFz8)
+[![Introduction](https://img.youtube.com/vi/vLMUhUg0A0Y/hqdefault.jpg)](https://youtu.be/vLMUhUg0A0Y)
 
 ### Using Terraform to Orchestrate Applications
 [![Introduction](https://img.youtube.com/vi/WF-M84FGwFg/hqdefault.jpg)](https://youtu.be/WF-M84FGwFg)

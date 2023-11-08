@@ -8,7 +8,8 @@ Built on the [Backstage open platform](https://backstage.io), this solution make
 
 This solution leverages the flexibility and extensibility of the Backstage platform to provide customizable software templates, scaffolder actions, and deployment patterns. While this provides a lot of freedom in implementation, it can be overwhelming to get started.  To help users get started, a reference repository is also provided with samples to show how to use the solution.
 
-:clapper: **Demonstrations and Tutorials** 
+:clapper: **Demonstrations and Tutorials**
+
 [OPA on AWS Website](https://opaonaws.io) <br/>
 [OPA on AWS Documentation](https://opaonaws.io/docs/intro) <br/>
 [Tutorial YouTube videos](https://www.youtube.com/playlist?list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3)

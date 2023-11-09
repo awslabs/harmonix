@@ -9,6 +9,18 @@ sidebar_position: 9
 
 [![Introduction](https://img.youtube.com/vi/jP7zLghcFz8/hqdefault.jpg)](https://www.youtube.com/playlist?list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3)
 
+### Decks
+1. [OPA on AWS - Part 1 - Introduction](/decks/OPAonAWS-Part1-Introduction.pdf)
+2. [OPA on AWS - Part 2 - Platform engineering](OPAonAWS-Part2-PlatformEngineering.pdf)
+3. [OPA on AWS - Part 3 - Application developer](OPAonAWS-Part3-ApplicationDeveloper.pdf)
+4. [OPA on AWS - Part 4 - Deploy Application to other environments](OPAonAWS-Part4-DeployApplicationToOtherEnvironments.pdf)
+5. [OPA on AWS - Part 5 - Provision AWS Resources and resource binding](OPAonAWS-Part5-ProvisionAWSResourcesAndResourceBinding.pdf)
+6. [OPA on AWS - Part 6 - Deploying Serverless APIs](OPAonAWS-Part6-DeployingServerlessAPIs.pdf)
+7. [OPA on AWS - Part 7 - OPA Security and RBAC](OPAonAWS-Part7-OPASecurityAndRBAC.pdf)
+8. [OPA on AWS - Part 8 - Orchestrating and Managing CI-CD](OPAonAWS-Part8-OrchestratingAndManagingCI-CD.pdf)
+9. [OPA on AWS - Part 9 - Using Terraform to Orchestrate Applications](OPAonAWS-Part9-UsingTerraformToOrchestrateApplications.pdf)
+10. [OPA on AWS - Part 10 - Customizing your platform - Adding providers](OPAonAWS-Part10-CustomizingYourPlatform-AddingProviders.pdf)
+11. [OPA on AWS - Part 11 - Customizing your platform - Adding Templates](OPAonAWS-Part11-CustomizingYourPlatform-AddingTemplates.pdf)
 
 ## Individual videos
 

@@ -6,7 +6,6 @@ sidebar_position: 9
 
 ## YouTube playlist
 
-
 [![Introduction](https://img.youtube.com/vi/jP7zLghcFz8/hqdefault.jpg)](https://www.youtube.com/playlist?list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3)
 
 ### Decks
@@ -25,34 +24,45 @@ sidebar_position: 9
 ## Individual videos
 
 ### Introduction
-[![Introduction](https://img.youtube.com/vi/jP7zLghcFz8/hqdefault.jpg)](https://youtu.be/jP7zLghcFz8)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/jP7zLghcFz8?si=DD0nkin_v2AopPRR" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ###  Platform Engineering
-[![Introduction](https://img.youtube.com/vi/wdKpfgQvHzo/hqdefault.jpg)](https://youtu.be/wdKpfgQvHzo)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/wdKpfgQvHzo?si=ESNoWhlU2UG2qSRR" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ###  Application Developer
-[![Introduction](https://img.youtube.com/vi/R0ohgdvpmk0/hqdefault.jpg)](https://youtu.be/R0ohgdvpmk0)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/R0ohgdvpmk0?si=st69qK_Bv5ZCzqYh" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ### Deploy an Application to other Environments
-[![Introduction](https://img.youtube.com/vi/EgfIAPzIAHk/hqdefault.jpg)](https://youtu.be/EgfIAPzIAHk)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/EgfIAPzIAHk?si=UIRLNLq0GcMMGNe6" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ### Provision AWS Resources and Resource Binding
-[![Introduction](https://img.youtube.com/vi/eEjV6cAGXCY/hqdefault.jpg)](https://youtu.be/eEjV6cAGXCY)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/eEjV6cAGXCY?si=bXfp8FmnYjW_c5W9" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ### Deploying Serverless APIs
-[![Introduction](https://img.youtube.com/vi/9unAK0Xlc1k/hqdefault.jpg)](https://youtu.be/9unAK0Xlc1k)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/9unAK0Xlc1k?si=cvZpfXzTEiXAI-_e" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ### OPA Security and RBAC
-[![Introduction](https://img.youtube.com/vi/9f-7f0ynrZQ/hqdefault.jpg)](https://youtu.be/9f-7f0ynrZQ)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/9f-7f0ynrZQ?si=kS7XxeiLnc-fkcBM" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ### Orchestrating and Managing CI/CD
-[![Introduction](https://img.youtube.com/vi/vLMUhUg0A0Y/hqdefault.jpg)](https://youtu.be/vLMUhUg0A0Y)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/vLMUhUg0A0Y?si=83fiYCn5kE7tTdJd" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ### Using Terraform to Orchestrate Applications
-[![Introduction](https://img.youtube.com/vi/WF-M84FGwFg/hqdefault.jpg)](https://youtu.be/WF-M84FGwFg)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/WF-M84FGwFg?si=eTAFosgCFKfXxcxm" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ### Customizing your platform - Adding providers
-[![Introduction](https://img.youtube.com/vi/aoDkwhrPrfQ/hqdefault.jpg)](https://youtu.be/aoDkwhrPrfQ)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/aoDkwhrPrfQ?si=gqUGQNmrxvY3KWgI" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
 
 ### Customizing your platform - Adding Templates
-[![Introduction](https://img.youtube.com/vi/IMY4hLiiFww/hqdefault.jpg)](https://youtu.be/IMY4hLiiFww)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/IMY4hLiiFww?si=VZezmBzpLv_xuk9S" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>

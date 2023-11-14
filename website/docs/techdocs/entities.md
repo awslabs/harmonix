@@ -4,31 +4,31 @@ sidebar_position: 2
 
 # Entities
 
-OPA on AWS use some of Backstage out of the box entities but also introduce two new entities in the software catalog.
+OPA on AWS uses some Backstage out of the box entities but also introduces two new entities in the software catalog.
 
 ## AWS Environment & Environment Provider
-These custom-kind backstage entities created to represent abstract AWS environment and an environment provider. 
+TThese custom Backstage entity kinds were created to represent an abstract AWS environment and environment provider. 
 
 ### AWS Environment
-An abstracted entity that captured the intent of use of a particular environment instance, including:
+An abstracted entity that captures the intent of use of a particular environment instance, including:
 
-2. Single/multi account.
-3. Single/multi region.
-4. Category – dev, test, stage, prod etc.
-5. Classification – private, internal, public.
-6. Requires approval - for automated pipeline deployments.
-7. System - for participation in higher level systems.
-8. Hierarchy – where does it position in the hierarchy of other environments (low– dev, high – prod).
+1. Single/multi account.
+2. Single/multi region.
+3. Category – dev, test, stage, prod etc.
+4. Classification – private, internal, public.
+5. Requires approval - for automated pipeline deployments.
+6. System - for participation in higher level systems.
+7. Hierarchy – where does it position in the hierarchy of other environments (low – dev, high – prod).
 
 :::info
 AWS Environment code: [AWSEnvironmentEntityV1.ts](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/aws-apps-backend/src/model/kind/AWSEnvironmentEntityV1.ts)
 :::
 
 AWS Environment Principles:
-1. Maintain 1:N relationship with AWS environment provider
-2. Integrated with pipeline definition for require approval deployments
-3. Customizable and extendable
-4. Can and be used with different types of Environments Providers.
+1. Maintain 1:N relationship with AWS environment provider.
+2. Integrated with pipeline definition for deployments that require approval.
+3. Customizable and extendable.
+4. Can be used with different types of Environments Providers.
 
 
 ```jsx title="AWSEnvironmentEntityV1.ts"
@@ -44,7 +44,7 @@ AWS Environment Principles:
 
 
 
-AWS Environment enforce the creation of relationship with environment providers through the entity Processor
+AWS Environment enforces the creation of relationship with environment providers through the entity Processor
 
 ```jsx title="AWSEnvironmentEntitiesProcessor.ts"
   if (targetRef.kind == 'awsenvironmentprovider') {
@@ -82,13 +82,13 @@ A custom kind entity that captures a place in the cloud that can be used to prov
 An Environment provider can be defined by:
 1. A particular AWS Account
 2. A particular AWS Region
-3. A name and prefix composition for organization segmentation(payments:development, hr:production etc.)
+3. A name and prefix composition for organization segmentation (payments:development, hr:production etc.)
 4. Mutually exclusive – within an account and region multiple providers can be created
 5. Isolated from other providers / accounts
-6. Provisioning role - a role that have the sufficient permissions to provision the resources for the designated types of applications.
-7. Operations role - a role that have the sufficient permissions to operate the designated types of applications.
+6. Provisioning role - a role that has the sufficient permissions to provision the resources for the designated types of applications.
+7. Operations role - a role that has the sufficient permissions to operate the designated types of applications.
 8. Audit table - a dedicated table to capture the actions performed on the applications running in the current environment.
-9. Optional: The underline networking(VPC), runtime environment(ECS/EKS/Serverless), and required applications infrastructure 
+9. Optional: The underlying networking(VPC), runtime environment(ECS/EKS/Serverless), and required applications infrastructure 
 
 <p align="center">
 ![aws-environment-provider.png](/img/docs/aws-environment-provider.png)
@@ -115,10 +115,10 @@ AWS Environment Provider Processor code: [AWSEnvironmentProviderEntitiesProcesso
 
 ## Components
 
-We map application to the existing backstage entity component. while the concept of application can be interpreted in different ways we found [kind component](https://backstage.io/docs/features/software-catalog/descriptor-format/#kind-component) to be very close to it.
+We map applications to the existing backstage entity component. while the concept of an application can be interpreted in different ways we found [kind component](https://backstage.io/docs/features/software-catalog/descriptor-format/#kind-component) to be very close to it.
 
 ### The structure of application component entity:
-When provisioning an application the template create backstage catalog info yaml file with the below properties:
+When provisioning an application, the template creates a Backstage catalog info yaml file with the below properties:
 ```yaml
 apiVersion: backstage.io/v1alpha1
 kind: Component
@@ -136,13 +136,13 @@ metadata:
     lifecycle: experimental
     dependsOn: [FirstDeployedEnvironment]
 ```
-We introduce a new component **spec type** - *aws-app* which will be used to mark applications that runs on aws. this is used to provide specific UI experience that allow the users to operates the application over AWS cloud.
+We introduce a new component **spec type** - *aws-app* which will be used to mark applications that runs on AWS. this is used to provide a specific UI experience that allows users to operate the application in the AWS cloud.
 
 
-The **iac-type** property indicate the type of the infrastructure as code this app was provisioned with - this impact both the pipeline as well as the UI experience that based on terraform or cdk(state management).
+The **iac-type** property indicates the type of the infrastructure as code this app was provisioned with - this impacts both the pipeline as well as the UI experience that are based on terraform or cdk (state management).
 
 :::tip
- You may notice that repo-secret-arn created regardless to the environment of which the application is deployed - that is because the access to the repository is part of the platform / solution account regardless to where is it being deployed.
+ You may notice that repo-secret-arn is created regardless of the environment where the application is deployed - that is because the access to the repository is part of the platform / solution account regardless of where is it being deployed.
 :::
 
 After the application provisioning pipeline completed, the pipeline will update the entity with the environment deployed resources under the *appData* tag:
@@ -192,7 +192,7 @@ spec:
 ```
 
 :::tip
- You may notice that the example above describe an entity of an application that is deployed in two environments: *EMEA-AML-dev* and *EMEA-AML-test*
+ You may notice that the example above describes an entity of an application that is deployed in two environments: *EMEA-AML-dev* and *EMEA-AML-test*
 :::
 
 Similiarly a serverless application entity will look like :
@@ -239,7 +239,7 @@ spec:
 
 ## Resource
 
-Backstage resource entity is used to illustrate AWS resource, however we extended the model so that we can articulate specific UI and processes that won't conflict with backstage built-in capabilities of *Resource* entity.
+Backstage resource entities are used to illustrate AWS resources. However, we extended the model so that we can articulate specific UI and processes that won't conflict with Backstage built-in capabilities of *Resource* entities.
 
 Resource entity catalog:
 
@@ -275,15 +275,15 @@ spec:
   dependsOn: ['awsenvironment:default/US-Commercial']
 ```
 Core resource entity properties:
-1. **spec/type** -> *aws-resource* . while we use the same kind of *Resource* the spec type defer to aws-resource which can be easily used to filter our aws related resources.
+1. **spec/type** -> *aws-resource* . while we use the same kind of *Resource* the spec type refers to aws-resource which can be easily used to filter our AWS related resources.
 2. **resource-type** this is used to capture the different types of AWS resources including: aws-rds, s3, sns, sqs etc.
 
 Extended resource entity properties:
 1.  **db-name** - in this aws-rds resource the property captures the database name
 2.  **db-object-name** in this aws-rds resource the property captures the schema/user name
-3.  **appData** - under this property all deployed resource artifact are preserved - you can customized what properties you would like to bring back to the entity from the provisioning pipeline.
+3.  **appData** - under this property, all deployed resource artifacts are preserved - you can customize what properties you would like to bring back to the entity from the provisioning pipeline.
 
 :::note
-Provisioning AWS Resource by definition are provisioned against **single environment**, the process of deploying a resource to additional environment is not supported to avoid managing different configuration or changes of the resource that are not unified across multiple environment.
+AWS Resources are provisioned against a single environment. The process of deploying a resource to an additional environment is not supported to avoid managing different configurations or changes of the resource that are not identical across multiple environments.
 
 :::

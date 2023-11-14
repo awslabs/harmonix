@@ -17,7 +17,7 @@ Backstage Plugins description
 
 | Plugin | Type  | Description |
 | :------------------- | ---- | :----------------------------------------------------------------------------------------- |
-| Backend - @aws/plugin-aws-apps-backend-for-backstage| Backstage backend plugin | responsible for all outgoing API calls to AWS, SCM(Gitlab) and the platform |
+| Backend - @aws/plugin-aws-apps-backend-for-backstage| Backstage backend plugin | responsible for all outgoing API calls to AWS, SCM (Gitlab) and the platform |
 | Frontend - @aws/plugin-aws-apps-for-backstage| Backstage frontend plugin | responsible for all UI interaction components - pages, components, state and frontend API |
 | Common - @aws/plugin-aws-apps-common-for-backstage| Backstage isomorphic plugin | shareable plugin for both frontend, backend and scaffolder, used to define interfaces and types |
 | Scaffolder - @aws/plugin-scaffolder-backend-aws-apps-for-backstage| Backstage scaffolder plugin | contains the actions required to execute the templates |

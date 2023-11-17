@@ -306,6 +306,7 @@ const FeatureRowList: FeatureGroup[] = [
     direction: "ltr",
     FeatureItems: EnterpriseFeatureList,
   },
+
   {
     direction: "ltr",
     FeatureItems: opaDescription,
@@ -313,12 +314,13 @@ const FeatureRowList: FeatureGroup[] = [
 
   {
     direction: "ltr",
-    FeatureItems: SpeedFeatureList,
+    FeatureItems: opaImageList,
   },
   {
     direction: "ltr",
-    FeatureItems: opaImageList,
+    FeatureItems: SpeedFeatureList,
   },
+
   {
     direction: "ltr",
     FeatureItems: ScaleFeatureList,

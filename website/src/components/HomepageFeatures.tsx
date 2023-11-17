@@ -12,7 +12,7 @@ type FeatureGroup = {
 const carouselContent = (
   <div className='carouselTitle'>
     <h3>Coming Soon</h3>
-  <Carousel data-bs-theme="dark" interval={null} pause={'hover'} touch={true} title='Coming soon'  >
+  <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='Coming soon'  >
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
       <h4>AWS EKS Provider</h4>

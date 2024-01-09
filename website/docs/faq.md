@@ -1,5 +1,5 @@
 ---
-sidebar_position: 10
+sidebar_position: 11
 toc_min_heading_level: 4
 toc_max_heading_level: 4
 ---
@@ -44,12 +44,12 @@ toc_max_heading_level: 4
 
 #### What are the benefits for using OPA?
 > 
-> A better developer experience and faster way to scale the use of AWS Services for enterprises. Please see the full [features page](/docs/features)
+> A better developer experience and faster way to scale the use of AWS Services for enterprises. Please see the full [features page](features.md)
 <br/>
 
 #### What are the requirements to get started on OPA?
 > 
-> Please read our documentation [Getting started](docs/category/getting-started)
+> Please read our documentation [Getting started](getting-started/deploy-the-platform.md)
 <br/>
 
 #### What is the price of OPA?
@@ -71,7 +71,7 @@ toc_max_heading_level: 4
 
 #### How can OPA on AWS accelerate applications migration?
 > 
-> Please see our [Migration page](docs/category/migrations) 
+> Please see our [Migration page](migrations) 
 <br/>
 
 

@@ -49,7 +49,7 @@ toc_max_heading_level: 4
 
 #### What are the requirements to get started on OPA?
 > 
-> Please read our documentation [Getting started](getting-started/deploy-the-platform.md)
+> Please read our documentation [Getting started](getting-started)
 <br/>
 
 #### What is the price of OPA?

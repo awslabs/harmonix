@@ -184,7 +184,17 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
     },
   } satisfies Preset.ThemeConfig,
-  plugins: ['docusaurus-lunr-search', 'docusaurus-plugin-image-zoom'],
+  plugins: [
+    'docusaurus-lunr-search', 
+    'docusaurus-plugin-image-zoom', 
+    ['docusaurus-plugin-remote-content',  
+    {
+      name: "changelog",
+      sourceBaseUrl: "https://raw.githubusercontent.com/awslabs/app-development-for-backstage-io-on-aws/main/",
+      outDir: "docs",
+      documents: ["CHANGELOG.md"],
+    }]
+  ],
 }
 
 export default config;

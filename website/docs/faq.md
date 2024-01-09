@@ -49,7 +49,7 @@ toc_max_heading_level: 4
 
 #### What are the requirements to get started on OPA?
 > 
-> Please read our documentation [Getting started](getting-started)
+> Please read our documentation [Getting started](getting-started/deploy-the-platform.md)
 <br/>
 
 #### What is the price of OPA?
@@ -60,7 +60,7 @@ toc_max_heading_level: 4
 
 #### Is there a roadmap?
 > 
-> Please see the features section under [features](docs/features)
+> Please see the features section under [features](features.md)
 
 <br/>
 
@@ -71,7 +71,7 @@ toc_max_heading_level: 4
 
 #### How can OPA on AWS accelerate applications migration?
 > 
-> Please see our [Migration page](migrations) 
+> Please see our [Migration page](migrations/migration-pcf.md) 
 <br/>
 
 
@@ -87,7 +87,7 @@ toc_max_heading_level: 4
 
 #### Will AWS supply templates or examples? How will they be maintained?
 > 
-> There are many samples and examples provided, please see [this table](/docs/features#provided-examples-and-templates).
+> There are many samples and examples provided, please see [this table](features.md#provided-examples-and-templates).
 <br/>
 
 #### Will this make the DevOps team obsolete?
@@ -113,7 +113,7 @@ toc_max_heading_level: 4
 
 #### Does OPA on AWS have a CLI?
 > 
-> Not yet - Please see [features](docs/features)
+> Not yet - Please see [features](features.md)
 <br/>
 
 ---

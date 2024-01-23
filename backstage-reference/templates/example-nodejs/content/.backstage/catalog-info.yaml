@@ -2,21 +2,21 @@ apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
   name: ${{ values.component_id | dump }}
+  title: ${{ values.title | dump }}
   {%- if values.description %}
   description: ${{values.description | dump}}
   {%- endif %}
   tags:
     - aws
     - nodejs
-  annotations:
-    aws.amazon.com/opa-repo-secret-arn: ${{ values.aws_secret_repo_arn | dump }}
   # links:
   #   - title: Example Title
   #     url: http://www.example.com
-  iac-type: cdk
-  repo-secret-arn: ${{ values.aws_secret_repo_arn | dump }}
+  iacType: cdk
+  repoSecretArn: ${{ values.awsSecretRepoArn | dump }}
 spec:
   type: aws-app
+  subType: aws-ecs
   owner: ${{ values.owner | dump }}
   lifecycle: experimental
   dependsOn: []

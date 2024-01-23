@@ -61,8 +61,9 @@ auth:
         clientId: ${OKTA_CLIENT_ID}
         clientSecret: ${OKTA_CLIENT_SECRET}
         audience: ${OKTA_ORG_URL}
-        # authServerId:
-        # idp:
+        # authServerId: ${AUTH_OKTA_AUTH_SERVER_ID}
+        # idp: ${AUTH_OKTA_IDP}
+        # additionalScopes: ${AUTH_OKTA_ADDITIONAL_SCOPES}
 
 integrations:
   gitlab:
@@ -110,13 +111,15 @@ catalog:
     okta:
       - orgUrl: ${OKTA_ORG_URL}
         token: ${OKTA_API_TOKEN}
+        # userFilter: profile.department eq "engineering"
+        # groupFilter: profile.name eq "Everyone"
     gitlab:
       opa:
         host: ${SSM_GITLAB_HOSTNAME}
         branch: main
         fallbackBranch: main
         skipForkedRepos: false
-        # group: example-group # Optional. Group and subgroup (if needed) to look for repositories. If not present the whole instance will be scanned
+        # group: example-org/teams # Required for user ingestion.  Group and subgroup (if needed) to look for users.
         entityFilename: .backstage/catalog-info.yaml
         projectPattern: '[\s\S]*'
         schedule:

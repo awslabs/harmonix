@@ -3,17 +3,36 @@
 
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
+# function to wait for apt to finish and release all locks
+apt_wait () {
+  while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
+    echo "/var/lib/dpkg/lock is locked"
+    sleep 10
+  done
+  while sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 ; do
+    echo "/var/lib/apt/lists/lock is locked"
+    sleep 10
+  done
+  if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
+    while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log >/dev/null 2>&1 ; do
+      echo "/var/log/unattended-upgrades/unattended-upgrades.log is locked"
+      sleep 10
+    done
+  fi
+}
+
 # Perform update - required so that jq/unzip packages are available
 echo ""
 echo "Updating APT..."
-apt update
+apt_wait
+apt-get update
 echo ""
 echo "DONE Updating APT"
 echo ""
 echo "Installing jq, unzip, and aws cli v2..."
 echo ""
-apt install jq -y
-apt install unzip -y
+apt_wait
+apt-get install jq unzip -y
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 echo "Unzipping AWS CLI..."
 unzip -q awscliv2.zip
@@ -47,7 +66,8 @@ echo "DONE Installing Docker"
 # Download and install GitLab Runner
 echo ""
 echo "Downloading GitLab Runner"
-sudo curl -L --output /usr/local/bin/gitlab-runner "https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-386"
+# Freeze the GitLab Runner version to 16.5.0
+sudo curl -L --output /usr/local/bin/gitlab-runner "https://gitlab-runner-downloads.s3.amazonaws.com/v16.5.0/binaries/gitlab-runner-linux-386"
 sudo chmod +x /usr/local/bin/gitlab-runner
 echo ""
 echo "DONE Downloading GitLab Runner"

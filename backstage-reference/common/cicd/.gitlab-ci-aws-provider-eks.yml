@@ -1,0 +1,148 @@
+iac-deployment-env-provider:
+  stage: build
+  before_script:
+    - echo -e "\e[0Ksection_start:`date +%s`:log_os[collapsed=true]\r\e[0KOS Info"
+    - cat /etc/os-release
+    - echo -e "\e[0Ksection_end:`date +%s`:log_os\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:get_tools[collapsed=true]\r\e[0KGet Tools"
+    - apt-get update
+    - apt install nodejs npm git python3-pip yq jq -y
+    - export PIP_BREAK_SYSTEM_PACKAGES=1
+    - pip3 install awscli --upgrade
+    - yarn global add aws-cli typescript@latest aws-cdk@2.120.0
+    - yarn --version
+    - aws --version
+    - echo -e "\e[0Ksection_end:`date +%s`:get_tools\r\e[0K"
+
+    # Export environment variables
+    - set -a && source stack-parameters.properties && set +a
+
+    - echo -e "\e[0Ksection_start:`date +%s`:aws_identity[collapsed=true]\r\e[0KAssume AWS IAM Role"
+    - aws sts get-caller-identity
+    # Store the access token before assuming the environment provisioning role
+    - ACCESS_TOKEN=`aws secretsmanager get-secret-value --secret-id opa-admin-gitlab-secrets --region ${OPA_PLATFORM_REGION} | jq --raw-output '.SecretString' | jq -r .apiToken`
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ROLE_ARN" --role-session-name "pipelineJob-$AWS_ACCOUNT_ID" --duration-second=3600 --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    - aws sts get-caller-identity
+    - echo -e "\e[0Ksection_end:`date +%s`:aws_identity\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:get_kubectl[collapsed=true]\r\e[0KInstall Kubectl"
+    - apt install sudo
+    - curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
+    - echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+    - sudo apt update
+    - sudo apt install kubectl
+    - echo -e "\e[0Ksection_end:`date +%s`:get_kubectl\r\e[0K"
+
+  script:
+    # Export environment variables
+    - set -a && source stack-parameters.properties && set +a
+    
+    - echo -e "\e[0Ksection_start:`date +%s`:existing_cluster[collapsed=true]\r\e[0KLookup Existing Cluster If Applicable"
+    - |
+      if [[ -z "$VPC_ID" && ! -z "$EXISTING_CLUSTER_NAME" ]]; then
+        export VPC_ID=$(aws eks describe-cluster --name $EXISTING_CLUSTER_NAME --region us-west-2 --query "cluster.resourcesVpcConfig.vpcId" --output text)
+        echo "Imported EKS Cluster VPC_ID is $VPC_ID"
+        echo "VPC_ID=$VPC_ID" >> stack-parameters.properties
+        git add stack-parameters.properties
+      fi
+    - echo -e "\e[0Ksection_end:`date +%s`:existing_cluster\r\e[0K"
+
+    - cd .iac/opa-eks-environment
+
+    - echo -e "\e[0Ksection_start:`date +%s`:yarn_install[collapsed=true]\r\e[0KYarn Install"
+    - yarn install
+    - echo -e "\e[0Ksection_end:`date +%s`:yarn_install\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:cdk_deploy[collapsed=true]\r\e[0KCDK Deploy"
+    - echo "Deploying the cluster and saving outputs in a file"
+    - cdk deploy --outputs-file cdk-output.json --require-approval never
+    - echo -e "\e[0Ksection_end:`date +%s`:cdk_deploy\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:extract_cdk_output[collapsed=true]\r\e[0KExport CDK Output"
+    # once CDK finished - extract output params
+    - jq '.[] ' cdk-output.json | jq -r 'to_entries[]|"\(.key)=\"\(.value)\""' > cdk-output.properties
+    # export the new variables
+    - cat cdk-output.properties
+    - set -a && source cdk-output.properties && set +a
+    - echo -e "\e[0Ksection_end:`date +%s`:extract_cdk_output\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:lambda_arn[collapsed=true]\r\e[0KGet kubectl lambda ARN"
+    # Look up the kubectl cluster creation role if we dont know it already
+    - |
+      if [[ -z "$KUBECTL_LAMBDA_ASSUME_ROLE_ARN" ]]; then
+        export KUBECTL_LAMBDA_ASSUME_ROLE_ARN=$(aws cloudformation describe-stack-resources --stack-name $StackName --query "StackResources[?ResourceType=='AWS::IAM::Role' && contains(LogicalResourceId, 'CreationRole')].PhysicalResourceId | [0]" --output text)
+        export KUBECTL_LAMBDA_ASSUME_ROLE_ARN="arn:aws:iam::$AWS_ACCOUNT_ID:role/$KUBECTL_LAMBDA_ASSUME_ROLE_ARN"
+        echo "KUBECTL_LAMBDA_ASSUME_ROLE_ARN is $KUBECTL_LAMBDA_ASSUME_ROLE_ARN"
+      else
+        export KUBECTL_LAMBDA_ASSUME_ROLE_ARN=$KUBECTL_LAMBDA_ASSUME_ROLE_ARN
+      fi
+    # Look up the kubectl lambda ARN if we dont know it already
+    - |
+      if [[ -z "$KUBECTL_LAMBDA_ARN" ]]; then
+        export KUBECTL_STACK_ARN=$(aws cloudformation describe-stack-resources --stack-name $StackName --query "StackResources[?ResourceType=='AWS::CloudFormation::Stack' && contains(LogicalResourceId, 'KubectlProvider')].PhysicalResourceId | [0]")
+        echo "KUBECTL_STACK_ARN is $KUBECTL_STACK_ARN"
+        export KUBECTL_STACK_NAME=$(echo "${KUBECTL_STACK_ARN%/*}")
+        export KUBECTL_STACK_NAME=$(echo "${KUBECTL_STACK_NAME##*/}")
+        echo "KUBECTL_STACK_NAME is $KUBECTL_STACK_NAME"
+        export KUBECTL_LAMBDA_ARN=$(aws cloudformation describe-stack-resources --stack-name $KUBECTL_STACK_NAME --query "StackResources[?ResourceType=='AWS::Lambda::Function' && starts_with(LogicalResourceId, 'Handler')].PhysicalResourceId | [0]" --output text)
+        export KUBECTL_LAMBDA_ARN="arn:aws:lambda:$AWS_DEFAULT_REGION:$AWS_ACCOUNT_ID:function:$KUBECTL_LAMBDA_ARN"
+      else
+        export KUBECTL_LAMBDA_ARN=$KUBECTL_LAMBDA_ARN
+      fi
+    - echo "KUBECTL_LAMBDA_ARN is $KUBECTL_LAMBDA_ARN"
+    - echo -e "\e[0Ksection_end:`date +%s`:lambda_arn\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:backstage_entity[collapsed=true]\r\e[0KUpdate Backstage Entity"
+    # alter entity details
+    - cd $CI_PROJECT_DIR/.backstage
+    - yq -Yi ".metadata.vpc =\"${VPC}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"clusterName\"] = \"${ClusterName}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"auditTable\"] = \"${AuditTable}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"operationRole\"] = \"${OperationsRoleARN}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"provisioningRole\"] = \"${ProvisioningRoleARN}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"clusterAdminRole\"] = \"${ClusterAdminRoleDirectARN}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"kubectlLambdaArn\"] = \"${KUBECTL_LAMBDA_ARN}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"kubectlLambdaAssumeRoleArn\"] = \"${KUBECTL_LAMBDA_ASSUME_ROLE_ARN}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"kubectlLambdaExecutionRoleArn\"] = \"${KubectlLambdaRoleDirectARN}\"" catalog-info.yaml
+    - yq -Yi ".metadata[\"stackName\"] = \"${StackName}\"" catalog-info.yaml
+    - cat catalog-info.yaml
+    - echo -e "\e[0Ksection_end:`date +%s`:backstage_entity\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:git[collapsed=true]\r\e[0KUpdate Git Repo"
+    - git config --global user.email "fsi-pace-pe@amazon.com"
+    - git config --global user.name "OPA CICD User"
+    - git add catalog-info.yaml
+    - git status
+    - UPDATE_COUNT=$(git diff --cached --numstat | wc -l | sed 's/ *$//g')
+    - echo "The number of files that will be committed is $UPDATE_COUNT"
+    - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git commit -m "updating entity details" --quiet; fi
+    - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git push -o ci.skip https://oauth2:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME HEAD:main; fi
+    - echo -e "\e[0Ksection_end:`date +%s`:git\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:lambda[collapsed=true]\r\e[0KUpdate Kubectl Lambda"
+    - cd $CI_PROJECT_DIR/.iac/opa-eks-environment
+    - echo "Updating ${KUBECTL_LAMBDA_ARN#*function:}"
+    - aws lambda update-function-code --function-name ${KUBECTL_LAMBDA_ARN#*function:} --zip-file fileb://kubectl-helm-lambda.zip
+    - echo -e "\e[0Ksection_end:`date +%s`:lambda\r\e[0K"
+
+    # The below code can be uncommented if you need to run some kubectl commands after the provider is created
+    # - echo -e "\e[0Ksection_start:`date +%s`:kubectl[collapsed=true]\r\e[0KExecute kubectl commands"
+    # # Unset AWS_xxx env vars so that we will use the default EC2 instance role
+    # - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
+    # - aws sts get-caller-identity
+    # # Now assume the newly-created provider provisioning role, which has K8s cluster access
+    # - export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+    # - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
+    # - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    # - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    # - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    # - aws sts get-caller-identity
+    # # Get configs for a kubectl session
+    # - aws eks update-kubeconfig --region $AWS_DEFAULT_REGION --name opa-$ENV_NAME-cluster
+    # - echo "Performing rolling restart on coredns to ensure it uses the latest aws-logging ConfigMap"
+    # - kubectl rollout restart deployment/coredns -n kube-system
+    # - echo -e "\e[0Ksection_end:`date +%s`:kubectl\r\e[0K"

@@ -14,18 +14,18 @@ const Pool = require('pg').Pool;
 const pool = new Pool({ user, host, database, password, port });
 
 const createTable = () => {
-  pool.query('CREATE TABLE IF NOT EXISTS ${{ values.db_name }} (ID SERIAL PRIMARY KEY, name VARCHAR(30), email VARCHAR(30) );', (error, results) => {
+  pool.query('CREATE TABLE IF NOT EXISTS ${{ values.dbName }} (ID SERIAL PRIMARY KEY, name VARCHAR(30), email VARCHAR(30) );', (error, results) => {
     if (error) {
       console.error('Error: ', error);
     } else {
-      console.log(`Created ${{ values.db_name }} table.  Results: ${JSON.stringify(results)}`)
+      console.log(`Created ${{ values.dbName }} table.  Results: ${JSON.stringify(results)}`)
     }
   })
 }
 
-// Get all ${{ values.db_object_name }}s
-const get${{ values.db_object_name | capitalize }}s = (request, response) => {
-  pool.query('SELECT * FROM ${{ values.db_name }} ORDER BY id ASC', (error, results) => {
+// Get all ${{ values.dbObjectName }}s
+const get${{ values.dbObjectName | capitalize }}s = (request, response) => {
+  pool.query('SELECT * FROM ${{ values.dbName }} ORDER BY id ASC', (error, results) => {
     if (error) {
       console.error('Error: ', error);
       response.status(500).json({error: JSON.stringify(error)});
@@ -35,11 +35,11 @@ const get${{ values.db_object_name | capitalize }}s = (request, response) => {
   })
 }
 
-// Get a single ${{ values.db_object_name }} by id
-const get${{ values.db_object_name | capitalize }}ById = (request, response) => {
+// Get a single ${{ values.dbObjectName }} by id
+const get${{ values.dbObjectName | capitalize }}ById = (request, response) => {
   const id = parseInt(request.params.id)
 
-  pool.query('SELECT * FROM ${{ values.db_name }} WHERE id = $1', [id], (error, results) => {
+  pool.query('SELECT * FROM ${{ values.dbName }} WHERE id = $1', [id], (error, results) => {
     if (error) {
       console.error('Error: ', error);
       response.status(500).json({error: JSON.stringify(error)});
@@ -49,58 +49,58 @@ const get${{ values.db_object_name | capitalize }}ById = (request, response) => 
   })
 }
 
-// Create a new ${{ values.db_object_name }}
-const create${{ values.db_object_name | capitalize }} = (request, response) => {
+// Create a new ${{ values.dbObjectName }}
+const create${{ values.dbObjectName | capitalize }} = (request, response) => {
   const { name, email } = request.body
 
-  pool.query('INSERT INTO ${{ values.db_name }} (name, email) VALUES ($1, $2) RETURNING *', [name, email], (error, results) => {
+  pool.query('INSERT INTO ${{ values.dbName }} (name, email) VALUES ($1, $2) RETURNING *', [name, email], (error, results) => {
     if (error) {
       console.error('Error: ', error);
       response.status(500).json({error: JSON.stringify(error)});
     } else {
-      response.status(201).send(`${{ values.db_object_name | capitalize }} added with ID: ${results.rows[0].id}`)
+      response.status(201).send(`${{ values.dbObjectName | capitalize }} added with ID: ${results.rows[0].id}`)
     }
   })
 }
 
-// Update an existing ${{ values.db_object_name }}
-const update${{ values.db_object_name | capitalize }} = (request, response) => {
+// Update an existing ${{ values.dbObjectName }}
+const update${{ values.dbObjectName | capitalize }} = (request, response) => {
   const id = parseInt(request.params.id)
   const { name, email } = request.body
 
   pool.query(
-    'UPDATE ${{ values.db_name }} SET name = $1, email = $2 WHERE id = $3',
+    'UPDATE ${{ values.dbName }} SET name = $1, email = $2 WHERE id = $3',
     [name, email, id],
     (error, results) => {
       if (error) {
         console.error('Error: ', error);
         response.status(500).json({error: JSON.stringify(error)});
       } else {
-        response.status(200).send(`${{ values.db_object_name | capitalize }} modified with ID: ${id}`)
+        response.status(200).send(`${{ values.dbObjectName | capitalize }} modified with ID: ${id}`)
       }
     }
   )
 }
 
-// Delete a ${{ values.db_object_name }}
-const delete${{ values.db_object_name | capitalize }} = (request, response) => {
+// Delete a ${{ values.dbObjectName }}
+const delete${{ values.dbObjectName | capitalize }} = (request, response) => {
   const id = parseInt(request.params.id)
 
-  pool.query('DELETE FROM ${{ values.db_name }} WHERE id = $1', [id], (error, results) => {
+  pool.query('DELETE FROM ${{ values.dbName }} WHERE id = $1', [id], (error, results) => {
     if (error) {
       console.error('Error: ', error);
       response.status(500).json({error: JSON.stringify(error)});
     } else {
-      response.status(200).send(`${{ values.db_object_name | capitalize }} deleted with ID: ${id}`)
+      response.status(200).send(`${{ values.dbObjectName | capitalize }} deleted with ID: ${id}`)
     }
   })
 }
 
 module.exports = {
   createTable,
-  get${{ values.db_object_name | capitalize }}s,
-  get${{ values.db_object_name | capitalize }}ById,
-  create${{ values.db_object_name | capitalize }},
-  update${{ values.db_object_name | capitalize }},
-  delete${{ values.db_object_name | capitalize }},
+  get${{ values.dbObjectName | capitalize }}s,
+  get${{ values.dbObjectName | capitalize }}ById,
+  create${{ values.dbObjectName | capitalize }},
+  update${{ values.dbObjectName | capitalize }},
+  delete${{ values.dbObjectName | capitalize }},
 }

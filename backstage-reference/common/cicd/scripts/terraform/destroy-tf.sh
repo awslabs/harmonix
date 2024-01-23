@@ -7,7 +7,8 @@ sed -e 's/^/TF_VAR_/' providers/$PROVIDER_FILE_TO_DELETE > updated_props.propert
 cat updated_props.properties
 set -a && source updated_props.properties && set +a
 cd $CI_PROJECT_DIR/.iac/
-ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=3600 --output json)
+export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
 export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
 export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
 export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')

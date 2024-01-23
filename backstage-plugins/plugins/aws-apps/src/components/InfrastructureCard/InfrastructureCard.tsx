@@ -9,6 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { opaApiRef } from '../../api';
 import { ServiceResourcesComponent } from './ServiceComponent';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
+import { ProviderType } from '../../helpers/constants';
 
 const OpaAppInfraInfo = ({
   input: { resourceGroupArn, awsComponent }
@@ -35,6 +36,11 @@ const OpaAppInfraInfo = ({
     'SecretsManager',
     'SSM',
   ];
+
+  if (ProviderType.EKS === awsComponent.currentEnvironment.providerData.providerType) {
+    defaultServiceFilter.push('ElasticLoadBalancingV2');
+    defaultServiceFilter.push('ECR');
+  }
 
   async function getData() {
     // Validate the resource group annotation and extract the resource group name

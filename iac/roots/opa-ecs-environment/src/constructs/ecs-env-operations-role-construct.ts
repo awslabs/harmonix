@@ -14,7 +14,7 @@ import { OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs
 export interface ECSOperationsConstructProps extends cdk.StackProps {
   readonly opaEnv: OPAEnvironmentParams;
   KMSkey: kms.IKey;
-  vpcCollection: ec2.Vpc[];
+  vpcCollection: ec2.IVpc[];
   ecsCollection: ecs.ICluster[];
   assumedBy: string;
   auditTable: string;
@@ -202,7 +202,7 @@ export class ECSOperationsConstruct extends Construct {
     // this.IAMRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonAPIGatewayAdministrator"));
     // this.IAMRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonS3FullAccess"));
 
-    // now save the VPC in SSM Param
+    // now save the Operations Role in SSM Param
     const roleParam = new ssm.StringParameter(this, `${envIdentifier}-role-param`, {
       allowedPattern: ".*",
       description: `The Operations Role for OPA Solution: ${props.opaEnv.envName} Environment`,

@@ -113,7 +113,7 @@ To simplify troubleshooting, SAM CLI has a command called `sam logs`. `sam logs`
 `NOTE`: This command works for all AWS Lambda functions; not just the ones you deploy using SAM.
 
 ```bash
-sam-sports-equipment-ts$ sam logs -n PersistDataFunction --stack-name sam-sports-equipment-ts --tail
+sam-sports-equipment-ts$ sam logs -n PersistDataFunction --stackName sam-sports-equipment-ts --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
@@ -133,7 +133,7 @@ sports-equipment$ npm run test
 To delete the sample application that you created, use the AWS CLI. Assuming you used your project name for the stack name, you can run the following:
 
 ```bash
-aws cloudformation delete-stack --stack-name sam-sports-equipment-ts
+aws cloudformation delete-stack --stackName sam-sports-equipment-ts
 ```
 
 ## Resources

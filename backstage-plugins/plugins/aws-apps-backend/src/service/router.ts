@@ -18,6 +18,7 @@ import { AwsAppsApi, getAWScreds } from '../api';
 import { AwsAuditResponse, createAuditRecord } from '../api/aws-audit';
 import { AwsAppsPlatformApi } from '../api/aws-platform';
 import { Config } from '@backstage/config';
+import { PlatformSCMParams } from '@aws/plugin-aws-apps-common-for-backstage/src/types/PlatformTypes';
 
 export interface RouterOptions {
   logger: Logger;
@@ -30,9 +31,9 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
   const { logger, userIdentity, config, permissions } = options;
 
   const permissionIntegrationRouter = createPermissionIntegrationRouter({
-    permissions: [ readOpaAppAuditPermission ]
+    permissions: [readOpaAppAuditPermission]
   });
-  
+
   const router = Router();
 
   router.use(permissionIntegrationRouter);
@@ -247,15 +248,15 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const gitProjectGroup = req.body.gitProjectGroup?.toString();
     const gitAdminSecret = req.body.gitAdminSecret?.toString();
     const envName = req.body.envName?.toString();
-    
-    const service = await apiPlatformClient.deleteTFProvider(envName, providerName,gitHost,gitProjectGroup,gitRepoName,gitAdminSecret);
+
+    const service = await apiPlatformClient.deleteTFProvider(envName, providerName, gitHost, gitProjectGroup, gitRepoName, gitAdminSecret);
     const status = service.status === "SUCCESS" ? 'SUCCESS' : 'FAILED';
     if (status == 'FAILED') res.status(500).json({ message: 'FAILED Destroy TF Provider request .' });
     res.status(200).json(service);
   });
 
 
-  
+
   router.post('/platform/delete-secret', async (req, res) => {
     logger.info('router entry: /platform/delete-secret');
     const apiPlatformClient = getAwsAppsPlatformApi(req);
@@ -415,6 +416,24 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     res.status(200).json(results);
   });
 
+  // API to update git JSON / Yaml config files
+  router.post('/platform/fetch-eks-config', async (req, res) => {
+    logger.info('router entry: /platform/fetch-eks-config');
+    console.log(req.body)
+    const apiPlatformClient = getAwsAppsPlatformApi(req);
+    const secretName = req.body.gitAdminSecret?.toString();
+    const envName = req.body.envName?.toString();
+    const providerName = req.body.providerName;
+    const platformParams: PlatformSCMParams = req.body.platformSCMConfig;
+
+    const filePath = encodeURIComponent(`k8s/${envName}-${providerName}/next-release.json`);
+    logger.info(`fetching environment entity file path is ${filePath}`);
+    // get the JSON file from the repo
+    const jsonResponse = await apiPlatformClient.getFileContentsFromGit({ gitHost: platformParams.host, gitProjectGroup: platformParams.projectGroup, gitRepoName: platformParams.repoName }, filePath, secretName);
+    const configJson = JSON.parse(atob(jsonResponse.content))
+    res.status(200).json(configJson);
+  });
+
   //Route for getting resource
   router.post('/resource-group', async (req, res) => {
     logger.info('router entry: /resource-group');
@@ -458,16 +477,28 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const { apiClient, apiClientConfig } = await getApiClient(req);
     const ssmParamName = req.body.ssmParamName?.toString();
     const serviceResult = await apiClient.getSSMParameter(ssmParamName);
+    let status = ""
+
+    if (serviceResult.$metadata.httpStatusCode === 200) {
+      status = 'SUCCESS'
+    } else {
+      status = 'FAILED'
+      console.error(`Failed fetching ${ssmParamName} on client ${apiClientConfig}`)
+    }
 
     const auditResponse = await createRouterAuditRecord({
       actionType: 'Fetch SSM Param',
       actionName: ssmParamName,
-      status: serviceResult.$metadata.httpStatusCode == 200 ? 'SUCCESS' : 'FAILED',
+      status,
       apiClientConfig,
     });
-    if (auditResponse.status == 'FAILED') res.status(500).json({ message: 'auditing request FAILED.' });
 
-    res.status(200).json(serviceResult);
+    if (auditResponse.status === 'FAILED') {
+      res.status(500).json({ message: 'auditing request FAILED.' });
+    }
+    else {
+      res.status(200).json(serviceResult);
+    }
   });
 
   router.post('/logs/stream', async (req, res) => {
@@ -747,24 +778,33 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
 
   });
 
-  router.post('/kubernetes/scaleEKSDeployment', async (req, res) => {
-    try {
-      logger.info('router entry: /kubernetes/scaleEKSDeployment');
-      const { apiClient } = await getApiClient(req)
+  // Route for interacting with lambda 
+  router.post('/lambda/invoke', async (req, res) => {
+    logger.info('router entry: /lambda/invoke');
+    const { apiClient, apiClientConfig } = await getApiClient(req);
+    const functionName = req.body.functionName?.toString();
+    const actionDescription = req.body.actionDescription?.toString() || '';
+    const body = req.body.body?.toString();
+    const lambdaOutput = await apiClient.callLambda(functionName, body);
 
-      const namespace = req.body.namespace;
-      const deploymentName = req.body.deploymentName;
-      const replicaCount = req.body.replicaCount
-      // Call the scaleEKSDeployment API client method here
-      const result = await apiClient.scaleEKSDeployment(deploymentName, namespace, replicaCount)
-
-      // Respond with a successful result
-      res.status(200).json(result);
-    } catch (error) {
-      // Handle errors appropriately and respond with an error status code and message
-      console.error('Error in /kubernetes/scaleEKSDeployment:', error);
-      res.status(500).json({ message: 'Internal Server Error' });
+    if (actionDescription) {
+      const auditResponse = await createRouterAuditRecord({
+        actionType: 'Invoke Lambda',
+        actionName: actionDescription,
+        status: lambdaOutput.StatusCode == 200 ? 'SUCCESS' : 'FAILED',
+        apiClientConfig,
+      });
+      if (auditResponse.status == 'FAILED') res.status(500).json({ message: 'auditing request FAILED.' });
     }
+
+    if (lambdaOutput.StatusCode == 200) {
+      res.status(200).send(lambdaOutput);
+    } else {
+      res.status(400).send({
+        error: `Error calling ${functionName}`,
+      });
+    }
+
   });
 
   return router;

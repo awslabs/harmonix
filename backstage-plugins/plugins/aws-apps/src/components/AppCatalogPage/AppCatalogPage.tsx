@@ -101,8 +101,21 @@ export function AppCatalogPage(props: AppCatalogPageProps) {
     initialKind = 'awsenvironmentprovider';
     allowedTypesComponent = [];
     initiallySelectedFilter = 'all';
-  } else if (kind === 'component') {
+  } else if (kind === 'component' && initialType === 'aws-app') {
+    const awsAppsColumns: TableColumn<CatalogTableRow>[] = [
+      columnFactories.createTitleColumn({ hidden: true }),
+      columnFactories.createNameColumn({ defaultKind: initialKind }),
+      columnFactories.createMetadataDescriptionColumn(),
+      columnFactories.createComponentSubTypeColumn(),
+      columnFactories.createOwnerColumn(),
+      columnFactories.createSpecLifecycleColumn(),
+      columnFactories.createMetadataDescriptionColumn(),
+      columnFactories.createTagsColumn(),
+    ];
+    columns=awsAppsColumns
     allowedKinds = ['Component'];
+    initiallySelectedFilter = 'all';
+
   } else if (kind === 'resource') {
     const awsResourcesColumns: TableColumn<CatalogTableRow>[] = [
       columnFactories.createTitleColumn({ hidden: true }),

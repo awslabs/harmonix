@@ -89,7 +89,7 @@ spec:
           PREFIX=${{ each.value.envProviderPrefix }}
           ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
           OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
-          OPA_CI_REGISTRY_IMAGE=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com/${{ parameters.component_id }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY_IMAGE=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com/${{ parameters.component_id | lower }}-${{ steps['opaGetAwsEnvProviders'].output.envName | lower }}-${{ each.value.envProviderName | lower }}
           OPA_CI_REGISTRY=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com
           OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{% else %}false{% endif %}
 
@@ -111,8 +111,8 @@ spec:
         url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_ecs
         targetPath: ./.iac
         values:
-          component_id: ${{ parameters.component_id }}
-          app_env_plaintext: ""
+          component_id: ${{ parameters.component_id | lower }}
+          appEnvPlaintext: ""
 
     # Fetches the template code from the remote repo where this template resides
     # In a real template, the input values which start with "aws_" would be used to
@@ -123,12 +123,13 @@ spec:
       input:
         url: ./content
         values:
-          component_id: ${{ parameters.component_id }}
+          component_id: ${{ parameters.component_id | lower }}
+          title: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
           owner: ${{ parameters.owner }}
-          aws_environment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
-          aws_environment_name: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
-          aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+          awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          awsSecretRepoArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
 
     # Publishes the contents of the working directory to a new GitLab repo
     - id: publish

@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "${{ values.component_id }}.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "${{ values.component_id }}.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "${{ values.component_id }}.labels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/envVarsConfigMap.yaml") . | sha256sum }}
+    spec:
+      serviceAccountName: {{ .Values.serviceAccount.name }}
+      containers:
+        - name: webapp
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.configMap.name }}
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: "1"
+            requests:
+              cpu: "100m"
+          ports:
+            - containerPort: {{ .Values.image.port }}
+          livenessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.image.port }}
+            initialDelaySeconds: 2
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          readinessProbe:
+            httpGet:
+              path: /
+              port: {{ .Values.image.port }}
+            initialDelaySeconds: 2
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 5
+          
+        

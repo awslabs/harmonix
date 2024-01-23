@@ -18,7 +18,7 @@ Installing the Orchestrate Platforms and Applications (OPS) on AWS solution will
 
 The following software is required to perform the installation of the platform solution:
 - Unix-based operating system (Linux, MacOS, or the Windows Subsystem for Linux)
-- [node.js](https://nodejs.org/en/) - 18.16 or higher
+- [node.js](https://nodejs.org/en/) - 18.19 or higher
 - [yarn](https://classic.yarnpkg.com/en/docs/install) - v1.x (Yarn classic)
 - [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 - [aws-cdk](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_install)
@@ -29,9 +29,9 @@ The following software is required to perform the installation of the platform s
 
 :::note
 The installation instructions documented here were tested using the following versions:
-- node v18.17
+- node v18.19
 - aws-cdk v2.95
-- yarn 1.22.19
+- yarn 1.22.21
 :::
 
 ### Solution Platform prerequisites

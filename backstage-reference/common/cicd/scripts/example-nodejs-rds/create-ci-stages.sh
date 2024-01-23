@@ -107,6 +107,18 @@ do
     echo "  variables:" >> $STAGE_FILE_PATH
     echo "    PROVIDER_PROPS_FILE: .awsdeployment/providers/${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties" >> $STAGE_FILE_PATH
     echo ""  >> $STAGE_FILE_PATH
+
+    # Deploy Container Image Job
+    echo "deploy-image-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}:" >> $STAGE_FILE_PATH
+    echo "  extends: .abstract-deploy-ecs-image" >> $STAGE_FILE_PATH
+    echo "  needs:" >> $STAGE_FILE_PATH
+    echo "    - build-image-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}" >> $STAGE_FILE_PATH
+    echo "  stage: ${TARGET_ENV_NAME}-stage" >> $STAGE_FILE_PATH
+    echo "  environment: ${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}" >> $STAGE_FILE_PATH
+    echo "  variables:" >> $STAGE_FILE_PATH
+    echo "    PROVIDER_PROPS_FILE: .awsdeployment/providers/${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties" >> $STAGE_FILE_PATH
+    echo "    BACKSTAGE_ENTITY_FILE: .backstage/catalog-info.yaml" >> $STAGE_FILE_PATH
+    echo ""  >> $STAGE_FILE_PATH
     
     echo "delete-aws-creds-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}:" >> $STAGE_FILE_PATH
     echo "  extends: .abstract-delete-aws-creds" >> $STAGE_FILE_PATH

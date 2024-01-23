@@ -6,11 +6,13 @@ metadata:
   title: Python Flask starter application
   description: >-
     Create a 'Hello World' Python application
-    utilizing the Flask web app framework
+    utilizing the Flask web app framework, 
+    running on an AWS Elastic Container Service cluster.
   tags:
     - python
     - flask
     - aws
+    - ecs
 spec:
   owner: group:admins
   type: website
@@ -52,8 +54,11 @@ spec:
           ui:options:
             allowedKinds:
               - AWSEnvironment
+            catalogFilter:
+              - kind: AWSEnvironment
+                metadata.environmentType: ecs
             defaultKind: AWSEnvironment
-    - title: Choose a location
+    - title: Choose a git repository location
       required:
         - repoUrl
       properties:
@@ -81,6 +86,12 @@ spec:
       input:
         environmentRef: ${{ parameters.environment }}
 
+    - id: debugEnvironment
+      name: Print the environment entity info
+      action: debug:log
+      input:
+        message: ${{ steps['opaGetAwsEnvProviders'].output | dump }}
+
     - id: createProviderPropsFiles
       each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
       name: Store environment provider parameters
@@ -97,7 +108,7 @@ spec:
           PREFIX=${{ each.value.envProviderPrefix }}
           ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
           OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
-          OPA_CI_REGISTRY_IMAGE=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com/${{ parameters.component_id }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY_IMAGE=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com/${{ parameters.component_id | lower }}-${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
           OPA_CI_REGISTRY=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com
           OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{% else %}false{% endif %}
           
@@ -114,8 +125,8 @@ spec:
         url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_ecs
         targetPath: ./.iac
         values:
-          component_id: ${{ parameters.component_id }}
-          app_env_plaintext:
+          component_id: ${{ parameters.component_id | lower }}
+          appEnvPlaintext:
             # IaC code uses PORT for container port mapping, but Flask apps use FLASK_RUN_PORT.  These values should match.
             PORT: 8081
             FLASK_RUN_PORT: 8081
@@ -126,21 +137,28 @@ spec:
       input:
         url: ./content
         values:
-          component_id: ${{ parameters.component_id }}
+          component_id: ${{ parameters.component_id | lower }}
+          title: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
           owner: ${{ parameters.owner }}
           destination: ${{ parameters.repoUrl | parseRepoUrl }}
-          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
-          aws_environment: ${{ parameters.environment }}
-          aws_region: ${{ steps['opaGetAwsEnvProviders'].output.region }}
-          aws_account: ${{ steps['opaGetAwsEnvProviders'].output.account }}
-          aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          awsSecretRepoArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
 
     - id: entityDetail
       name: Get AWSEnvironment entity details
       action: catalog:fetch
       input:
         entityRef: ${{ parameters.environment }}
+
+    - id: debugEntity
+      name: Print the workspace
+      action: debug:log
+      input:
+        message: ${{ steps['entityDetail'].output.entity | dump }}
+        listWorkspace: true
 
     # This step publishes the contents of the working directory to GitLab.
     - id: publish

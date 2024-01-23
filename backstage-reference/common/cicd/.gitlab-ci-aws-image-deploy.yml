@@ -1,0 +1,50 @@
+.abstract-deploy-ecs-image:
+  script:
+    - echo -e "\e[0Ksection_start:`date +%s`:verify_env_info[collapsed=true]\r\e[0KVerify environment information"
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    # Verify required utilities and filesare available and versions
+    - if command -v aws; then echo "aws-cli is available"; aws --version; else echo "aws-cli is not available"; fi
+    - if command -v yq; then echo "yq is available"; yq --version; else echo "yq is not available"; fi
+    - '[[ ! -z "$BACKSTAGE_ENTITY_FILE" ]] || { echo >&2 "BACKSTAGE_ENTITY_FILE must be set"; exit 1; }'
+    - '[[ -f $BACKSTAGE_ENTITY_FILE ]] || { echo >&2 "BACKSTAGE_ENTITY_FILE var does not point to a valid file (${BACKSTAGE_ENTITY_FILE})"; exit 1; }'
+    - cat $BACKSTAGE_ENTITY_FILE; 
+    # Verify that the '.metadata.appData' key exists in the backstage entity file before continuing
+    - APPDATA=$(cat ${BACKSTAGE_ENTITY_FILE} | yq -r '.metadata | select(.appData)')
+    - '[[ ! -z "${APPDATA}" ]] || { echo >&2 "appData is not set in the ${BACKSTAGE_ENTITY_FILE} entity file.  Exiting."; exit 0; }'
+    # 
+    # Note: yq v3 wraps scalar values in quotes in the output.  Remove the beginning and trailing quotes from each variable using 'sed' after setting them using yq
+    - ECS_SERVICE_ARN=$(yq -r ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"EcsServiceArn\"]" ${CI_PROJECT_DIR}/.backstage/catalog-info.yaml);
+    # - ECS_SERVICE_ARN=$(sed -e 's/^"//' -e 's/"$//' <<<"$ECS_SERVICE_ARN")
+    - ECS_TASK_DEF_ARN=$(yq -r ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"EcsTaskDefinitionArn\"]" ${CI_PROJECT_DIR}/.backstage/catalog-info.yaml);
+    # - ECS_TASK_DEF_ARN=$(sed -e 's/^"//' -e 's/"$//' <<<"$ECS_TASK_DEF_ARN")
+    - TASK_DEF_REGION=$(echo "${ECS_TASK_DEF_ARN}" | cut -d':' -f4)
+    - echo -e "\e[0Ksection_end:`date +%s`:verify_env_info\r\e[0K"
+    # 
+    # Deploy/Update ECS service as needed
+    - echo -e "\e[0Ksection_start:`date +%s`:deploy_ecs_image[collapsed=true]\r\e[0KDeploy ECS service image"
+    - aws sts get-caller-identity
+    # Assume the environment provisioning role to manage the ecs service and task definition
+    - export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    - aws sts get-caller-identity
+    # Determine if the deployed image is tagged as "latest" (or defaults to latest).  Do not proceed with updating the deployment if the image uses an explicit tag identifier
+    - TASK_DEF_IMAGE=$(aws ecs describe-task-definition --task-definition ${ECS_TASK_DEF_ARN} --region ${TASK_DEF_REGION} --output text --query 'taskDefinition.containerDefinitions[0].image')
+    - TASK_DEF_IMAGE_TAG=$(echo "${TASK_DEF_IMAGE}" | cut -sd':' -f2)
+    - if [ -n "$TASK_DEF_IMAGE_TAG" ] && [ "$TASK_DEF_IMAGE_TAG" != "latest" ]; then echo >&2 "Task Definition image tag exists but doesn't equal 'latest'.  Exiting"; fi
+    - echo "Using the \"latest\" image.  Proceeding to check number of desired count."
+    # Determine if the ECS service desired count is greater than zero.  If not, do not proceed with updating the deployment
+    - DESIRED_COUNT="$(aws ecs describe-services --cluster ${TARGET_ECS_CLUSTER_ARN} --service ${ECS_SERVICE_ARN} --region ${TASK_DEF_REGION} --query 'services[0].desiredCount' --output text)"
+    - '[[ "$DESIRED_COUNT" -ne "0" ]] || { echo >&2 "Desired count for the service is zero.  No update will be deployed."; exit 0; }'
+    # Proceed with forcing a new update
+    - aws ecs update-service --cluster ${TARGET_ECS_CLUSTER_ARN} --service ${ECS_SERVICE_ARN} --force-new-deployment --region ${TASK_DEF_REGION}
+    - echo -e "\e[0Ksection_end:`date +%s`:deploy_ecs_image\r\e[0K"
+  rules:
+    - if: $CI_COMMIT_TITLE =~ /generate CICD stages/
+      when: never
+
+  after_script:
+    - echo "Unsetting the role assumption env vars"
+    - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN

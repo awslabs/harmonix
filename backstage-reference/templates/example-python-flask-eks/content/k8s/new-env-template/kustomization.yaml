@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: NS_PLACEHOLDER
+nameSuffix: -ENV_PLACEHOLDER
+configMapGenerator:
+  - name: ${{ values.component_id }}-env-vars
+    literals:
+      - ENVIRONMENT_NAME=ENV_PLACEHOLDER
+      - FLASK_RUN_PORT=8080
+generatorOptions:
+  labels:
+    app.kubernetes.io/name: ${{ values.component_id }}
+    app.kubernetes.io/env: ENV_PLACEHOLDER
+resources:
+  - ../base
+  - ./namespace.yaml
+patches:
+  - path: deployment.yaml
+  - path: ingress.yaml
+  - path: nsAdminRoleBinding.yaml
+  - path: nsViewerRoleBinding.yaml
+  - path: service.yaml
+  - path: serviceAccount.yaml

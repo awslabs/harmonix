@@ -112,7 +112,7 @@ const config: Config = {
     },
     announcementBar: {
       content:
-        'OPA on AWS 0.2 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/app-development-for-backstage-io-on-aws">GitHub</a>! ⭐️',
+      'OPA on AWS 0.3 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/app-development-for-backstage-io-on-aws">GitHub</a>! ⭐️.  View changes <a target="_blank" rel="noopener noreferrer" href="https://opaonaws.io/docs/CHANGELOG">here</a>.',
       backgroundColor: '#ffffff',
       textColor: '#000000',
       isCloseable: true,
@@ -184,17 +184,7 @@ const config: Config = {
       darkTheme: prismThemes.dracula,
     },
   } satisfies Preset.ThemeConfig,
-  plugins: [
-    'docusaurus-lunr-search', 
-    'docusaurus-plugin-image-zoom', 
-    ['docusaurus-plugin-remote-content',  
-    {
-      name: "changelog",
-      sourceBaseUrl: "https://raw.githubusercontent.com/awslabs/app-development-for-backstage-io-on-aws/main/",
-      outDir: "docs",
-      documents: ["CHANGELOG.md"],
-    }]
-  ],
+  plugins: ['docusaurus-lunr-search', 'docusaurus-plugin-image-zoom'],
 }
 
 export default config;

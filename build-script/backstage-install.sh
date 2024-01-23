@@ -2,8 +2,8 @@
 
 # The Create App version has a direct correlation with the version of Backstage
 # that is installed. 
-# 0.5.4 will install Backstage 0.17.5
-BACKSTAGE_CREATE_APP_VERSION="0.5.4"
+# 0.5.7 will install Backstage 1.20.3
+BACKSTAGE_CREATE_APP_VERSION="0.5.8"
 
 # The OPA Backstage plugins can be installed in 1 of 2 ways. Firstly, the latest
 # published NPM packages can be used. Alternatively, the plugins can be installed
@@ -65,11 +65,11 @@ cp $opaHomeDir/config/app-config.aws-production.yaml $backstageDir
 echo "" #intentional blank line
 echo "Installing backend dependencies"
 yarn --cwd packages/backend add \
-    "@backstage/plugin-catalog-backend-module-gitlab@^0.2.6" \
-    "@backstage/plugin-permission-backend@^0.5.25" \
-    "@roadiehq/catalog-backend-module-okta@^0.8.5" \
-    "@roadiehq/scaffolder-backend-module-utils@^1.10.1" \
-    "@immobiliarelabs/backstage-plugin-gitlab-backend@^6.0.0" \
+    "@backstage/plugin-catalog-backend-module-gitlab@^0.3.5" \
+    "@backstage/plugin-permission-backend@^0.5.31" \
+    "@roadiehq/catalog-backend-module-okta@^0.9.3" \
+    "@roadiehq/scaffolder-backend-module-utils@^1.11.0" \
+    "@immobiliarelabs/backstage-plugin-gitlab-backend@^6.4.0" \
     "@aws/plugin-aws-apps-backend-for-backstage@${AWS_APPS_BACKEND_VERSION}" \
     "@aws/plugin-scaffolder-backend-aws-apps-for-backstage@${AWS_APPS_SCAFFOLDER_VERSION}"
 
@@ -77,7 +77,7 @@ yarn --cwd packages/backend add \
 echo "" #intentional blank line
 echo "Installing frontend dependencies"
 yarn --cwd packages/app add \
-    "@immobiliarelabs/backstage-plugin-gitlab@^6.0.0" \
+    "@immobiliarelabs/backstage-plugin-gitlab@^6.4.0" \
     "@aws/plugin-aws-apps-for-backstage@${AWS_APPS_VERSION}" \
     "@backstage/plugin-home" \
     "@aws/plugin-aws-apps-demo-for-backstage@${AWS_APPS_DEMO_VERSION}"

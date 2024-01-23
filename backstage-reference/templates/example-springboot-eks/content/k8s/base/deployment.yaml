@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ${{ values.component_id }}-mainpod
+  labels:
+    app.kubernetes.io/name: ${{ values.component_id }}
+    app.kubernetes.io/env: overrideMe
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ${{ values.component_id }}
+      app.kubernetes.io/env: overrideMe
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ${{ values.component_id }}
+        app.kubernetes.io/env: overrideMe
+    spec:
+      serviceAccountName: overrideMe
+      containers:
+      - name: api
+        image: 12345678912.dkr.ecr.us-east-1.amazonaws.com/${{ values.component_id }}-overrideMe-overrideMe:latest
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 600Mi
+            cpu: "1"
+          requests:
+            cpu: "100m"
+        ports:
+          - containerPort: ${{ values.appPort }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: ${{ values.appPort }}
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /
+            port: ${{ values.appPort }}
+          initialDelaySeconds: 30
+          timeoutSeconds: 5
+          successThreshold: 1
+          failureThreshold: 5
+

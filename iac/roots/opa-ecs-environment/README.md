@@ -1,10 +1,8 @@
-# Welcome to your CDK TypeScript project
+# OPA ECS IaC
 
-This is a blank project for CDK development with TypeScript.
+This folder contains CDK code that is used by Backstage when creating new ECS (Fargate) Providers.
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-## Useful commands
+## CDK Useful commands
 
 * `npm run build`   compile typescript to js
 * `npm run watch`   watch for changes and compile

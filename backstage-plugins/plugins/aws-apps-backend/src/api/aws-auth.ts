@@ -165,7 +165,6 @@ export async function getAWSCredsWorkaround(accountId: string, region: string, p
   const userName = user?.metadata.name || "unknown";
 
   //assemble the arn format to the desire destination environment
-  //arn:aws:iam::115272120974:role/opa-dev-p1-operations-role
   const roleArn = `arn:aws:iam::${accountId}:role/${prefix}-${providerName}-operations-role`;
   console.log(roleArn)
 

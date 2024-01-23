@@ -97,7 +97,7 @@ This action will generate a `awsSecretArn` output which can be referenced in sub
       action: opa:create-secret
       input:
         # The name of the SecretsManager secret
-        secretName: ${{ parameters.component_id }}-gitlab-access-token
+        secretName: ${{ parameters.component_id | lower }}-gitlab-access-token
         # The AWS region where the secret will be created
         region: ${{ steps['opaDeployECSBoilerplate'].output.region }}
         # The AWS account in which the secret will be created
@@ -106,8 +106,8 @@ This action will generate a `awsSecretArn` output which can be referenced in sub
         description: "Gitlab repo access token"
         # AWS tags to apply to the Secret
         tags:
-          - Key: "aws-apps:${{ parameters.component_id }}"
-            Value: ${{ parameters.component_id }}
+          - Key: "aws-apps:${{ parameters.component_id | lower }}"
+            Value: ${{ parameters.component_id | lower }}
     ...
 
 ```

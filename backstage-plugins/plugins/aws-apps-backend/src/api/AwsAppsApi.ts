@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+  Capability,
   CloudFormationClient,
   CreateStackCommand,
   CreateStackCommandOutput,
@@ -65,12 +66,19 @@ import {
   EKSClient,
 } from '@aws-sdk/client-eks';
 import {
+  InvokeCommand,
+  InvokeCommandInput,
+  InvokeCommandOutput,
+  LambdaClient
+} from '@aws-sdk/client-lambda';
+import {
   ListGroupResourcesCommand,
   ListGroupResourcesCommandInput,
   ListGroupResourcesCommandOutput,
   ResourceGroupsClient,
 } from '@aws-sdk/client-resource-groups';
 import {
+  BucketLocationConstraint,
   CreateBucketCommand,
   CreateBucketCommandInput,
   CreateBucketCommandOutput,
@@ -97,11 +105,10 @@ import {
   GetParameterCommandOutput,
   SSMClient,
 } from '@aws-sdk/client-ssm';
+
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { parse as parseArn } from '@aws-sdk/util-arn-parser';
 import { AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
-import { KubeConfig, AppsV1Api } from '@kubernetes/client-node';
-import { response } from 'express';
 import { Logger } from 'winston';
 
 export type DynamoDBTableData = {
@@ -130,7 +137,7 @@ export class AwsAppsApi {
     private readonly awsRegion: string,
     private readonly awsAccount: string,
   ) {
-    this.logger.info('Instatiating AWS Apps API with:');
+    this.logger.info('Instantiating AWS Apps API with:');
     this.logger.info(`awsAccount: ${this.awsAccount}`);
     this.logger.info(`awsRegion: ${this.awsRegion}`);
   }
@@ -346,7 +353,7 @@ export class AwsAppsApi {
     // See https://github.com/aws/aws-sdk-js/issues/3647
     if (this.awsRegion !== 'us-east-1') {
       createInput.CreateBucketConfiguration = {
-        LocationConstraint: this.awsRegion,
+        LocationConstraint: BucketLocationConstraint[this.awsRegion as keyof typeof BucketLocationConstraint],
       };
     }
 
@@ -793,8 +800,8 @@ export class AwsAppsApi {
       TemplateURL: `https://${s3BucketName}.s3.amazonaws.com/${cfFileName}`,
       Parameters: parameters,
       Capabilities: [
-        "CAPABILITY_NAMED_IAM",
-        "CAPABILITY_AUTO_EXPAND",
+        Capability.CAPABILITY_IAM,
+        Capability.CAPABILITY_AUTO_EXPAND,
       ],
       Tags: [
         {
@@ -845,8 +852,8 @@ export class AwsAppsApi {
       TemplateURL: `https://${s3BucketName}.s3.amazonaws.com/${cfFileName}`,
       Parameters: parameters,
       Capabilities: [
-        "CAPABILITY_NAMED_IAM",
-        "CAPABILITY_AUTO_EXPAND",
+        Capability.CAPABILITY_NAMED_IAM,
+        Capability.CAPABILITY_AUTO_EXPAND,
       ],
       Tags: [
         {
@@ -915,48 +922,23 @@ public async getEksCluster(clusterName: string): Promise<DescribeClusterCommandO
   return response;
 }
 
-/**
- * Scale Down EKS Deployment
- *
- * @remarks
- * Scale a deployment in an EKS Cluster.
- *
- * @param deploymentName - The name of the deployment to scale
- * @param namespace - The Kubernetes namespace
- * @returns The result of scaling down the deployment
- *
- */
-public async scaleEKSDeployment(
-  deploymentName: string,
-  namespace: string,
-  replicaCount: number
-):Promise<any> {
-  const kc = new KubeConfig();
-  kc.loadFromDefault();
+public async callLambda(functionName: string, body: string) :Promise<InvokeCommandOutput>
+{
+  this.logger.info('Calling callLambda');
+  const client = new LambdaClient({
+    region: this.awsRegion,
+    credentials: this.awsCredentials,
+  });
 
-  const k8sApi = kc.makeApiClient(AppsV1Api);
-  try {
-    const deployment = await k8sApi.readNamespacedDeployment(deploymentName, namespace);
-
-    if (deployment && deployment.body.spec){
-       // Set the replicas to 0 to pause the deployment
-      deployment.body.spec.replicas = replicaCount;
-    }
-    else{
-      this.logger.info("error when scaling deployment. check deployment name, body or specs")
-    }
-
-    const response = await k8sApi.replaceNamespacedDeployment(deploymentName, namespace, deployment.body);
-
-    console.log(`Deployment ${deploymentName} scaled down.`);
-    console.log(response);
-  } catch (error) {
-    console.error(`Error scaling down deployment: ${error}`);
-  }
-  
-  // Perform the scaling down operation, e.g., using Kubernetes client or AWS SDK
-
-  // Return the result of the scaling down operation
+  const params: InvokeCommandInput = {
+    FunctionName: functionName,
+    LogType: 'Tail',
+    Payload: Buffer.from(body),
+    InvocationType:'RequestResponse'
+  };
+  const command = new InvokeCommand(params);
+  const response = await client.send(command);
   return response;
-  }
+}
+
 }

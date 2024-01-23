@@ -8,19 +8,27 @@ spec:
         # APPS
         - ./example-nodejs/template.yaml
         - ./example-springboot/template.yaml
+        - ./example-springboot-eks/template.yaml
         # - ./example-eks-note-app/template.yaml
         - ./example-serverless-rest-api/template.yaml
         - ./example-nodejs-rds/template.yaml
-        # - ./example-nodejs-efs/template.yaml
+        - ./example-eks-nodejs-rds-kustomize/template.yaml
+        - ./example-eks-nodejs-rds-helm/template.yaml
+        - ./example-nodejs-microservice/template.yaml
         - ./example-python-flask/template.yaml
+        - ./example-python-flask-eks/template.yaml
         - ./example-tf-nodejs/template.yaml
-        # # Environments
+        # Environments
         - ./aws-environment/template.yaml
         - ./aws-ecs-environment-provider/template.yaml
-        # - ./aws-eks-environment-provider/template.yaml
+        - ./aws-ecs-ec2-environment-provider/template.yaml
+        - ./aws-eks-environment-provider/template.yaml
+        - ./aws-eks-environment-existing-cluster-provider/template.yaml
         - ./aws-serverless-environment-provider/template.yaml
+        # - ./aws-basic-environment-provider/template.yaml
         # AWS Resources
         - ./aws-rds-resource/template.yaml
+        - ./aws-s3-resource/template.yaml
     rules:
         - allow: [Template]
 

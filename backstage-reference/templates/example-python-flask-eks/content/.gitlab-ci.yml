@@ -1,0 +1,20 @@
+stages:
+  - env-creation
+  - prepare-${{values.awsEnvironmentName}}-stage
+  - ${{values.awsEnvironmentName}}-stage
+
+variables:
+  APP_SHORT_NAME: "${{ values.component_id }}"
+  APP_TEMPLATE_NAME: "example-python-flask-eks"
+  OPA_PLATFORM_REGION: "${{ values.platformRegion }}"
+
+include:
+  - project: 'opa-admin/backstage-reference'
+    ref: main 
+    file:
+      - 'common/cicd/.gitlab-ci-job-defaults-cdk.yml'
+      - 'common/cicd/.gitlab-ci-aws-base.yml'
+      - 'common/cicd/.gitlab-ci-aws-iac-eks.yml'
+      # If you want to call kubectl directly instead of going through lambda, comment above line and uncomment below line
+      # - 'common/cicd/.gitlab-ci-aws-iac-eks-kubectl.yml'
+      - 'common/cicd/.gitlab-ci-aws-image-kaniko.yml'

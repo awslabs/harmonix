@@ -119,8 +119,8 @@ Resources:
     # Cant delete since it is attached to network interfaces managed by lambda service
     DeletionPolicy: Retain
     Properties:
-      GroupName: !Sub '${AppName}-lambda-sg'
-      GroupDescription: !Sub 'A Security Group for ${AppName} lambda functions'
+      GroupName: !Sub '${AppName}-lambda-sg-${Stage}'
+      GroupDescription: !Sub 'A Security Group for ${AppName} lambda functions in stage ${Stage}'
       VpcId: !Ref VpcId
 
   GetEquipmentFunctionLogGroup:

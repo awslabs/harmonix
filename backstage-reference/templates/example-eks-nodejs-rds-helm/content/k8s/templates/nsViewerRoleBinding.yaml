@@ -1,0 +1,14 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.nsViewerRoleBinding.name }}
+  labels:
+    {{- include "${{ values.component_id }}.labels" . | nindent 4 }}
+subjects:
+- kind: User
+  name: {{ .Values.appAdminRole }}
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: opa-namespace-viewer
+  apiGroup: rbac.authorization.k8s.io

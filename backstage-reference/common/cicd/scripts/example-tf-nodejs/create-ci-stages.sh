@@ -46,7 +46,8 @@ do
     aws s3api head-bucket --bucket $STATE_BUCKET_NAME || BUCKET_NOT_EXIST=true
     if [ $BUCKET_NOT_EXIST ]; then
         echo "State bucket does not exist. creating..."
-        ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=3600 --output json)
+        export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+        ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
         export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
         export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
         export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
@@ -137,7 +138,19 @@ do
     echo "  variables:" >> $STAGE_FILE_PATH
     echo "    PROVIDER_PROPS_FILE: .awsdeployment/providers/${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties" >> $STAGE_FILE_PATH
     echo ""  >> $STAGE_FILE_PATH
-    
+
+    # Deploy Container Image Job
+    echo "deploy-image-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}:" >> $STAGE_FILE_PATH
+    echo "  extends: .abstract-deploy-ecs-image" >> $STAGE_FILE_PATH
+    echo "  needs:" >> $STAGE_FILE_PATH
+    echo "    - build-image-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}" >> $STAGE_FILE_PATH
+    echo "  stage: ${TARGET_ENV_NAME}-stage" >> $STAGE_FILE_PATH
+    echo "  environment: ${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}" >> $STAGE_FILE_PATH
+    echo "  variables:" >> $STAGE_FILE_PATH
+    echo "    PROVIDER_PROPS_FILE: .awsdeployment/providers/${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties" >> $STAGE_FILE_PATH
+    echo "    BACKSTAGE_ENTITY_FILE: .backstage/catalog-info.yaml" >> $STAGE_FILE_PATH
+    echo ""  >> $STAGE_FILE_PATH
+        
     echo "delete-aws-creds-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}:" >> $STAGE_FILE_PATH
     echo "  extends: .abstract-delete-aws-creds" >> $STAGE_FILE_PATH
     echo "  needs:" >> $STAGE_FILE_PATH

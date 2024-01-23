@@ -1,0 +1,1010 @@
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/app-config.yaml backstage/app-config.yaml
+--- backstage_0.5.8/app-config.yaml	2024-01-23 15:03:23
++++ backstage/app-config.yaml	2024-01-23 15:03:06
+@@ -1,9 +1,11 @@
+ app:
+-  title: Scaffolded Backstage App
++  title: OPA
+   baseUrl: http://localhost:3000
++  logo: ${CUSTOMER_LOGO}
++  logoIcon: ${CUSTOMER_LOGO_ICON}
+ 
+ organization:
+-  name: My Company
++  name: ${CUSTOMER_NAME}
+ 
+ backend:
+   # Used for enabling authentication, secret is shared by all backend plugins
+@@ -18,7 +20,7 @@
+     # Uncomment the following host directive to bind to specific interfaces
+     # host: 127.0.0.1
+   csp:
+-    connect-src: ["'self'", 'http:', 'https:']
++    connect-src: ["'self'", "http:", "https:"]
+     # Content-Security-Policy directives follow the Helmet format: https://helmetjs.github.io/#reference
+     # Default Helmet Content-Security-Policy values can be removed by setting the key to false
+   cors:
+@@ -28,9 +30,19 @@
+   # This is for local development only, it is not recommended to use this in production
+   # The production database configuration is stored in app-config.production.yaml
+   database:
+-    client: better-sqlite3
+-    connection: ':memory:'
++    # client: better-sqlite3
++    # connection: ':memory:'
++    client: pg
++    connection:
++      host: ${POSTGRES_HOST}
++      port: ${POSTGRES_PORT}
++      user: ${POSTGRES_USER}
++      password: ${POSTGRES_PASSWORD}
+   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
++  platformRegion: us-east-1
++  reading:
++    allow:
++      - host: ${SSM_GITLAB_HOSTNAME}
+ 
+ integrations:
+   github:
+@@ -42,7 +54,15 @@
+     # - host: ghe.example.net
+     #   apiBaseUrl: https://ghe.example.net/api/v3
+     #   token: ${GHE_TOKEN}
++  gitlab:
++    - host: ${SSM_GITLAB_HOSTNAME}
++      apiBaseUrl: https://${SSM_GITLAB_HOSTNAME}/api/v4
++      baseUrl: https://${SSM_GITLAB_HOSTNAME}
++      token: ${SECRET_GITLAB_CONFIG_PROP_apiToken}
+ 
++permission:
++  enabled: true
++
+ proxy:
+   ### Example for how to add a proxy endpoint for the frontend.
+   ### A typical reason to do this is to handle HTTPS and CORS for internal services.
+@@ -56,42 +76,85 @@
+ # and an external cloud storage when deploying TechDocs for production use-case.
+ # https://backstage.io/docs/features/techdocs/how-to-guides#how-to-migrate-from-techdocs-basic-to-recommended-deployment-approach
+ techdocs:
+-  builder: 'local' # Alternatives - 'external'
++  builder: "local" # Alternatives - 'external'
+   generator:
+-    runIn: 'docker' # Alternatives - 'local'
++    runIn: "docker" # Alternatives - 'local'
+   publisher:
+-    type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
++    type: "local" # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
+ 
+ auth:
+   # see https://backstage.io/docs/auth/ to learn about auth providers
+-  providers: {}
++  environment: development
++  providers:
++    okta:
++      development:
++        clientId: ${OKTA_CLIENT_ID}
++        clientSecret: ${OKTA_CLIENT_SECRET}
++        audience: ${OKTA_AUDIENCE}
++        # authServerId:
++        # idp:
+ 
+ scaffolder:
+   # see https://backstage.io/docs/features/software-templates/configuration for software template options
++  defaultAuthor:
++    name: ${BACKSTAGE_SCAFFOLDER_NAME}
++    email: ${BACKSTAGE_SCAFFOLDER_EMAIL}
+ 
++gitlab:
++  allowedKinds:
++    - Component
++    - Resource
++    - AWSEnvironmentProvider
++
+ catalog:
+   import:
+     entityFilename: catalog-info.yaml
+     pullRequestBranchName: backstage-integration
+   rules:
+-    - allow: [Component, System, API, Resource, Location]
++    - allow:
++        [
++          Component,
++          System,
++          API,
++          Resource,
++          Location,
++          Template,
++          AWSEnvironment,
++          AWSEnvironmentProvider,
++        ]
+   locations:
+     # Local example data, file locations are relative to the backend process, typically `packages/backend`
+-    - type: file
+-      target: ../../examples/entities.yaml
++    # - type: file
++    #   target: ../../examples/entities.yaml
+ 
+-    # Local example template
+-    - type: file
+-      target: ../../examples/template/template.yaml
+-      rules:
+-        - allow: [Template]
++    # # Local example template
++    # - type: file
++    #   target: ../../examples/template/template.yaml
++    #   rules:
++    #     - allow: [Template]
+ 
+     # Local example organizational data
++    # - type: file
++    #   target: ../../examples/org.yaml
++    #   rules:
++    #     - allow: [User, Group]
++
++    # # Local templates data
+     - type: file
+-      target: ../../examples/org.yaml
++      target: ../../../git-temp/backstage-reference/templates/all-templates.yaml
+       rules:
+-        - allow: [User, Group]
++        - allow: [Location, Component]
+ 
++    # - type: file
++    #   target: ../../../git-temp/backstage-reference/catalog/all-environments.yaml
++    #   rules:
++    #     - allow: [Location, AWSEnvironment]
++
++    # - type: file
++    #   target: ../../../git-temp/backstage-reference/catalog/all-environment-providers.yaml
++    #   rules:
++    #     - allow: [Location, AWSEnvironmentProvider]
++
+     ## Uncomment these lines to add more example data
+     # - type: url
+     #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+@@ -101,3 +164,23 @@
+     #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/acme-corp.yaml
+     #   rules:
+     #     - allow: [User, Group]
++
++  providers:
++    okta:
++      - orgUrl: ${OKTA_AUDIENCE}
++        token: ${OKTA_API_TOKEN}
++        # userFilter: profile.department eq "engineering"
++        # groupFilter: profile.name eq "Developers"
++    gitlab:
++      opa:
++        host: ${SSM_GITLAB_HOSTNAME}
++        branch: main
++        fallbackBranch: main
++        skipForkedRepos: false
++        # group: example-group # Optional. Group and subgroup (if needed) to look for repositories. If not present the whole instance will be scanned
++        groupPattern: "aws-environment*"
++        entityFilename: .backstage/catalog-info.yaml
++        projectPattern: '[\s\S]*'
++        schedule:
++          frequency: { minutes: 30 }
++          timeout: { minutes: 3 }
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/backstage.json backstage/backstage.json
+--- backstage_0.5.8/backstage.json	2024-01-23 15:03:23
++++ backstage/backstage.json	2024-01-23 15:03:06
+@@ -1,3 +1,3 @@
+ {
+-  "version": "1.21.0"
++  "version": "1.21.1"
+ }
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/app/e2e-tests/app.test.ts backstage/packages/app/e2e-tests/app.test.ts
+--- backstage_0.5.8/packages/app/e2e-tests/app.test.ts	2024-01-23 15:03:24
++++ backstage/packages/app/e2e-tests/app.test.ts	2024-01-23 15:03:06
+@@ -13,11 +13,8 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-
+ import { test, expect } from '@playwright/test';
+-
+ test('App should render the welcome page', async ({ page }) => {
+   await page.goto('/');
+-
+   await expect(page.getByText('My Company Catalog')).toBeVisible();
+ });
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/app/src/App.tsx backstage/packages/app/src/App.tsx
+--- backstage_0.5.8/packages/app/src/App.tsx	2024-01-23 15:03:24
++++ backstage/packages/app/src/App.tsx	2024-01-23 15:03:06
+@@ -27,15 +27,38 @@
+ import { searchPage } from './components/search/SearchPage';
+ import { Root } from './components/Root';
+ 
+-import { AlertDisplay, OAuthRequestDialog } from '@backstage/core-components';
++import { AlertDisplay, OAuthRequestDialog, SignInPage } from '@backstage/core-components';
+ import { createApp } from '@backstage/app-defaults';
+ import { AppRouter, FlatRoutes } from '@backstage/core-app-api';
+ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
+ import { RequirePermission } from '@backstage/plugin-permission-react';
+ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
++import { AppCatalogPage } from '@aws/plugin-aws-apps-for-backstage';
++import { oktaAuthApiRef } from '@backstage/core-plugin-api';
++import { OPAHomePage, customerTheme, awsTheme, opaTheme } from '@aws/plugin-aws-apps-demo-for-backstage';
++import { darkTheme, lightTheme } from '@backstage/theme';
++import { CssBaseline, ThemeProvider } from '@material-ui/core';
+ 
+ const app = createApp({
+   apis,
++  components: {
++    SignInPage: props => {
++      return (
++        <SignInPage
++          {...props}
++          auto
++          providers={[
++            {
++              id: 'okta-auth-provider',
++              title: 'Okta',
++              message: 'Sign in using Okta credentials',
++              apiRef: oktaAuthApiRef,
++            },
++          ]}
++        />
++      );
++    },
++  },
+   bindRoutes({ bind }) {
+     bind(catalogPlugin.externalRoutes, {
+       createComponent: scaffolderPlugin.routes.root,
+@@ -53,11 +76,64 @@
+       catalogIndex: catalogPlugin.routes.catalogIndex,
+     });
+   },
++  themes: [
++    {
++      id: 'customerTheme',
++      title: 'CUSTOMER',
++      variant: 'light',
++      Provider: ({ children }) => (
++        <ThemeProvider theme={customerTheme}>
++          <CssBaseline>{children}</CssBaseline>
++        </ThemeProvider>
++      ),
++    },
++    {
++      id: 'light',
++      title: 'Light',
++      variant: 'light',
++      Provider: ({ children }) => (
++        <ThemeProvider theme={lightTheme}>
++          <CssBaseline>{children}</CssBaseline>
++        </ThemeProvider>
++      ),
++    },
++    {
++      id: 'dark',
++      title: 'Dark',
++      variant: 'dark',
++      Provider: ({ children }) => (
++        <ThemeProvider theme={darkTheme}>
++          <CssBaseline>{children}</CssBaseline>
++        </ThemeProvider>
++      ),
++    },
++    {
++      id: 'awsTheme',
++      title: 'AWS',
++      variant: 'light',
++      Provider: ({ children }) => (
++        <ThemeProvider theme={awsTheme}>
++          <CssBaseline>{children}</CssBaseline>
++        </ThemeProvider>
++      ),
++    },
++    {
++      id: 'opaTheme',
++      title: 'OPA',
++      variant: 'light',
++      Provider: ({ children }) => (
++        <ThemeProvider theme={opaTheme}>
++          <CssBaseline>{children}</CssBaseline>
++        </ThemeProvider>
++      ),
++    },
++  ]
+ });
+ 
+ const routes = (
+   <FlatRoutes>
+-    <Route path="/" element={<Navigate to="catalog" />} />
++    <Route path="/" element={<Navigate to="home" />} />
++    <Route path="/home" element={<OPAHomePage />} />
+     <Route path="/catalog" element={<CatalogIndexPage />} />
+     <Route
+       path="/catalog/:namespace/:kind/:name"
+@@ -74,7 +150,22 @@
+         <ReportIssue />
+       </TechDocsAddons>
+     </Route>
+-    <Route path="/create" element={<ScaffolderPage />} />
++    <Route path="/create" element={
++      <ScaffolderPage
++        groups={[
++          {
++            title: "AWS Environments and Environment Providers",
++            filter: entity =>
++              (entity?.metadata?.tags?.includes('environment-provider') || entity?.metadata?.tags?.includes('aws-environment')) ?? false,
++          },
++          {
++            title: "AWS Resources",
++            filter: entity =>
++              entity?.metadata?.tags?.includes('aws-resource') ?? false,
++          },
++        ]}
++      />
++    } />
+     <Route path="/api-docs" element={<ApiExplorerPage />} />
+     <Route
+       path="/tech-radar"
+@@ -93,6 +184,21 @@
+     </Route>
+     <Route path="/settings" element={<UserSettingsPage />} />
+     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
++    <Route path="/aws-apps-search-page" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="all" />
++    </Route>
++    <Route path="/aws-apps-search-page/environments" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="awsenvironment" />
++    </Route>
++    <Route path="/aws-apps-search-page/providers" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="awsenvironmentprovider" />
++    </Route>
++    <Route path="/aws-apps-search-page/apps" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="component" />
++    </Route>
++    <Route path="/aws-apps-search-page/resources" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="resource" />
++    </Route>
+   </FlatRoutes>
+ );
+ 
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/app/src/components/Root/Root.tsx backstage/packages/app/src/components/Root/Root.tsx
+--- backstage_0.5.8/packages/app/src/components/Root/Root.tsx	2024-01-23 15:03:24
++++ backstage/packages/app/src/components/Root/Root.tsx	2024-01-23 15:03:06
+@@ -23,9 +23,14 @@
+   SidebarSpace,
+   useSidebarOpenState,
+   Link,
++  SidebarSubmenu,
++  SidebarSubmenuItem,
+ } from '@backstage/core-components';
+ import MenuIcon from '@material-ui/icons/Menu';
+ import SearchIcon from '@material-ui/icons/Search';
++import CloudIcon from '@material-ui/icons/Cloud';
++import { AWSLogoFull, AWSLogoIcon, CustomerLogoIcon, CustomerLogoFullLight } from '@aws/plugin-aws-apps-demo-for-backstage';
++import { useApi, useApp, appThemeApiRef } from '@backstage/core-plugin-api';
+ 
+ const useSidebarLogoStyles = makeStyles({
+   root: {
+@@ -42,14 +47,29 @@
+   },
+ });
+ 
++function getLogo(themeId: string) {
++  switch (themeId) {
++    case 'opaTheme':
++      return [<AWSLogoFull />, <AWSLogoIcon />];
++    case 'customerTheme':
++      return [<CustomerLogoFullLight />, <CustomerLogoIcon />];
++    default:
++      return [<LogoFull />, <LogoIcon />];
++  }
++}
++
+ const SidebarLogo = () => {
++  const appThemeApi = useApi(appThemeApiRef);
++  const themeId = appThemeApi.getActiveThemeId();
+   const classes = useSidebarLogoStyles();
+   const { isOpen } = useSidebarOpenState();
+ 
++  const [fullLogo, iconLogo] = getLogo(themeId ?? '');
++
+   return (
+     <div className={classes.root}>
+       <Link to="/" underline="none" className={classes.link} aria-label="Home">
+-        {isOpen ? <LogoFull /> : <LogoIcon />}
++        {isOpen ? fullLogo : iconLogo}
+       </Link>
+     </div>
+   );
+@@ -65,7 +85,35 @@
+       <SidebarDivider />
+       <SidebarGroup label="Menu" icon={<MenuIcon />}>
+         {/* Global nav, not org-specific */}
+-        <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
++        <SidebarItem icon={HomeIcon} to="/" text="Home" />
++        <SidebarDivider />
++        <SidebarGroup label="AWS" icon={<MenuIcon />}>
++          <SidebarItem icon={CloudIcon} text="AWS">
++            <SidebarSubmenu title="AWS Catalog">
++              <SidebarSubmenuItem
++                title="Environments"
++                to="aws-apps-search-page/environments?filters[kind]=awsenvironment"
++                icon={useApp().getSystemIcon('kind:domain')}
++              />
++              <SidebarSubmenuItem
++                title="Providers"
++                to="aws-apps-search-page/providers?filters[kind]=awsenvironmentprovider"
++                icon={useApp().getSystemIcon('kind:system')}
++              />
++              <SidebarSubmenuItem
++                title="Apps"
++                to="aws-apps-search-page/apps?filters[kind]=component"
++                icon={useApp().getSystemIcon('kind:component')}
++              />
++              <SidebarSubmenuItem
++                title="Resources"
++                to="aws-apps-search-page/resources?filters[kind]=resource"
++                icon={useApp().getSystemIcon('kind:resource')}
++              />
++            </SidebarSubmenu>
++          </SidebarItem>
++        </SidebarGroup>
++        <SidebarDivider />
+         <SidebarItem icon={ExtensionIcon} to="api-docs" text="APIs" />
+         <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
+         <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/app/src/components/catalog/EntityPage.tsx backstage/packages/app/src/components/catalog/EntityPage.tsx
+--- backstage_0.5.8/packages/app/src/components/catalog/EntityPage.tsx	2024-01-23 15:03:24
++++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2024-01-23 15:03:06
+@@ -27,6 +27,7 @@
+   isOrphan,
+   hasRelationWarnings,
+   EntityRelationWarning,
++  isResourceType,
+ } from '@backstage/plugin-catalog';
+ import {
+   isGithubActionsAvailable,
+@@ -45,6 +46,7 @@
+   EntityCatalogGraphCard,
+ } from '@backstage/plugin-catalog-graph';
+ import {
++  Entity,
+   RELATION_API_CONSUMED_BY,
+   RELATION_API_PROVIDED_BY,
+   RELATION_CONSUMES_API,
+@@ -54,10 +56,23 @@
+   RELATION_PART_OF,
+   RELATION_PROVIDES_API,
+ } from '@backstage/catalog-model';
++import {
++  AwsEnvironmentPage,
++  AwsEnvironmentProviderPage,
++  AwsComponentPage,
++} from '@aws/plugin-aws-apps-for-backstage';
+ 
++import { isGitlabAvailable, EntityGitlabContent } from '@immobiliarelabs/backstage-plugin-gitlab';
++
+ import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
+ import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
+ 
++
++const isCicdApplicable = (entity: Entity) => {
++  return isGitlabAvailable(entity) || isGithubActionsAvailable(entity);
++};
++
++
+ const techdocsContent = (
+   <EntityTechdocsContent>
+     <TechDocsAddons>
+@@ -73,7 +88,10 @@
+     <EntitySwitch.Case if={isGithubActionsAvailable}>
+       <EntityGithubActionsContent />
+     </EntitySwitch.Case>
+-
++    <EntitySwitch.Case if={isGitlabAvailable}>
++      <EntityGitlabContent />
++    </EntitySwitch.Case>
++    
+     <EntitySwitch.Case>
+       <EmptyState
+         title="No CI/CD available for this entity"
+@@ -110,7 +128,7 @@
+         </Grid>
+       </EntitySwitch.Case>
+     </EntitySwitch>
+-
++    
+     <EntitySwitch>
+       <EntitySwitch.Case if={hasCatalogProcessingErrors}>
+         <Grid item xs={12}>
+@@ -121,6 +139,7 @@
+   </>
+ );
+ 
++
+ const overviewContent = (
+   <Grid container spacing={3} alignItems="stretch">
+     {entityWarningContent}
+@@ -218,6 +237,10 @@
+       {overviewContent}
+     </EntityLayout.Route>
+ 
++    <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
++      {cicdContent}
++    </EntityLayout.Route>
++
+     <EntityLayout.Route path="/docs" title="Docs">
+       {techdocsContent}
+     </EntityLayout.Route>
+@@ -230,6 +253,14 @@
+       {serviceEntityPage}
+     </EntitySwitch.Case>
+ 
++    {/* AWS Modifications */ }
++
++    <EntitySwitch.Case if={isComponentType('aws-app')}>
++      <AwsComponentPage componentType='aws-app'/>
++    </EntitySwitch.Case>
++    {/* End of AWS Modifications */ }
++
++
+     <EntitySwitch.Case if={isComponentType('website')}>
+       {websiteEntityPage}
+     </EntitySwitch.Case>
+@@ -377,9 +408,34 @@
+   </EntityLayout>
+ );
+ 
++ {/* AWS Modifications */ }
++
++const awsEnvironmentProviderEntityPage = (
++      <AwsEnvironmentProviderPage />
++);
++
++const awsEnvironmentEntityPage = (
++      <AwsEnvironmentPage />
++);
++
++const resourceEntityPage = (
++  <EntitySwitch>
++    <EntitySwitch.Case if={isResourceType('aws-resource')}>
++       <AwsComponentPage componentType='aws-resource'/>
++    </EntitySwitch.Case>
++    <EntitySwitch.Case>{defaultEntityPage}</EntitySwitch.Case>
++  </EntitySwitch>
++);
++
++ {/* End of AWS Modifications */ }
+ export const entityPage = (
+   <EntitySwitch>
+     <EntitySwitch.Case if={isKind('component')} children={componentPage} />
++    {/* AWS Modifications */ }
++    <EntitySwitch.Case if={isKind('resource')} children={resourceEntityPage} />
++    <EntitySwitch.Case if={isKind('awsenvironment')} children={awsEnvironmentEntityPage} />
++    <EntitySwitch.Case if={isKind('awsenvironmentprovider')} children={awsEnvironmentProviderEntityPage} />
++    {/* End AWS Modifications */ }
+     <EntitySwitch.Case if={isKind('api')} children={apiPage} />
+     <EntitySwitch.Case if={isKind('group')} children={groupPage} />
+     <EntitySwitch.Case if={isKind('user')} children={userPage} />
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/Dockerfile backstage/packages/backend/Dockerfile
+--- backstage_0.5.8/packages/backend/Dockerfile	2024-01-23 15:03:23
++++ backstage/packages/backend/Dockerfile	2024-01-23 15:03:06
+@@ -22,7 +22,6 @@
+ # in which case you should also move better-sqlite3 to "devDependencies" in package.json.
+ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+     --mount=type=cache,target=/var/lib/apt,sharing=locked \
+-    apt-get update && \
+     apt-get install -y --no-install-recommends libsqlite3-dev
+ 
+ # From here on we use the least-privileged `node` user to run the backend.
+@@ -49,4 +48,4 @@
+ COPY --chown=node:node packages/backend/dist/bundle.tar.gz app-config*.yaml ./
+ RUN tar xzf bundle.tar.gz && rm bundle.tar.gz
+ 
+-CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
++CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
+\ No newline at end of file
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
+--- backstage_0.5.8/packages/backend/src/index.ts	2024-01-23 15:03:23
++++ backstage/packages/backend/src/index.ts	2024-01-23 15:03:06
+@@ -28,9 +28,12 @@
+ import proxy from './plugins/proxy';
+ import techdocs from './plugins/techdocs';
+ import search from './plugins/search';
++import permission from './plugins/permission';
+ import { PluginEnvironment } from './types';
+ import { ServerPermissionClient } from '@backstage/plugin-permission-node';
+ import { DefaultIdentityClient } from '@backstage/plugin-auth-node';
++import gitlab from './plugins/gitlab';
++import awsApps from './plugins/awsApps';
+ 
+ function makeCreateEnv(config: Config) {
+   const root = getRootLogger();
+@@ -38,7 +41,7 @@
+   const discovery = HostDiscovery.fromConfig(config);
+   const cacheManager = CacheManager.fromConfig(config);
+   const databaseManager = DatabaseManager.fromConfig(config, { logger: root });
+-  const tokenManager = ServerTokenManager.noop();
++  const tokenManager = ServerTokenManager.fromConfig(config, { logger: root });
+   const taskScheduler = TaskScheduler.fromConfig(config, { databaseManager });
+ 
+   const identity = DefaultIdentityClient.create({
+@@ -85,6 +88,9 @@
+   const techdocsEnv = useHotMemoize(module, () => createEnv('techdocs'));
+   const searchEnv = useHotMemoize(module, () => createEnv('search'));
+   const appEnv = useHotMemoize(module, () => createEnv('app'));
++  const permissionEnv = useHotMemoize(module, () => createEnv('permission'));
++  const awsAppsEnv = useHotMemoize(module, () => createEnv('aws-apps-backend'));
++  const gitlabEnv = useHotMemoize(module, () => createEnv('gitlab'));
+ 
+   const apiRouter = Router();
+   apiRouter.use('/catalog', await catalog(catalogEnv));
+@@ -93,6 +99,9 @@
+   apiRouter.use('/techdocs', await techdocs(techdocsEnv));
+   apiRouter.use('/proxy', await proxy(proxyEnv));
+   apiRouter.use('/search', await search(searchEnv));
++  apiRouter.use('/permission', await permission(permissionEnv));
++  apiRouter.use('/gitlab', await gitlab(gitlabEnv));
++  apiRouter.use('/aws-apps-backend', await awsApps(awsAppsEnv));
+ 
+   // Add backends ABOVE this line; this 404 handler is the catch-all fallback
+   apiRouter.use(notFoundHandler());
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts
+--- backstage_0.5.8/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts	1969-12-31 19:00:00
++++ backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts	2024-01-23 15:03:06
+@@ -0,0 +1,94 @@
++import { readOpaAppAuditPermission } from '@aws/plugin-aws-apps-common-for-backstage';
++import { DEFAULT_NAMESPACE, stringifyEntityRef } from '@backstage/catalog-model';
++import { BackstageIdentityResponse } from '@backstage/plugin-auth-node';
++import { catalogConditions, createCatalogConditionalDecision } from '@backstage/plugin-catalog-backend/alpha';
++import { RESOURCE_TYPE_CATALOG_ENTITY, catalogEntityDeletePermission, catalogEntityReadPermission } from '@backstage/plugin-catalog-common/alpha';
++import { AuthorizeResult, PolicyDecision, isPermission, isResourcePermission } from '@backstage/plugin-permission-common';
++import { PermissionPolicy, PolicyQuery } from '@backstage/plugin-permission-node';
++
++
++// The Group entity ref constants below are based on group identifiers created from the auth IdP or manually created
++// Update the entity ref identifiers as appropriate to match your Backstage installation
++const ADMINS_GROUP = stringifyEntityRef({ kind: 'Group', namespace: DEFAULT_NAMESPACE, name: "admins" });
++const DEVOPS_GROUP = stringifyEntityRef({ kind: 'Group', namespace: DEFAULT_NAMESPACE, name: "dev-ops" });
++// const QA_GROUP = stringifyEntityRef({ kind: 'Group', namespace: DEFAULT_NAMESPACE, name: "qa" });
++const DEVELOPERS_GROUP = stringifyEntityRef({ kind: 'Group', namespace: DEFAULT_NAMESPACE, name: "developers" });
++// const EVERYONE_GROUP = stringifyEntityRef({ kind: 'Group', namespace: DEFAULT_NAMESPACE, name: "everyone" });
++
++export class OpaSampleAllowAllPolicy implements PermissionPolicy {
++
++  async handle(): Promise<PolicyDecision> {
++    return { result: AuthorizeResult.ALLOW };
++  }
++}
++  
++
++
++
++export class OpaSamplePermissionPolicy implements PermissionPolicy {
++
++  async handle(
++    request: PolicyQuery, 
++    user?: BackstageIdentityResponse
++  ): Promise<PolicyDecision> {
++
++    // The example permission decision checks follow a "first found" strategy.
++    // The order of the checks is very important!!
++
++    // store the array of entityRefs which allow this user to claim ownership of an entity
++    const ownershipGroups = user?.identity.ownershipEntityRefs || [];
++
++    // Example permission decision:
++    //   ALLOW admin and devops group members to perform any action
++    const allowAllGroups = [ADMINS_GROUP, DEVOPS_GROUP];
++    if (ownershipGroups.some(x => allowAllGroups.includes(x))) {
++      return { result: AuthorizeResult.ALLOW };
++    }
++
++    // Example permission decision: 
++    //   DENY audit read access unless the user is a member of Admin or DevOps
++    //   The implementation below assumes that prior checks have returned an
++    //   'allow' policy decision for groups other than 'developer'
++    if (isPermission(request.permission, readOpaAppAuditPermission) && ownershipGroups.includes(DEVELOPERS_GROUP)) {
++      return { result: AuthorizeResult.DENY };
++    }
++
++    // Example permission decision:
++    //   Multiple groups of permission decisions are nested under the first check to see if we're working with catalog entities
++    if (isResourcePermission(request.permission, RESOURCE_TYPE_CATALOG_ENTITY)) {
++
++      // Example permission decision:
++      //   DENY catalog entity delete permission (Unregister entity) to users
++      //   if they cannot claim ownership of the entity
++      if (isPermission(request.permission, catalogEntityDeletePermission)) {
++        return createCatalogConditionalDecision(
++          request.permission,
++          catalogConditions.isEntityOwner({
++            claims: user?.identity.ownershipEntityRefs ?? [],
++          }),
++        );
++      }
++      // Example permission decision:
++      //   DENY users access to software templates of type 'aws-environment' or
++      //   'aws-environment-provider' if they cannot claim ownership of the entity
++      if (isPermission(request.permission, catalogEntityReadPermission)) {
++        return createCatalogConditionalDecision(request.permission, {
++          not: {
++            allOf: [
++              catalogConditions.isEntityKind({ kinds: ['template'] }),
++              {
++                anyOf: [
++                  catalogConditions.hasSpec({ key: 'type', value: 'aws-environment' }),
++                  catalogConditions.hasSpec({ key: 'type', value: 'aws-environment-provider' }),
++                ],
++              },
++            ],
++          },
++        });
++      }
++    }
++
++    // Default policy decision is to ALLOW permission requests
++    return { result: AuthorizeResult.ALLOW };
++  }
++}
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/auth.ts backstage/packages/backend/src/plugins/auth.ts
+--- backstage_0.5.8/packages/backend/src/plugins/auth.ts	2024-01-23 15:03:23
++++ backstage/packages/backend/src/plugins/auth.ts	2024-01-23 15:03:06
+@@ -49,6 +49,23 @@
+           // resolver: providers.github.resolvers.usernameMatchingUserEntityName(),
+         },
+       }),
++      okta: providers.okta.create({
++        signIn: {
++          // resolver: providers.okta.resolvers.emailMatchingUserEntityAnnotation(),
++          resolver: async (info, ctx) => {
++            const {
++              profile: { email },
++            } = info;
++            if (!email) {
++              throw new Error('User profile contained no email');
++            }
++            const [name] = email.split('@');
++            return ctx.signInWithCatalogUser({
++              entityRef: { name }
++            });
++          }
++        },
++      }),      
+     },
+   });
+ }
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/awsApps.ts backstage/packages/backend/src/plugins/awsApps.ts
+--- backstage_0.5.8/packages/backend/src/plugins/awsApps.ts	1969-12-31 19:00:00
++++ backstage/packages/backend/src/plugins/awsApps.ts	2024-01-23 15:03:06
+@@ -0,0 +1,24 @@
++//awsApps.ts
++
++import {createRouter} from '@aws/plugin-aws-apps-backend-for-backstage'
++import { Router } from 'express';
++import { PluginEnvironment } from '../types';
++import {DefaultIdentityClient } from '@backstage/plugin-auth-node';
++
++export default async function createPlugin({
++  logger,
++  discovery,
++  config,
++  permissions,
++}: PluginEnvironment): Promise<Router> {
++  return await createRouter({
++    logger: logger,
++    // userIdentity: identity,
++    userIdentity: DefaultIdentityClient.create({
++      discovery,
++      issuer: await discovery.getExternalBaseUrl('auth'),
++    }),
++    config,
++    permissions,
++  });
++}
+\ No newline at end of file
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/catalog.ts backstage/packages/backend/src/plugins/catalog.ts
+--- backstage_0.5.8/packages/backend/src/plugins/catalog.ts	2024-01-23 15:03:23
++++ backstage/packages/backend/src/plugins/catalog.ts	2024-01-23 15:03:06
+@@ -2,13 +2,37 @@
+ import { ScaffolderEntitiesProcessor } from '@backstage/plugin-catalog-backend-module-scaffolder-entity-model';
+ import { Router } from 'express';
+ import { PluginEnvironment } from '../types';
++import { OktaOrgEntityProvider } from '@roadiehq/catalog-backend-module-okta';
++import { GitlabFillerProcessor } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
++import { AWSEnvironmentEntitiesProcessor, AWSEnvironmentProviderEntitiesProcessor} from '@aws/plugin-aws-apps-backend-for-backstage';
++import { GitlabDiscoveryEntityProvider } from '@backstage/plugin-catalog-backend-module-gitlab';
+ 
+ export default async function createPlugin(
+   env: PluginEnvironment,
+ ): Promise<Router> {
+   const builder = await CatalogBuilder.create(env);
++  const orgProvider = OktaOrgEntityProvider.fromConfig(env.config, {
++    logger: env.logger,
++    userNamingStrategy: 'strip-domain-email',
++    groupNamingStrategy: 'kebab-case-name',
++  });
++    
++  builder.addEntityProvider(orgProvider);
++  builder.addEntityProvider(
++    ...GitlabDiscoveryEntityProvider.fromConfig(env.config, {
++      logger: env.logger,
++      scheduler: env.scheduler,
++    }),
++  );
++
++  // Custom processors
++  builder.addProcessor(new GitlabFillerProcessor(env.config));
++  builder.addProcessor(new AWSEnvironmentEntitiesProcessor());
++  builder.addProcessor(new AWSEnvironmentProviderEntitiesProcessor())
++
+   builder.addProcessor(new ScaffolderEntitiesProcessor());
+   const { processingEngine, router } = await builder.build();
++  orgProvider.run();
+   await processingEngine.start();
+   return router;
+ }
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/gitlab.ts backstage/packages/backend/src/plugins/gitlab.ts
+--- backstage_0.5.8/packages/backend/src/plugins/gitlab.ts	1969-12-31 19:00:00
++++ backstage/packages/backend/src/plugins/gitlab.ts	2024-01-23 15:03:06
+@@ -0,0 +1,12 @@
++import { PluginEnvironment } from '../types';
++import { Router } from 'express-serve-static-core';
++import { createRouter } from '@immobiliarelabs/backstage-plugin-gitlab-backend';
++
++export default async function createPlugin(
++  env: PluginEnvironment,
++): Promise<Router> {
++  return createRouter({
++    logger: env.logger,
++    config: env.config,
++  });
++}
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/permission.ts backstage/packages/backend/src/plugins/permission.ts
+--- backstage_0.5.8/packages/backend/src/plugins/permission.ts	1969-12-31 19:00:00
++++ backstage/packages/backend/src/plugins/permission.ts	2024-01-23 15:03:06
+@@ -0,0 +1,15 @@
++import { createRouter } from '@backstage/plugin-permission-backend';
++import { Router } from 'express';
++import { PluginEnvironment } from '../types';
++import { OpaSampleAllowAllPolicy, /* OpaSamplePermissionPolicy */ } from './OpaSamplePermissionPolicy';
++
++
++export default async function createPlugin(env: PluginEnvironment): Promise<Router> {
++  return await createRouter({
++    config: env.config,
++    logger: env.logger,
++    discovery: env.discovery,
++    policy: new OpaSampleAllowAllPolicy(),
++    identity: env.identity,
++  });
++}
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/scaffolder.ts backstage/packages/backend/src/plugins/scaffolder.ts
+--- backstage_0.5.8/packages/backend/src/plugins/scaffolder.ts	2024-01-23 15:03:23
++++ backstage/packages/backend/src/plugins/scaffolder.ts	2024-01-23 15:03:06
+@@ -1,7 +1,33 @@
+ import { CatalogClient } from '@backstage/catalog-client';
+-import { createRouter } from '@backstage/plugin-scaffolder-backend';
++import { createBuiltinActions, createRouter } from '@backstage/plugin-scaffolder-backend';
+ import { Router } from 'express';
+ import type { PluginEnvironment } from '../types';
++import { ScmIntegrations } from '@backstage/integration';
++import {
++  createRepoAccessTokenAction,
++  createSecretAction,
++  createS3BucketAction,
++  getEnvProvidersAction,
++  getComponentInfoAction,
++  getSsmParametersAction,
++  getPlatformParametersAction,
++  getPlatformMetadataAction,
++} from '@aws/plugin-scaffolder-backend-aws-apps-for-backstage';
++import {
++  // createZipAction,
++  // createSleepAction,
++  createWriteFileAction,
++  createAppendFileAction,
++  // createMergeJSONAction,
++  // createMergeAction,
++  // createParseFileAction,
++  // createSerializeYamlAction,
++  // createSerializeJsonAction,
++  // createJSONataAction,
++  // createYamlJSONataTransformAction,
++  // createJsonJSONataTransformAction,
++  // createReplaceInFileAction,
++} from '@roadiehq/scaffolder-backend-module-utils';
+ 
+ export default async function createPlugin(
+   env: PluginEnvironment,
+@@ -10,6 +36,39 @@
+     discoveryApi: env.discovery,
+   });
+ 
++const integrations = ScmIntegrations.fromConfig(env.config);
++const builtInActions = createBuiltinActions({
++  integrations,
++  catalogClient,
++  reader: env.reader,
++  config: env.config,
++});
++
++const actions = [
++  // createZipAction(),
++  // createSleepAction(),
++  createWriteFileAction(),
++  createAppendFileAction(),
++  // createMergeJSONAction({}),
++  // createMergeAction(),
++  // createParseFileAction(),
++  // createSerializeYamlAction(),
++  // createSerializeJsonAction(),
++  // createJSONataAction(),
++  // createYamlJSONataTransformAction(),
++  // createJsonJSONataTransformAction(),
++  // createReplaceInFileAction(),
++   ...builtInActions,
++  createRepoAccessTokenAction({ integrations, envConfig:env.config }),
++  createS3BucketAction(),
++  createSecretAction( {envConfig:env.config}),
++  getEnvProvidersAction({ catalogClient }),
++  getComponentInfoAction(),
++  getSsmParametersAction(),
++  getPlatformParametersAction({envConfig:env.config}),
++  getPlatformMetadataAction({envConfig:env.config}),
++];
++
+   return await createRouter({
+     logger: env.logger,
+     config: env.config,
+@@ -18,5 +77,6 @@
+     catalogClient,
+     identity: env.identity,
+     permissions: env.permissions,
++    actions
+   });
+ }
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/playwright.config.ts backstage/playwright.config.ts
+--- backstage_0.5.8/playwright.config.ts	2024-01-23 15:03:23
++++ backstage/playwright.config.ts	2024-01-23 15:03:06
+@@ -13,20 +13,16 @@
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
+-
+ import { defineConfig } from '@playwright/test';
+ import { generateProjects } from '@backstage/e2e-test-utils/playwright';
+-
+ /**
+  * See https://playwright.dev/docs/test-configuration.
+  */
+ export default defineConfig({
+   timeout: 60_000,
+-
+   expect: {
+     timeout: 5_000,
+   },
+-
+   // Run your local dev server before starting the tests
+   webServer: process.env.CI
+     ? []
+@@ -38,13 +34,9 @@
+           timeout: 60_000,
+         },
+       ],
+-
+   forbidOnly: !!process.env.CI,
+-
+   retries: process.env.CI ? 2 : 0,
+-
+   reporter: [['html', { open: 'never', outputFolder: 'e2e-test-report' }]],
+-
+   use: {
+     actionTimeout: 0,
+     baseURL:
+@@ -53,8 +45,6 @@
+     screenshot: 'only-on-failure',
+     trace: 'on-first-retry',
+   },
+-
+   outputDir: 'node_modules/.cache/e2e-test-results',
+-
+   projects: generateProjects(), // Find all packages with e2e-test folders
+ });

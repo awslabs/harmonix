@@ -1,0 +1,45 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ${{ values.component_id }}-ingress
+  annotations:
+    kubernetes.io/ingress.class: "alb"
+    alb.ingress.kubernetes.io/scheme: "internet-facing"
+    alb.ingress.kubernetes.io/healthcheck-path: "/health"
+    alb.ingress.kubernetes.io/success-codes: "200,201,302"
+    alb.ingress.kubernetes.io/target-type: "ip"
+
+    # Tag load balancer so that it shows up as an OPA application resource
+    # Note - this setting must be overriden per environment provider
+    alb.ingress.kubernetes.io/tags: "aws-apps-${{ values.component_id }}-ENV_PLACEHOLDER-ENV_PROVIDER_PLACEHOLDER=${{ values.component_id }}"
+
+    # Allows multiple services to use the same ALB
+    alb.ingress.kubernetes.io/group.name: ${{ values.component_id }}-ENV_PLACEHOLDER
+
+    # Configure the load balancer name. Comment this out to have the name be auto-generated
+    # Load balancer name can only be up to 32 characters long
+    # alb.ingress.kubernetes.io/load-balancer-name: "${{ values.component_id }}-ENV_PLACEHOLDER-NS_PLACEHOLDER"
+    
+    # To enable HTTPS, you need a valid SSL certificate
+    # Here are some example annotations to use for enabling an HTTPS listener for your load balancer:
+    # alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    # alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+    # alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:<my-region>:<my-account-number>:certificate/<cert-number>
+  
+    # To configure an IP allow-list for the load balancer
+    # alb.ingress.kubernetes.io/inbound-cidrs: 10.0.0.0/24
+
+  labels:
+    app.kubernetes.io/name: ${{ values.component_id }}
+    app.kubernetes.io/env: overrideMe
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /*
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: ${{ values.component_id }}-service
+                port: 
+                    number: 80

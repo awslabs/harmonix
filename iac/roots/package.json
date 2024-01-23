@@ -2,7 +2,10 @@
     "private": true,
     "name": "aws-application-development",
     "workspaces": [
+        "opa-basic-environment",
         "opa-ecs-environment",
+        "opa-ecs-ec2-environment",
+        "opa-eks-environment",
         "opa-serverless-environment",
         "opa-common-constructs",
         "opa-platform"

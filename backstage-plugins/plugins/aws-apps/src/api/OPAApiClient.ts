@@ -20,6 +20,8 @@ import { ResponseError } from '@backstage/errors';
 import { OPAApi } from '.';
 import { HTTP } from '../helpers/constants';
 import { ContainerDetailsType } from '../types';
+import { InvokeCommandOutput } from "@aws-sdk/client-lambda";
+import { PlatformSCMParams } from "@aws/plugin-aws-apps-common-for-backstage/src/types/PlatformTypes";
 
 
 export class OPAApiClient implements OPAApi {
@@ -216,7 +218,7 @@ export class OPAApiClient implements OPAApi {
     gitAdminSecret: string;
     backendParamsOverrides?: BackendParams
   }): Promise<any> {
-   
+
 
     const postBody = {
       ...this.backendParams,
@@ -336,7 +338,7 @@ export class OPAApiClient implements OPAApi {
     gitProjectGroup: string;
     gitAdminSecret: string;
     envName: string;
-  }): Promise<any>  {
+  }): Promise<any> {
     const beParams = this.getAppliedBackendParams(backendParamsOverrides);
     const postBody = {
       ...beParams,
@@ -662,31 +664,131 @@ export class OPAApiClient implements OPAApi {
     return results;
   }
 
-  async scaleEKSDeployment({
-    deploymentName,
-    namespace,
-    replicaCount,
-    backendParamsOverrides,
+  async invokeLambda({
+    functionName,
+    actionDescription,
+    body,
+    backendParamsOverrides
   }: {
-    namespace: string;
-    deploymentName: string;
-    replicaCount: number;
+    functionName: string;
+    actionDescription: string;
+    body: string;
     backendParamsOverrides?: BackendParams;
-  }): Promise<any> {
+  }): Promise<InvokeCommandOutput> {
     const beParams = this.getAppliedBackendParams(backendParamsOverrides);
     const postBody = {
       ...beParams,
-      namespace: namespace,
-      deploymentName: deploymentName,
-      replicaCount: replicaCount
+      functionName,
+      actionDescription,
+      body
+    };
+    // console.log(postBody)
+    const lambdaResult = await this.fetch<InvokeCommandOutput>('/lambda/invoke', HTTP.POST, postBody);
+    return lambdaResult;
+  }
+
+  async getEKSAppManifests({
+    envName,
+    gitAdminSecret,
+    platformSCMConfig,
+    backendParamsOverrides
+  }: {
+    envName: string;
+    gitAdminSecret: string;
+    platformSCMConfig: PlatformSCMParams;
+    backendParamsOverrides?: BackendParams;
+  }): Promise<any> {
+    const beParams = this.getAppliedBackendParams(backendParamsOverrides);
+    // Fetch current config
+    const postBody = {
+      ...beParams,
+      envName,
+      gitAdminSecret,
+      platformSCMConfig
     };
 
-    try {
-      const cluster = await this.fetch<any>('/kubernetes/scaleEKSDeployment', HTTP.POST, postBody);
-      return cluster;
-    } catch (error) {
-      console.error('Error:', error);
-    }
+    // console.log(postBody)
+    let configResult = await this.fetch<any>('/platform/fetch-eks-config', HTTP.POST, postBody);
+    // console.log(configResult);
+
+    return configResult;
+  }
+
+  async updateEKSApp({
+    actionDescription,
+    envName,
+    cluster,
+    updateKey,
+    updateValue,
+    kubectlLambda,
+    lambdaRoleArn,
+    gitAdminSecret,
+    platformSCMConfig,
+    backendParamsOverrides
+  }: {
+    actionDescription: string;
+    envName: string;
+    cluster: string;
+    updateKey: string;
+    updateValue: string | number;
+    kubectlLambda: string;
+    lambdaRoleArn: string;
+    gitAdminSecret: string;
+    platformSCMConfig: PlatformSCMParams;
+    backendParamsOverrides?: BackendParams;
+  }): Promise<any> {
+    let configResult = await this.getEKSAppManifests({
+      envName,
+      gitAdminSecret,
+      platformSCMConfig,
+      backendParamsOverrides
+    });
+
+    const updateKeyArray = updateKey.split('.');
+    Object.values(configResult).forEach(value => {
+      let currObj: any = value;
+      for (let i = 0; i < updateKeyArray.length; i++) {
+        const currKey = updateKeyArray[i];
+        if (currObj.hasOwnProperty(currKey)) {
+          // console.log(currKey)
+          // console.log(currObj)
+          if (i === updateKeyArray.length - 1) {
+            // console.log(`key ${currKey} found , current value ${currObj[currKey]}`)
+            currObj[currKey] = updateValue
+            // console.log(`Updating key ${currKey} found , current value ${currObj[currKey]}`)
+
+          } else {
+            currObj = currObj[currKey]
+          }
+        }
+        else {
+          break
+        }
+      }
+    })
+    // console.log(configResult)
+
+    //make changes to config
+    const manifest = JSON.stringify(configResult)
+    const bodyParam = {
+      RequestType: "Update",
+      ResourceType: "Custom::AWSCDK-EKS-KubernetesResource",
+      ResourceProperties: {
+        TimeoutSeconds: "5",
+        ClusterName: cluster,
+        RoleArn: lambdaRoleArn,
+        InvocationType: 'RequestResponse',
+        Manifest: manifest,
+      }
+    };
+
+    const configUpdateResult = await this.invokeLambda({
+      functionName: kubectlLambda,
+      actionDescription,
+      body: JSON.stringify(bodyParam)
+    })
+
+    return configUpdateResult;
   }
 
   private async fetch<T>(path: string, method = HTTP.GET, data?: any): Promise<T> {

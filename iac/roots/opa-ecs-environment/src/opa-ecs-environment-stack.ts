@@ -8,6 +8,16 @@ import { Construct } from "constructs";
 import { NetworkConstruct, OPAEnvironmentParams, EcsClusterConstruct, DynamoDBConstruct, } from '@aws/aws-app-development-common-constructs'
 import { ECSProvisioningConstruct } from './constructs/ecs-env-provisioning-role-construct'
 import { ECSOperationsConstruct } from "./constructs/ecs-env-operations-role-construct";
+import {
+  getAccountId, 
+  getRegion, 
+  getPrefix, 
+  getEnvironmentName, 
+  getPlatformRoleArn,
+  getPipelineRoleArn,
+  getVpcCIDR,
+  getExistingVpcId,
+} from "./ecs-input";
 
 export interface OPAECSEnvStackProps extends cdk.StackProps {
   uniqueEnvIdentifier: string;
@@ -18,13 +28,14 @@ export class OPAECSEnvStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: OPAECSEnvStackProps) {
     super(scope, id, props);
 
-    const prefix = process.env.PREFIX as string || "opa";
-    const envName = process.env.ENV_NAME as string
-    const awsAccount = process.env.AWS_ACCOUNT_ID as string
-    const platformRoleArn = process.env.PLATFORM_ROLE_ARN as string
-    const pipelineRoleArn = process.env.PIPELINE_ROLE_ARN as string
-    const awsRegion = process.env.AWS_DEFAULT_REGION as string || "us-east-1"
-    const cidrInput = process.env.ENV_CIDR as string || "10.0.0.0/24"
+    const prefix = getPrefix().toLowerCase();
+    const envName = getEnvironmentName().toLowerCase();
+    const awsAccount = getAccountId();
+    const platformRoleArn = getPlatformRoleArn();
+    const pipelineRoleArn = getPipelineRoleArn();
+    const awsRegion = getRegion();
+    const cidrInput = getVpcCIDR();
+    const existingVpcId = getExistingVpcId();
 
     // Creating environment params object
 
@@ -35,36 +46,36 @@ export class OPAECSEnvStack extends cdk.Stack {
       prefix: prefix
     }
 
-    const envIdentifier = opaEnvParams.envName;
-    const envPathIdentifier = `/${envIdentifier}`
+    const envPathIdentifier = `/${envName}`
 
     // Create encryption key for all data at rest encryption
-    const key = new kms.Key(this, `${envIdentifier}-key`, {
-      alias: `${envIdentifier}-key`,
+    const key = new kms.Key(this, `${envName}-key`, {
+      alias: `${envName}-key`,
       enableKeyRotation: true,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       pendingWindow: cdk.Duration.days(8),
     });
 
     // Save KMS key arn in an SSM Parameter
-    new ssm.StringParameter(this, `${envIdentifier}-key-param`, {
+    new ssm.StringParameter(this, `${envName}-key-param`, {
       allowedPattern: ".*",
-      description: `The KMS Key for ECS Solution: ${envIdentifier} Environment`,
+      description: `The KMS Key for ECS Solution: ${envName} Environment`,
       parameterName: `${envPathIdentifier}/kms-key`,
       stringValue: key.keyArn,
     });
 
-    // Create underline network construct
-    const network = new NetworkConstruct(this, envIdentifier, {
+    // Create underlying network construct
+    const network = new NetworkConstruct(this, envName, {
       opaEnv: opaEnvParams,
       cidrRange: cidrInput,
       isIsolated: false,
       publicVpcNatGatewayCount: 3,
-      vpcAzCount: 3
+      vpcAzCount: 3,
+      existingVpcId,
     })
 
     // Create ECS Cluster
-    const ecsAppCluster = new EcsClusterConstruct(this, `${envIdentifier}-app-runtime`, {
+    const ecsAppCluster = new EcsClusterConstruct(this, `${envName}-app-runtime`, {
       opaEnv: opaEnvParams,
       vpc: network.vpc,
       isFargateCluster: true,
@@ -74,12 +85,12 @@ export class OPAECSEnvStack extends cdk.Stack {
     //create audit table
     const auditTableConstruct = new DynamoDBConstruct(this, "audit-table", {
       opaEnv: opaEnvParams,
-      tableName: `${envIdentifier}-audit`,
+      tableName: `${envName}-audit`,
       kmsKey: key,
     });
 
     // Create pipeline provisioning role for the environment
-    const provisioningRoleConstruct = new ECSProvisioningConstruct(this, `${opaEnvParams.prefix}-${envIdentifier}-provisioning-role`, {
+    const provisioningRoleConstruct = new ECSProvisioningConstruct(this, `${opaEnvParams.prefix}-${envName}-provisioning-role`, {
       opaEnv: opaEnvParams,
       KMSkey: key,
       vpcCollection: [network.vpc],
@@ -89,7 +100,7 @@ export class OPAECSEnvStack extends cdk.Stack {
     });
 
     // Create operations role for the environment
-    const operationsRoleConstruct = new ECSOperationsConstruct(this, `${opaEnvParams.prefix}-${envIdentifier}-operations-role`, {
+    const operationsRoleConstruct = new ECSOperationsConstruct(this, `${opaEnvParams.prefix}-${envName}-operations-role`, {
       opaEnv: opaEnvParams,
       KMSkey: key,
       vpcCollection: [network.vpc],
@@ -99,7 +110,7 @@ export class OPAECSEnvStack extends cdk.Stack {
     });
 
     // save the unique environment identifier
-    const uniqueEnvId = new ssm.StringParameter(this, `${envIdentifier}-unique-id-param`, {
+    const uniqueEnvId = new ssm.StringParameter(this, `${envName}-unique-id-param`, {
       allowedPattern: ".*",
       description: `The Unique ID for: ${opaEnvParams.envName} Environment`,
       parameterName: `${envPathIdentifier}/unique-id`,
@@ -107,12 +118,12 @@ export class OPAECSEnvStack extends cdk.Stack {
     });
 
     // Printing outputs
-    new cdk.CfnOutput(this, "Environment_Name", {
+    new cdk.CfnOutput(this, "EnvironmentName", {
       value: envName,
     });
 
     // Printing the unique environment ID
-    new cdk.CfnOutput(this, "Environment_ID", {
+    new cdk.CfnOutput(this, "EnvironmentID", {
       value: uniqueEnvId.stringValue,
     });
 
@@ -122,7 +133,7 @@ export class OPAECSEnvStack extends cdk.Stack {
     });
 
     // Printing the ECS Cluster name
-    new cdk.CfnOutput(this, "Cluster_Name", {
+    new cdk.CfnOutput(this, "ClusterName", {
       value: ecsAppCluster.clusterParam.parameterName,
     });
 
@@ -132,19 +143,19 @@ export class OPAECSEnvStack extends cdk.Stack {
     });
 
     // Print role information
-    new cdk.CfnOutput(this, "Provisioning_Role", {
+    new cdk.CfnOutput(this, "ProvisioningRole", {
       value: provisioningRoleConstruct.provisioningRoleParam.parameterName,
     });
 
-    new cdk.CfnOutput(this, "Provisioning_Role_ARN", {
+    new cdk.CfnOutput(this, "ProvisioningRoleARN", {
       value: provisioningRoleConstruct.provisioningRoleArnParam.parameterName,
     });
 
-    new cdk.CfnOutput(this, "Operations_Role", {
+    new cdk.CfnOutput(this, "OperationsRole", {
       value: operationsRoleConstruct.operationsRoleParam.parameterName,
     });
 
-    new cdk.CfnOutput(this, "Operations_Role_ARN", {
+    new cdk.CfnOutput(this, "OperationsRoleARN", {
       value: operationsRoleConstruct.operationsRoleArnParam.parameterName,
     });
 

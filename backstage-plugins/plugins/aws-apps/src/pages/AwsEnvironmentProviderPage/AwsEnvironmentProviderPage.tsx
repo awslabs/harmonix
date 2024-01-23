@@ -8,6 +8,7 @@ import { AwsServerlessEnvironmentProviderPage } from '../AwsServerlessEnvironmen
 import { useEntity } from '@backstage/plugin-catalog-react';
 import { Entity } from '@backstage/catalog-model';
 import { ProviderType } from '../../helpers/constants';
+import { AwsEKSEnvironmentProviderPage } from '../AwsEKSEnvironmentProviderPage/AwsEKSEnvironmentProviderPage';
 
 export interface AwsEnvironmentProviderPageProps {
   children?: ReactNode
@@ -15,7 +16,7 @@ export interface AwsEnvironmentProviderPageProps {
 
 export function isProviderType(providerType: string, entity: Entity): (entity: Entity) => boolean {
   return (): boolean => {
-    return entity.metadata["env-type"]?.toString().toLowerCase() === providerType;
+    return entity.metadata["envType"]?.toString().toLowerCase() === providerType;
   };
 };
 
@@ -28,11 +29,14 @@ export function AwsEnvironmentProviderPage(/* {children}: AwsEnvironmentProvider
       <EntitySwitch.Case if={isProviderType(ProviderType.ECS, entity)}>
         <AwsECSEnvironmentProviderPage />
       </EntitySwitch.Case>
+      <EntitySwitch.Case if={isProviderType(ProviderType.EKS, entity)}>
+        <AwsEKSEnvironmentProviderPage />
+      </EntitySwitch.Case>
       <EntitySwitch.Case if={isProviderType(ProviderType.SERVERLESS, entity)}>
         <AwsServerlessEnvironmentProviderPage />
       </EntitySwitch.Case>
       <EntitySwitch.Case>
-        <h1>Environment Provider Type "{entity.metadata["env-type"]}" Is Not Supported At This Time</h1>
+        <h1>Environment Provider Type "{entity.metadata["envType"]}" Is Not Supported At This Time</h1>
       </EntitySwitch.Case>
     </EntitySwitch>
   );

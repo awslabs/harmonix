@@ -10,6 +10,7 @@ import React, { ReactNode } from 'react';
 import { CICDContent } from '../../components/CICDContent/CICDContent';
 import { EntityDeleteAppCard } from '../../plugin';
 import { AwsRDSResourcePage } from '../AwsRDSResourcePage/AwsRDSResourcePage';
+import {AwsS3ResourcePage} from '../AwsS3ResourcePage/AwsS3ResourcePage'
 
 interface AwsResourcePageProps {
   children: ReactNode;
@@ -18,7 +19,7 @@ interface AwsResourcePageProps {
 export function isResourceType(resourceType: string): (entity: Entity) => boolean {
   return (entity: Entity): boolean => {
     let subType = 'N/A';
-    if (entity?.metadata?.['resource-type']) subType = entity?.metadata?.['resource-type'].toString();
+    if (entity?.metadata?.['resourceType']) subType = entity?.metadata?.['resourceType'].toString();
     return subType == resourceType;
   };
 }
@@ -54,12 +55,28 @@ export function AwsResourcePage(_props: AwsResourcePageProps) {
     </>
   );
 
+  const AwsS3ResourceEntityPage = (
+    <>
+      {_props.children}
+      <EntityLayout>
+        <EntityLayout.Route path="/" title="Overview">
+          <AwsS3ResourcePage></AwsS3ResourcePage>
+        </EntityLayout.Route>
+        <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
+          <CICDContent />
+        </EntityLayout.Route>
+        <EntityLayout.Route path="/management" title="Management">
+          {managementContent}
+        </EntityLayout.Route>
+      </EntityLayout>
+    </>
+  );
+
   return (
     <EntitySwitch>
       <EntitySwitch.Case if={isResourceType('aws-rds')}>{AwsRDSResourceEntityPage}</EntitySwitch.Case>
-      {/* <EntitySwitch.Case if={isResourceType('aws-s3')}>
-        {AwsS3EntityPage}
-      </EntitySwitch.Case>
+      <EntitySwitch.Case if={isResourceType('aws-s3')}>{AwsS3ResourceEntityPage}</EntitySwitch.Case>
+      {/*
       <EntitySwitch.Case if={isResourceType('aws-sqs')}>
         {AwsSQSEntityPage}
       </EntitySwitch.Case> */}

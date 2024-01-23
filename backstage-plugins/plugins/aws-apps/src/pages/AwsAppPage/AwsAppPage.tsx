@@ -21,6 +21,7 @@ import {
 import { AwsECSAppPage } from '../AwsECSAppPage/AwsECSAppPage';
 import { AwsServerlessAppPage } from '../AwsServerlessAppPage/AwsServerlessAppPage';
 import { CICDContent } from '../../components/CICDContent/CICDContent';
+import { AwsEKSAppPage } from '../AwsEKSAppPage/AwsEKSAppPage';
 
 interface AwsAppPageProps {
   children: ReactNode;
@@ -106,6 +107,33 @@ export function AwsAppPage(_props: AwsAppPageProps) {
     </>
   );
 
+  const AwsEKSAppEntityPage = (
+    <>
+      {_props.children}
+      <EntityLayout>
+        <EntityLayout.Route path="/" title="Overview">
+          <AwsEKSAppPage />
+        </EntityLayout.Route>
+        <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
+          <CICDContent />
+        </EntityLayout.Route>
+        <EntityLayout.Route path="/logs" title="App Logs" if={isLogsAvailable}>
+          {awsAppLogsContent}
+        </EntityLayout.Route>
+        <EntityLayout.Route path="/management" title="Management">
+          {managementContent}
+        </EntityLayout.Route>
+        {!loadingPermission && canReadAudit && (
+          <EntityLayout.Route path="/audit" title="Audit">
+            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}>
+              {auditContent}
+            </RequirePermission>
+          </EntityLayout.Route>
+        )}
+      </EntityLayout>
+    </>
+  );
+
   const AwsServerlessAppEntityPage = (
     <>
       {_props.children}
@@ -122,9 +150,13 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         <EntityLayout.Route path="/management" title="Management">
           {managementContent}
         </EntityLayout.Route>
-        <EntityLayout.Route path="/audit" title="Audit">
-          {auditContent}
-        </EntityLayout.Route>
+        {!loadingPermission && canReadAudit && (
+          <EntityLayout.Route path="/audit" title="Audit">
+            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}>
+              {auditContent}
+            </RequirePermission>
+          </EntityLayout.Route>
+        )}
       </EntityLayout>
     </>
   );
@@ -136,7 +168,11 @@ export function AwsAppPage(_props: AwsAppPageProps) {
     return (
       <EntitySwitch>
         <EntitySwitch.Case if={isAppType('ecs', env)}>{AwsECSAppEntityPage}</EntitySwitch.Case>
+        <EntitySwitch.Case if={isAppType('eks', env)}>{AwsEKSAppEntityPage}</EntitySwitch.Case>
         <EntitySwitch.Case if={isAppType('serverless', env)}>{AwsServerlessAppEntityPage}</EntitySwitch.Case>
+        <EntitySwitch.Case>
+          <h1>Application Type "{env.providerData.providerType}" Is Not Supported At This Time</h1>
+        </EntitySwitch.Case>
       </EntitySwitch>
     );
   } else {

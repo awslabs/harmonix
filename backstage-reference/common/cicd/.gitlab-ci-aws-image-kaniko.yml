@@ -5,11 +5,13 @@
     - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "push") && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
   script:
     - set -a && source $PROVIDER_PROPS_FILE && set +a
-    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=900 --output json)
+    - export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=900 --output json)
     - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
     - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
     - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
     - export GL_API=https://$CI_SERVER_HOST/api/v4/projects/$CI_PROJECT_ID/variables
+    - echo "NOTE - if the next command fails, delete these CICD variables and restart the pipeline job - AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN"
     - >
       curl --silent --output /dev/null --show-error --fail
       --request POST --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}" "${GL_API}"
@@ -72,7 +74,8 @@
       --context "${CI_PROJECT_DIR}"
       --dockerfile "Dockerfile"
       --destination "${LC_TAG}:latest"
-
+      --destination "${LC_TAG}:${CI_COMMIT_SHORT_SHA}"
+  
 .abstract-delete-aws-creds:
   rules:
     - if: $CI_COMMIT_TITLE =~ /generate CICD stages/

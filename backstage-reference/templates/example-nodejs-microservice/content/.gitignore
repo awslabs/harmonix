@@ -1,0 +1,64 @@
+# macOS
+.DS_Store
+
+# Intellij
+.idea/
+*.iml
+
+# VS Code
+.vscode/**
+!.vscode/launch.json
+!.vscode/tasks.json
+.vsls.json
+git-temp
+
+# logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# Coverage directory
+coverage
+
+# Dependency directories
+node_modules/
+**/.venv/
+**/__pycache__
+
+# Yarn 3 files
+.pnp.*
+**/.yarn/*
+!**/.yarn/patches
+!**/.yarn/plugins
+!**/.yarn/releases
+!**/.yarn/sdks
+!**/.yarn/versions
+
+# Node version directives
+.nvmrc
+
+# Optional eslint cache
+.eslintcache
+
+# dotenv environment variables file
+.env
+.env.*
+
+# Local configuration files
+*.local.yaml
+
+
+# transpiled JavaScript, Typings and test files
+*.d.ts
+!jest.config.js
+
+# CDK asset staging directory
+.cdk.staging
+cdk.out
+cdk.context.json
+
+# Temp files
+**/*.bak

@@ -128,8 +128,8 @@ metadata:
   tags:
     - aws
     - nodejs
-  iac-type: cdk
-  repo-secret-arn: "arn:aws:secretsmanager:us-east-1:**********.:secret:***"
+  iacType: cdk
+  repoSecretArn: "arn:aws:secretsmanager:us-east-1:**********.:secret:***"
   spec:
     type: aws-app
     owner: "group:default/developers"
@@ -139,10 +139,10 @@ metadata:
 We introduce a new component **spec type** - *aws-app* which will be used to mark applications that run on AWS. This is used to provide a specific UI experience that allows users to operate the application in the AWS cloud.
 
 
-The **iac-type** property indicates the type of the infrastructure as code this app was provisioned with - this impacts both the pipeline as well as the UI experience that are based on Terraform or CDK (state management).
+The **iacType** property indicates the type of the infrastructure as code this app was provisioned with - this impacts both the pipeline as well as the UI experience that are based on Terraform or CDK (state management).
 
 :::tip
- You may notice that repo-secret-arn is created regardless of the environment where the application is deployed - that is because the access to the repository is part of the platform / solution account regardless of where is it being deployed.
+ You may notice that repoSecretArn is created regardless of the environment where the application is deployed - that is because the access to the repository is part of the platform / solution account regardless of where is it being deployed.
 :::
 
 After the application provisioning pipeline completes, the pipeline will update the entity with the environment deployed resources under the *appData* tag:
@@ -157,9 +157,9 @@ metadata:
     - aws
     - nodejs
   annotations:
-    aws.amazon.com/opa-repo-secret-arn: "arn:aws:secretsmanager:us-east-1:**********.:secret:aws-apps-aml-detection-emea-access-token-V9w8Ea"
-  iac-type: cdk
-  repo-secret-arn: "arn:aws:secretsmanager:us-east-1:**********.:secret:aws-apps-aml-detection-emea-access-token-V9w8Ea"
+    aws.amazon.com/opa-repoSecretArn: "arn:aws:secretsmanager:us-east-1:**********.:secret:aws-apps-aml-detection-emea-access-token-V9w8Ea"
+  iacType: cdk
+  repoSecretArn: "arn:aws:secretsmanager:us-east-1:**********.:secret:aws-apps-aml-detection-emea-access-token-V9w8Ea"
   appData:
     EMEA-AML-dev:
       emea-aml-dev:
@@ -211,11 +211,8 @@ metadata:
     - openapi
     - apigateway
     - serverless
-  annotations:
-    aws.amazon.com/opa-repo-secret-arn: "arn:aws:secretsmanager:us-east-1:**********:secret:aws-apps-snacks-access-token-0IMiXR"
-    aws.amazon.com/opa-component-subtype: "serverless-rest-api"
-  iac-type: cdk
-  repo-secret-arn: "arn:aws:secretsmanager:us-east-1:**********:secret:aws-apps-snacks-access-token-0IMiXR"
+  iacType: cdk
+  repoSecretArn: "arn:aws:secretsmanager:us-east-1:**********:secret:aws-apps-snacks-access-token-0IMiXR"
   appData:
     api-team-dev:
       api-team-dev:
@@ -255,10 +252,10 @@ metadata:
     - aws-resource
     - database
   annotations: null
-  iac-type: cdk
-  resource-type: "aws-rds"
-  db-name: "pymtdb"
-  db-object-name: "user"
+  iacType: cdk
+  resourceType: "aws-rds"
+  dbName: "pymtdb"
+  dbObjectName: "user"
   appData:
     US-Commercial:
       us-commercial-dev:
@@ -276,11 +273,11 @@ spec:
 ```
 Core resource entity properties:
 1. **spec/type** -> *aws-resource* . while we use the same kind of *Resource* the spec type refers to aws-resource which can be easily used to filter our AWS related resources.
-2. **resource-type** this is used to capture the different types of AWS resources including: aws-rds, s3, sns, sqs etc.
+2. **resourceType** this is used to capture the different types of AWS resources including: aws-rds, s3, sns, sqs etc.
 
 Extended resource entity properties:
-1.  **db-name** - in this aws-rds resource the property captures the database name
-2.  **db-object-name** in this aws-rds resource the property captures the schema/user name
+1.  **dbName** - in this aws-rds resource the property captures the database name
+2.  **dbObjectName** in this aws-rds resource the property captures the schema/user name
 3.  **appData** - under this property, all deployed resource artifacts are preserved - you can customize what properties you would like to bring back to the entity from the provisioning pipeline.
 
 :::note

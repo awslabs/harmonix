@@ -1,0 +1,184 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: aws-basic-environment-provider
+  title: AWS Basic Environment Provider
+  description: Configure an AWS basic environment provider with no VPC
+  tags:
+    - aws
+    - environment-provider
+spec:
+  owner: group:admins
+  type: aws-environment-provider
+  parameters:
+    - title: Fill in the environment provider details
+      required:
+        - name
+        - prefix
+        - env_description
+        - owner
+        - aws_account_id
+        - aws_region
+        - environment_role
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name for the environment provider
+          ui:autofocus: true
+        prefix:
+          title: Prefix
+          type: string
+          description: Prefix for environment - examples - payments, engineering, infra
+          default: opa
+        env_description:
+          title: Description
+          type: string
+          description: A description of the environment
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+        aws_account_id:
+          title: AWS Account number
+          type: string
+          description: Enter an AWS account number
+          minLength: 12
+        aws_region:
+          title: AWS Region
+          type: string
+          description: Select AWS region
+          default: us-east-1
+          enum:
+            - us-east-1
+            - us-east-2
+            - us-west-1
+            - us-west-2
+            - af-south-1
+            - ap-east-1
+            - ap-south-2
+            - ap-southeast-3
+            - ap-southeast-4
+            - ap-south-1
+            - ap-northeast-3
+            - ap-northeast-2
+            - ap-southeast-1
+            - ap-southeast-2
+            - ap-northeast-1
+            - ca-central-1
+            - eu-central-1
+            - eu-west-1
+            - eu-west-2
+            - eu-south-1
+            - eu-west-3
+            - eu-south-2
+            - eu-north-1
+            - eu-central-2
+            - me-south-1
+            - me-central-1
+            - sa-east-1
+          enumNames:
+            - 'US East (N. Virginia)'
+            - 'US East (Ohio)'
+            - 'US West (N. California)'
+            - 'US West (Oregon)'
+            - 'Africa (Cape Town)'
+            - 'Asia Pacific (Hong Kong)'
+            - 'Asia Pacific (Hyderabad)'
+            - 'Asia Pacific (Jakarta)'
+            - 'Asia Pacific (Melbourne)'
+            - 'Asia Pacific (Mumbai)'
+            - 'Asia Pacific (Osaka)'
+            - 'Asia Pacific (Seoul)'
+            - 'Asia Pacific (Singapore)'
+            - 'Asia Pacific (Sydney)'
+            - 'Asia Pacific (Tokyo)'
+            - 'Canada (Central)'
+            - 'Europe (Frankfurt)'
+            - 'Europe (Ireland)'
+            - 'Europe (London)'
+            - 'Europe (Milan)'
+            - 'Europe (Paris)'
+            - 'Europe (Spain)'
+            - 'Europe (Stockholm)'
+            - 'Europe (Zurich)'
+            - 'Middle East (Bahrain)'
+            - 'Middle East (UAE)'
+            - 'South America (São Paulo)'
+        environment_role:
+          title: Environment Role arn
+          type: string
+          description: The role arn to assume in order to provision the new environment.
+    - title: Provide Repository information
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-environment-providers
+  steps:
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+      
+    - id: resolvePlatformVariables
+      name: Resolve Platform Variables
+      action: opa:get-platform-parameters
+      input:
+        paramKeys:
+          - '/opa/platform-role'
+          - '/opa/pipeline-role'
+    - id: fetchBase
+      name: Fetch Code Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name | lower }}
+          title: ${{ parameters.name }}
+          description: ${{ parameters.env_description }}
+          owner: ${{ parameters.owner }}
+          env_type: serverless
+          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          aws_region: ${{ parameters.aws_region }}
+          aws_account: ${{ parameters.aws_account_id }}
+          environment_role: ${{ parameters.environment_role }}
+          platform_role: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
+          pipeline_role: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
+          prefix: ${{parameters.prefix}}
+    - id: fetchBaseIAC
+      name: Fetch IAC Base
+      action: fetch:plain
+      input:
+        targetPath: ./.iac
+        url: "https://{{gitlab_hostname}}/opa-admin/backstage-reference/-/tree/main/environments"
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

@@ -9,7 +9,7 @@ const account = app.node.tryGetContext("account") || process.env.CDK_DEPLOY_ACCO
 
 const region =
   app.node.tryGetContext("region") || process.env.REGION || process.env.CDK_DEPLOY_REGION || process.env.CDK_DEFAULT_REGION || "us-east-1";
-console.log(`Selected region: ${region}`)
+console.log(`Selected region: ${region}`);
 const env = { region, account };
 
 const stackSufix = process.env.TARGET_ENV_PROVIDER_NAME ? `-${process.env.TARGET_ENV_PROVIDER_NAME}` : '';

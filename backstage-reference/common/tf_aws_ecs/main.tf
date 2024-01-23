@@ -47,7 +47,7 @@ resource "aws_kms_alias" "keyAlias" {
 
 # Create ECR repo for the app image
 resource "aws_ecr_repository" "ecrRepository" {
-  name                 = lower("${var.APP_NAME}-${var.TARGET_ENV_PROVIDER_NAME}")
+  name                 = lower("${var.APP_NAME}-${var.TARGET_ENV_NAME}-${var.TARGET_ENV_PROVIDER_NAME}")
   image_tag_mutability = "MUTABLE"
   encryption_configuration {
     encryption_type = "KMS"

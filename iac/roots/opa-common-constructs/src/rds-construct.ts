@@ -12,7 +12,7 @@ import { NagSuppressions } from "cdk-nag";
 /* eslint-disable @typescript-eslint/no-empty-interface */
 export interface RdsConstructProps extends cdk.StackProps {
   readonly opaEnv: OPAEnvironmentParams;
-  readonly vpc: cdk.aws_ec2.Vpc;
+  readonly vpc: cdk.aws_ec2.IVpc;
   readonly kmsKey: cdk.aws_kms.IKey;
   readonly instanceType: ec2.InstanceType;
 }

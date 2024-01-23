@@ -1,0 +1,21 @@
+apiVersion: aws.backstage.io/v1alpha
+kind: AWSEnvironmentProvider
+metadata:
+  name: ${{ values.name | dump }}
+  title: ${{ values.title | dump }}
+  prefix: ${{ values.prefix | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - aws-environment-provider
+  env-type: ${{values.env_type}}
+  aws-account: "${{values.aws_account}}"
+  aws-region: ${{values.aws_region}}
+  environment_role: "${{values.environment_role}}"
+  vpc: ""
+spec:
+  type: environment-provider
+  lifecycle: experimental
+  owner: ${{values.owner | dump}}

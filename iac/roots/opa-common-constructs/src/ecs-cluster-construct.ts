@@ -17,7 +17,7 @@ export interface EcsClusterConstructProps extends cdk.StackProps {
   /**
    * The VPC to launch the cluster in
    */
-  vpc: vpc.Vpc;
+  vpc: vpc.IVpc;
   /**
    * Whether to launch a fargate launch-type cluster or EC2 launch-type
    *

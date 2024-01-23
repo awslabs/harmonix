@@ -62,6 +62,9 @@ spec:
           ui:options:
             allowedKinds:
               - AWSEnvironment
+            catalogFilter:
+              - kind: AWSEnvironment
+                metadata.environmentType: serverless
             defaultKind: AWSEnvironment
     - title: Choose a git repository location
       required:
@@ -88,7 +91,7 @@ spec:
       name: Get Component Info
       action: opa:get-component-info
       input:
-        componentName: ${{ parameters.component_id }}
+        componentName: ${{ parameters.component_id | lower }}
 
     - id: opaGetAwsEnvProviders
       name: Get AWS Environment Providers
@@ -134,8 +137,8 @@ spec:
         url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_serverless_api
         targetPath: ./.iac
         values:
-          component_id: ${{ parameters.component_id }}
-          app_env_plaintext: ""
+          component_id: ${{ parameters.component_id | lower }}
+          appEnvPlaintext: ""
 
     - id: fetchBase
       name: Fetch Base
@@ -143,15 +146,16 @@ spec:
       input:
         url: ./content
         values:
-          component_id: ${{ parameters.component_id }}
+          component_id: ${{ parameters.component_id | lower }}
+          title: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
           destination: ${{ parameters.repoUrl | parseRepoUrl }}
           owner: ${{ parameters.owner }}
-          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
-          aws_environment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
-          aws_environment_name: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
-          aws_environment_short_name: ${{ steps['opaGetAwsEnvProviders'].output.envShortName }}
-          aws_secret_repo_arn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          awsEnvironment_short_name: ${{ steps['opaGetAwsEnvProviders'].output.envShortName }}
+          awsSecretRepoArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
           kebabName: ${{ steps['getComponentInfo'].output.kebabCaseComponentName }}
 
     - id: entityDetail

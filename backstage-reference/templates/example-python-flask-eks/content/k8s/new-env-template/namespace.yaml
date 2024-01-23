@@ -1,0 +1,6 @@
+kind: Namespace
+apiVersion: v1
+metadata:
+  name: NS_PLACEHOLDER
+  labels:
+    name: NS_PLACEHOLDER

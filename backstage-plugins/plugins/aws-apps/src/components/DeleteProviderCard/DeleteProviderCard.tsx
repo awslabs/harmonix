@@ -24,11 +24,11 @@ const DeleteProviderPanel = ({
   const [deleteResultMessage, setDeleteResultMessage] = useState("");
   const api = useApi(opaApiRef);
   const navigate = useNavigate();
-  const stackName = entity.metadata['stack-name']?.toString() || '';
+  const stackName = entity.metadata['stackName']?.toString() || '';
   const prefix = entity.metadata['prefix']?.toString() || '';
-  const accessRole = entity.metadata['environment_role']?.toString() || '';
-  const awsAccount = entity.metadata['aws-account']?.toString() || '';
-  const awsRegion = entity.metadata['aws-region']?.toString() || '';
+  const accessRole = entity.metadata['environmentRole']?.toString() || '';
+  const awsAccount = entity.metadata['awsAccount']?.toString() || '';
+  const awsRegion = entity.metadata['awsRegion']?.toString() || '';
   const backendParamsOverrides = {
     appName: '',
     awsAccount: awsAccount,

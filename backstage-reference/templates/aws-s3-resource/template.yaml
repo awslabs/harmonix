@@ -1,0 +1,166 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: aws-s3
+  title: AWS S3 Bucket
+  description: >-
+    Create an Amazon S3 Bucket.
+  tags:
+    - aws-resource
+    - s3
+    - aws
+spec:
+  owner: group:admins
+  type: resource
+  parameters:
+    - title: Provide resource information
+      required:
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: what this bucket will be used for
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the resource
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+    - title: Provide deployment information for the resource
+      required:
+        - environment
+      properties:
+        environment:
+          title: AWS Environment
+          type: string
+          description: The AWS Environment where the bucket is created
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AWSEnvironment
+            defaultKind: AWSEnvironment
+    - title: Provide Bucket configuration
+      required:
+        - bucketName
+      properties:
+        bucketName:
+          title: Bucket name
+          type: string
+          description: The name of the bucket to create.
+          minLength: 3
+          maxLength: 63
+          pattern: '(?!(^xn--|.+-s3alias$|.+--ol-s3$))^[a-z0-9][a-z0-9-]{1,61}[a-z0-9]$'
+          ui:autofocus: true
+          ui:help: "The name must follow AWS s3 bucket naming rules"
+    - title: Choose a git repository location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-resources
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+      
+    - id: opaGetAwsEnvProviders
+      name: Get AWS Environment Providers
+      action: opa:get-env-providers
+      input:
+        environmentRef: ${{ parameters.environment }}
+
+    - id: debugEnvironment
+      name: Print the environment entity info
+      action: debug:log
+      input:
+        message: ${{ steps['opaGetAwsEnvProviders'].output | dump }}
+
+    - id: createProviderPropsFiles
+      each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
+      name: Store environment provider parameters
+      action: roadiehq:utils:fs:write
+      input:
+        path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
+        content: |
+          APP_SHORT_NAME=${{ parameters.component_id | lower }}
+          TARGET_VPCID=${{ each.value.vpcId }}
+          TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
+          TARGET_BUCKET_NAME=${{ parameters.bucketName }}
+          ACCOUNT=${{ each.value.accountId }}
+          REGION=${{ each.value.region }}
+          PREFIX=${{ each.value.envProviderPrefix }}
+          ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
+          OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
+          OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{% else %}false{% endif %}
+    - id: fetchIac
+      name: Fetch S3 Infrastructure as Code
+      action: fetch:template
+      input: 
+        url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_s3
+        targetPath: ./.iac
+        values:
+          component_id: ${{ parameters.component_id | lower}}
+          appEnvPlaintext: ""
+    - id: fetchBase
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          component_id: ${{ parameters.component_id | lower }}
+          title: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          awsEnvironmentProviderName: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].envProviderName }}
+          awsEnvironmentPrefix: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].envProviderPrefix }}
+          awsRegion: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].region }}
+          awsAccount: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].accountId }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          assumedRoleArn: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].assumedRoleArn }}
+          bucketName: ${{ parameters.bucketName }}
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}
+

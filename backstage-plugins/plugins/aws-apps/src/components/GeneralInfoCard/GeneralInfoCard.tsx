@@ -134,7 +134,7 @@ export const GeneralInfoCard = ({ appPending }: { appPending: boolean }) => {
       region: '',
       gitApp: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "",
       gitHostUrl: '',
-      repoSecretArn: entity.metadata['repo-secret-arn']?.toString() || '',
+      repoSecretArn: entity.metadata['repoSecretArn']?.toString() || '',
       api,
       appPending
     };

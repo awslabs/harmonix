@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = ${{ values.app_port }} || '??port??';
+const port = ${{ values.appPort }} || '??port??';
 
 app.get('/', (req, res) => {
   res.send('Hello ${{ values.component_id }}!');

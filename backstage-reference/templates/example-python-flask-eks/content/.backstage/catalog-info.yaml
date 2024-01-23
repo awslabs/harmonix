@@ -1,0 +1,24 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.component_id | dump }}
+  title: ${{ values.title | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - python
+    - flask
+    - k8s
+  iacType: cdk
+  repoSecretArn: ${{ values.awsSecretRepoArn | dump }}
+
+  # Configure where k8s configurations are within the project
+  k8sConfigDirName: k8s
+spec:
+  type: aws-app
+  subType: aws-eks
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn: []

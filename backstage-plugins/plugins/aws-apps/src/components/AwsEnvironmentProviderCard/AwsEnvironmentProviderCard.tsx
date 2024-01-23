@@ -55,18 +55,19 @@ const AwsEnvironmentProviderCard = ({
         id: index.toString(),
         name: et?.metadata.name || '',
         prefix: et?.metadata['prefix']?.toString() || '',
-        providerType: et?.metadata['env-type']?.toString() || '',
+        providerType: et?.metadata['envType']?.toString() || '',
         description: et?.metadata['description']?.toString() || '',
-        accountNumber: et?.metadata['aws-account']?.toString() || '',
-        region: et?.metadata['aws-region']?.toString() || ''
+        accountNumber: et?.metadata['awsAccount']?.toString() || '',
+        region: et?.metadata['awsRegion']?.toString() || ''
       })
     })
     setItems(providers)
 
     let potentialProviders: AWSEnvironmentProviderRecord[] = [];
     let index = 0;
+    const envRuntimeType = entity.metadata.environmentType?.toString() || ""
 
-    catalog.getEntities({ filter: { 'kind': "awsenvironmentprovider" } }).then(entities => {
+    catalog.getEntities({ filter: { 'kind': "awsenvironmentprovider", 'metadata.envType':envRuntimeType } }).then(entities => {
       entities.items.forEach((et) => {
         if (providers.length > 0) {
           providers.forEach(existingP => {
@@ -78,10 +79,10 @@ const AwsEnvironmentProviderCard = ({
                 id: index.toString(),
                 name: et?.metadata.name || '',
                 prefix: et?.metadata['prefix']?.toString() || '',
-                providerType: et?.metadata['env-type']?.toString() || '',
+                providerType: et?.metadata['envType']?.toString() || '',
                 description: et?.metadata['description']?.toString() || '',
-                accountNumber: et?.metadata['aws-account']?.toString() || '',
-                region: et?.metadata['aws-region']?.toString() || ''
+                accountNumber: et?.metadata['awsAccount']?.toString() || '',
+                region: et?.metadata['awsRegion']?.toString() || ''
               })
             }
           })
@@ -92,10 +93,10 @@ const AwsEnvironmentProviderCard = ({
             id: index.toString(),
             name: et?.metadata.name || '',
             prefix: et?.metadata['prefix']?.toString() || '',
-            providerType: et?.metadata['env-type']?.toString() || '',
+            providerType: et?.metadata['envType']?.toString() || '',
             description: et?.metadata['description']?.toString() || '',
-            accountNumber: et?.metadata['aws-account']?.toString() || '',
-            region: et?.metadata['aws-region']?.toString() || ''
+            accountNumber: et?.metadata['awsAccount']?.toString() || '',
+            region: et?.metadata['awsRegion']?.toString() || ''
           })
         }
       })
@@ -110,16 +111,16 @@ const AwsEnvironmentProviderCard = ({
       awsAccount: item.accountNumber,
       awsRegion: item.region,
       prefix: item.prefix,
-      providerName: item.name
+      providerName: item.name.toLowerCase()
     };
 
     const params = {
       gitHost: entity.metadata['repoUrl'] ? entity.metadata['repoUrl'].toString().split('?')[0] : "",
-      gitRepoName: entity.metadata.name,
+      gitRepoName: entity.metadata.repoUrl?.toString().split('repo=')[1].toLowerCase() || "",
       provider: item,
       gitProjectGroup: 'aws-environments',
       gitAdminSecret: 'opa-admin-gitlab-secrets',
-      envName: entity.metadata.name,
+      envName: entity.metadata.name.toLowerCase(),
       action,
       backendParamsOverrides
     }

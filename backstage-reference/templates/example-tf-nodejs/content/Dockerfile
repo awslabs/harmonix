@@ -11,5 +11,5 @@ RUN yarn install
 # Bundle app source
 COPY . .
 
-EXPOSE ${{ values.app_port }}
+EXPOSE ${{ values.appPort }}
 CMD [ "node", "src/index.js" ]

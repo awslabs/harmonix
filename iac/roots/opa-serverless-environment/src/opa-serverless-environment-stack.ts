@@ -8,6 +8,16 @@ import { Construct } from "constructs";
 import { NetworkConstruct, OPAEnvironmentParams, DynamoDBConstruct, } from '@aws/aws-app-development-common-constructs'
 import { ServerlessAPIProvisioningConstruct } from './constructs/serverless-api-env-provisioning-role-construct'
 import { ServerlessAPIOperationsConstruct } from "./constructs/serverless-api-env-operations-role-construct";
+import {
+  getAccountId, 
+  getRegion, 
+  getPrefix, 
+  getEnvironmentName, 
+  getPlatformRoleArn,
+  getPipelineRoleArn,
+  getVpcCIDR,
+  getExistingVpcId,
+} from "./serverless-input";
 
 export interface OPAServerlessEnvStackProps extends cdk.StackProps {
   uniqueEnvIdentifier: string;
@@ -18,21 +28,22 @@ export class OPAServerlessEnvStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: OPAServerlessEnvStackProps) {
     super(scope, id, props);
 
-    const prefix = process.env.PREFIX as string || "opa";
-    const envName = process.env.ENV_NAME as string
-    const awsAccount = process.env.AWS_ACCOUNT_ID as string
-    const platformRoleArn = process.env.PLATFORM_ROLE_ARN as string
-    const pipelineRoleArn = process.env.PIPELINE_ROLE_ARN as string
-    const awsRegion = process.env.AWS_DEFAULT_REGION as string || "us-east-1"
-    const cidrInput = process.env.ENV_CIDR as string || "10.0.0.0/24"
+    const prefix = getPrefix();
+    const envName = getEnvironmentName();
+    const awsAccount = getAccountId();
+    const platformRoleArn = getPlatformRoleArn();
+    const pipelineRoleArn = getPipelineRoleArn();
+    const awsRegion = getRegion();
+    const cidrInput = getVpcCIDR();
+    const existingVpcId = getExistingVpcId();
 
     // Creating environment params object
 
     const opaEnvParams: OPAEnvironmentParams = {
-      envName: envName,
+      envName: envName.toLowerCase(),
       awsRegion: awsRegion,
       awsAccount: awsAccount,
-      prefix: prefix
+      prefix: prefix.toLowerCase()
     }
 
     const envIdentifier = opaEnvParams.envName;
@@ -54,13 +65,14 @@ export class OPAServerlessEnvStack extends cdk.Stack {
       stringValue: key.keyArn,
     });
 
-    // Create underline network construct
+    // Create underlying network construct
     const network = new NetworkConstruct(this, envIdentifier, {
       opaEnv: opaEnvParams,
       cidrRange: cidrInput,
       isIsolated: false,
       publicVpcNatGatewayCount: 3,
-      vpcAzCount: 3
+      vpcAzCount: 3,
+      existingVpcId,
     })
 
     //create audit table
@@ -76,7 +88,7 @@ export class OPAServerlessEnvStack extends cdk.Stack {
       KMSkey: key,
       vpcCollection: [network.vpc],
       assumedBy: pipelineRoleArn,
-      auditTable: auditTableConstruct.table.tableName
+      auditTable: auditTableConstruct.table.tableName,
     });
 
     // Create operations role for the environment
@@ -97,12 +109,12 @@ export class OPAServerlessEnvStack extends cdk.Stack {
     });
 
     // Printing outputs
-    new cdk.CfnOutput(this, "Environment_Name", {
+    new cdk.CfnOutput(this, "EnvironmentName", {
       value: envName,
     });
 
     // Printing the unique environment ID
-    new cdk.CfnOutput(this, "Environment_ID", {
+    new cdk.CfnOutput(this, "EnvironmentID", {
       value: uniqueEnvId.stringValue,
     });
 
@@ -117,19 +129,19 @@ export class OPAServerlessEnvStack extends cdk.Stack {
     });
 
     // Print role information
-    new cdk.CfnOutput(this, "Provisioning_Role", {
+    new cdk.CfnOutput(this, "ProvisioningRole", {
       value: provisioningRoleConstruct.provisioningRoleParam.parameterName,
     });
 
-    new cdk.CfnOutput(this, "Provisioning_Role_ARN", {
+    new cdk.CfnOutput(this, "ProvisioningRoleARN", {
       value: provisioningRoleConstruct.provisioningRoleArnParam.parameterName,
     });
 
-    new cdk.CfnOutput(this, "Operations_Role", {
+    new cdk.CfnOutput(this, "OperationsRole", {
       value: operationsRoleConstruct.operationsRoleParam.parameterName,
     });
 
-    new cdk.CfnOutput(this, "Operations_Role_ARN", {
+    new cdk.CfnOutput(this, "OperationsRoleARN", {
       value: operationsRoleConstruct.operationsRoleArnParam.parameterName,
     });
 

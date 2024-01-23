@@ -21,4 +21,6 @@ export type EnvironmentProvider = {
   privateSubnets: string;
   clusterArn?: string;
   assumedRoleArn: string;
+  kubectlLambdaArn?: string;
+  kubectlLambdaRoleArn?: string;
 }

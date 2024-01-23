@@ -44,21 +44,21 @@ const EnvironmentInfo = (props: ProviderInfoProps) => {
 
   items.push({
     key: "Short Name",
-    value: metadata['short-name']?.toString() || ""
+    value: metadata['shortName']?.toString() || ""
   });
 
   items.push({
     key: "Environment Type",
-    value: metadata['environment-type']?.toString() || ""
+    value: metadata['environmentType']?.toString() || ""
   });
 
   items.push({
     key: "Account Type",
-    value: metadata['env-type-account']?.toString() || ""
+    value: metadata['envTypeAccount']?.toString() || ""
   });
   items.push({
     key: "Region Type",
-    value: metadata['env-type-region']?.toString() || ""
+    value: metadata['envTypeRegion']?.toString() || ""
   });
   items.push({
     key: "Category",

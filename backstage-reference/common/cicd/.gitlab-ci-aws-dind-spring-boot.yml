@@ -13,7 +13,8 @@
     - apk add aws-cli
     - apk add jq
     - aws --version
-    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=3600 --output json)
+    - export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
     - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
     - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
     - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
@@ -28,10 +29,11 @@
     # - (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.28.0/pack-v0.28.0-linux.tgz" | tar -C /usr/local/bin/ --no-same-owner -xzv pack)
     - set -a && source $PROVIDER_PROPS_FILE && set +a
     - TAG=$(date +%m-%d-%Y_%H-%M-%S)
-    - mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$APP_SHORT_NAME:$TAG
+    - mvn spring-boot:build-image -Dspring-boot.build-image.imageName=$APP_SHORT_NAME:${CI_COMMIT_SHORT_SHA}
     # - pack build $APP_SHORT_NAME -t $APP_SHORT_NAME:$TAG --builder paketobuildpacks/builder:base
-    # - docker build -t $APP_SHORT_NAME:$TAG .
-    - docker tag $APP_SHORT_NAME:$TAG $OPA_CI_REGISTRY_IMAGE:$TAG
-    - docker tag $APP_SHORT_NAME:$TAG $OPA_CI_REGISTRY_IMAGE:latest
+    # - docker build -t $APP_SHORT_NAME:${CI_COMMIT_SHORT_SHA} .
+    - LC_TAG=`echo "${OPA_CI_REGISTRY_IMAGE}" | tr '[:upper:]' '[:lower:]'`
+    - docker tag $APP_SHORT_NAME:${CI_COMMIT_SHORT_SHA} $LC_TAG:${CI_COMMIT_SHORT_SHA}
+    - docker tag $APP_SHORT_NAME:${CI_COMMIT_SHORT_SHA} $LC_TAG:latest
     - echo Pushing Docker image to ECR...
-    - docker push $OPA_CI_REGISTRY_IMAGE --all-tags
+    - docker push $LC_TAG --all-tags

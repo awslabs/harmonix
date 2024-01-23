@@ -18,7 +18,7 @@ spec:
         - short_name
         - description
         - environment_type
-        - deployment_requires_approval
+        - deploymentRequiresApproval
         - owner
         - account_type
         - region_type
@@ -54,7 +54,7 @@ spec:
             - AWS ECS
             - AWS EKS
             - AWS Serverless
-        deployment_requires_approval:
+        deploymentRequiresApproval:
           title: Deployment requires approval
           description: is approval required before deploying to this environment?
           type: boolean
@@ -158,7 +158,8 @@ spec:
       input:
         url: ./content
         values:
-          name: ${{ parameters.name }}
+          name: ${{ parameters.name | lower }}
+          title: ${{ parameters.name }}
           short_name: ${{ parameters.short_name }}
           description: ${{ parameters.description }}
           environment_type: ${{parameters.environment_type}}
@@ -171,7 +172,7 @@ spec:
           providers: ${{parameters.providers}}
           level: ${{parameters.level}}
           repoUrl: ${{ parameters.repoUrl }}
-          deployment_requires_approval: ${{parameters.deployment_requires_approval}}
+          deploymentRequiresApproval: ${{parameters.deploymentRequiresApproval}}
     - id: publish
       name: Publish
       action: publish:gitlab

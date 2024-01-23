@@ -1,0 +1,234 @@
+.abstract-iac-deployment:
+  script:
+    - echo -e "\e[0Ksection_start:`date +%s`:set_provider_vars[collapsed=true]\r\e[0KSet Provider Variables"
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    # tell CDK where to deploy to, based on provider props file
+    - export CDK_DEPLOY_ACCOUNT=$ACCOUNT
+    - export CDK_DEPLOY_REGION=$REGION
+    - echo -e "\e[0Ksection_end:`date +%s`:set_provider_vars\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:aws_identity[collapsed=true]\r\e[0KAssume AWS IAM Role"
+    - export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    - aws sts get-caller-identity
+    - echo -e "\e[0Ksection_end:`date +%s`:aws_identity\r\e[0K"
+
+    - cd $CI_PROJECT_DIR/.iac/
+
+    - echo -e "\e[0Ksection_start:`date +%s`:yarn_install[collapsed=true]\r\e[0KYarn Install"
+    - yarn install
+    - echo -e "\e[0Ksection_end:`date +%s`:yarn_install\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:cdk_deploy[collapsed=true]\r\e[0KCDK Deploy"
+    - export CLUSTER_OIDC_PROVIDER=$(aws eks describe-cluster --name ${TARGET_EKS_CLUSTER_ARN#*/} --region $REGION --query "cluster.identity.oidc.issuer" --output text | sed -e "s/^https:\/\///")
+    - $CI_PROJECT_DIR/.iac/node_modules/.bin/cdk deploy --outputs-file cdk-output.json --require-approval never
+    - cat cdk-output.json
+    - echo -e "\e[0Ksection_end:`date +%s`:cdk_deploy\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:extract_cdk_output[collapsed=true]\r\e[0KExport CDK Output"
+    - cat cdk-output.json
+    - jq '.[] ' cdk-output.json | jq -r 'to_entries[]|"\(.key)=\"\(.value)\""' > cdk-output.properties
+    - cat cdk-output.properties
+    - set -a && source cdk-output.properties && set +a
+    - echo -e "\e[0Ksection_end:`date +%s`:extract_cdk_output\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:k8s-config-dir[collapsed=true]\r\e[0KGetting k8s config directory"
+    - export K8S_CONFIG_DIR=$(yq -r .metadata.k8sConfigDirName $CI_PROJECT_DIR/.backstage/catalog-info.yaml)
+    - echo K8S_CONFIG_DIR is $K8S_CONFIG_DIR
+    - echo -e "\e[0Ksection_end:`date +%s`:k8s-config-dir\r\e[0K"
+
+    - |
+      if [[ -f "$CI_PROJECT_DIR/$K8S_CONFIG_DIR/Chart.yaml" ]]; then
+        $CI_PROJECT_DIR/cicd/scripts/k8s/install-helm.sh
+      fi
+
+    - echo -e "\e[0Ksection_start:`date +%s`:namespace[collapsed=true]\r\e[0KDeploying k8s Namespace $NAMESPACE"
+    - |
+      if [[ -f "$CI_PROJECT_DIR/$K8S_CONFIG_DIR/Chart.yaml" ]]; then
+        cd $CI_PROJECT_DIR/$K8S_CONFIG_DIR
+        export MANIFEST_JSON=$(helm template -f $TARGET_ENV_NAME-$TARGET_ENV_PROVIDER_NAME/values.yaml -s templates/namespace.yaml . | yq -s .)
+      else
+        cd $CI_PROJECT_DIR/$K8S_CONFIG_DIR/$TARGET_ENV_NAME-$TARGET_ENV_PROVIDER_NAME
+        export MANIFEST_JSON=$(yq -s . namespace.yaml)
+      fi
+    - echo "Namespace MANIFEST_JSON is $MANIFEST_JSON"
+    - export clusterName=${TARGET_EKS_CLUSTER_ARN#*/}
+    # It is possible to just use kubectl here to deploy the namespace but it won't work if this pipeline
+    # cannot hit the EKS cluster API endpoint due to the cluster being created as private or with an IP
+    # allow-list that does not include this pipeline's IP address. We are using a lambda function here
+    # to deploy the namespace because it runs within the same VPC as the EKS cluster and will always be
+    # able to talk to the EKS cluster API endpoint.
+    - $CI_PROJECT_DIR/cicd/scripts/k8s/apply-k8s-lambda.sh || exit 1
+    - cd -
+    - echo -e "\e[0Ksection_end:`date +%s`:namespace\r\e[0K"
+
+  cache:
+    - key:
+        files:
+          - $CI_PROJECT_DIR/.iac/yarn.lock
+      paths:
+        - $CI_PROJECT_DIR/.iac/node_modules
+
+.abstract-git-commit:
+  rules:
+    - if: $CI_COMMIT_TITLE =~ /generate CICD stages/
+      when: never
+    - if: $CI_COMMIT_TITLE =~ /^Destroy TF Infrastructure/
+      when: never
+    - if: ($CI_PIPELINE_SOURCE == "web" || $CI_PIPELINE_SOURCE == "push") && $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+  script:
+    # make access token available to after_script
+    - echo $ACCESS_TOKEN > $CI_PROJECT_DIR/gittoken
+
+    - echo -e "\e[0Ksection_start:`date +%s`:set_provider_vars[collapsed=true]\r\e[0KSet Provider Variables"
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    - echo -e "\e[0Ksection_end:`date +%s`:set_provider_vars\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:aws_identity[collapsed=true]\r\e[0KAssume AWS IAM Role"
+    - export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
+    - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
+    - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
+    - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
+    - aws sts get-caller-identity
+    - echo -e "\e[0Ksection_end:`date +%s`:aws_identity\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:extract_cdk_output[collapsed=true]\r\e[0KExport CDK Output"
+    - export APP_SHORT_NAME=$(yq -r .metadata.name $CI_PROJECT_DIR/.backstage/catalog-info.yaml)
+    - echo "APP_SHORT_NAME is $APP_SHORT_NAME"
+    - aws cloudformation --region $REGION describe-stacks --stack-name $APP_SHORT_NAME-eks-resources-$TARGET_ENV_NAME-$TARGET_ENV_PROVIDER_NAME --query "Stacks[0].Outputs[]" | jq -r '. | to_entries | map(.value.OutputKey + "=" + (.value.OutputValue|tojson)) | .[]' > cdk-output.properties
+    - cat cdk-output.properties
+    - set -a && source cdk-output.properties && set +a
+    - echo -e "\e[0Ksection_end:`date +%s`:extract_cdk_output\r\e[0K"
+
+    - $CI_PROJECT_DIR/cicd/scripts/k8s/install-kubectl.sh
+
+    - echo -e "\e[0Ksection_start:`date +%s`:catalog[collapsed=true]\r\e[0KGetting the latest catalog-info.yaml contents"
+    # We need the latest catalog-info.yaml contents in case this pipeline modified this file in an earlier stage
+    - git checkout $CI_COMMIT_BRANCH
+    - git pull
+    - export LATEST_CATALOG_INFO="$(cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml)"
+    - git checkout $CI_COMMIT_SHA # put our files back to where they were when the pipeline started
+    - echo "$LATEST_CATALOG_INFO" > $CI_PROJECT_DIR/.backstage/catalog-info.yaml
+    - echo -e "\e[0Ksection_end:`date +%s`:catalog\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:k8s-config-dir[collapsed=true]\r\e[0KGetting k8s config directory"
+    - export K8S_CONFIG_DIR=$(yq -r .metadata.k8sConfigDirName $CI_PROJECT_DIR/.backstage/catalog-info.yaml)
+    - echo K8S_CONFIG_DIR is $K8S_CONFIG_DIR
+    - echo -e "\e[0Ksection_end:`date +%s`:k8s-config-dir\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:app-admin[collapsed=true]\r\e[0KCheck for App Admin"
+    # if AppAdminRoleArn is blank then clear out the RoleBinding file so that its a no-op
+    - |
+      if [[ -z "$AppAdminRoleArn" ]]; then
+        echo "AppAdminRoleArn was blank, clearing k8s admin role binding manifest.";
+        echo '' > $CI_PROJECT_DIR/$K8S_CONFIG_DIR/base/nsAdminRoleBinding.yaml
+      fi
+    - echo -e "\e[0Ksection_end:`date +%s`:app-admin\r\e[0K"
+
+    - |
+      if [[ -f "$CI_PROJECT_DIR/$K8S_CONFIG_DIR/Chart.yaml" ]]; then
+        $CI_PROJECT_DIR/cicd/scripts/k8s/install-helm.sh
+      fi
+
+    - echo -e "\e[0Ksection_start:`date +%s`:save-template-output[collapsed=true]\r\e[0KSaving k8s Configs for Environment"
+    - $CI_PROJECT_DIR/cicd/scripts/k8s/save-template-output.sh "gitAddTemplateOutput" "$TARGET_ENV_NAME-${TARGET_ENV_PROVIDER_NAME}/" || exit 1
+    # Restore current provider props env vars that could have been altered by save-template-output.sh
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    - echo -e "\e[0Ksection_end:`date +%s`:save-template-output\r\e[0K"
+
+    # Note: this section can be uncommented if you do NOT want the CICD pipeline 
+    # to automatically deploy the app to the kubernetes cluster
+    # - echo -e "\e[0Ksection_start:`date +%s`:first_deployment[collapsed=true]\r\e[0KDetermine If This Is The First Stack Deployment Ever"
+    # - export appData=".metadata | try(.appData) | try (.[\"$TARGET_ENV_NAME\"]) | try(.[\"$TARGET_ENV_PROVIDER_NAME\"]) | try(.StackName)"
+    # # Determine if the stack has ever been deployed
+    # - export ENTITY_ENV_STACK_NAME=$(yq --arg appData "${appData}" "$appData" $CI_PROJECT_DIR/.backstage/catalog-info.yaml)
+    # - echo "ENTITY_ENV_STACK_NAME is $ENTITY_ENV_STACK_NAME"
+    # - echo -e "\e[0Ksection_end:`date +%s`:first_deployment\r\e[0K"
+
+    # This line should be commented-out if the above section is executed
+    - export ENTITY_ENV_STACK_NAME="null"
+
+    - |
+      if [[ "$ENTITY_ENV_STACK_NAME" == "null" ]]; then
+        echo -e "\e[0Ksection_start:`date +%s`:aws-auth-patch[collapsed=true]\r\e[0KUpdating aws-auth ConfigMap if necessary";
+        export clusterName=${TARGET_EKS_CLUSTER_ARN#*/};
+        $CI_PROJECT_DIR/cicd/scripts/k8s/add-role-to-aws-auth-configmap.sh || exit 1;
+        echo -e "\e[0Ksection_end:`date +%s`:aws-auth-patch\r\e[0K";
+        echo -e "\e[0Ksection_start:`date +%s`:deploy_app[collapsed=true]\r\e[0KDeploying App to Kubernetes";
+        echo "Deploying k8s app...";
+        cd $CI_PROJECT_DIR/$K8S_CONFIG_DIR/$TARGET_ENV_NAME-$TARGET_ENV_PROVIDER_NAME;
+        export MANIFEST_JSON=$(cat next-release.json)
+        $CI_PROJECT_DIR/cicd/scripts/k8s/apply-k8s-lambda.sh || exit 1
+        if [[ "$MANIFEST_JSON" == *"alb.ingress.kubernetes.io/tags"* ]]; then
+          $CI_PROJECT_DIR/cicd/scripts/k8s/get-ingress-dns-name.sh "aws-apps-$APP_SHORT_NAME-$TARGET_ENV_NAME-$TARGET_ENV_PROVIDER_NAME" || exit 1
+          if [[ -f "$CI_PROJECT_DIR/ingressDNS.txt" ]]; then
+            AlbEndpoint=$(cat $CI_PROJECT_DIR/ingressDNS.txt)
+            export AlbEndpoint="http://${AlbEndpoint}"
+            echo "Set AlbEndpoint to $AlbEndpoint"
+            rm $CI_PROJECT_DIR/ingressDNS.txt
+          fi
+        else
+          echo "Skipping setting AlbEndpoint since application did not contain properly annotated Ingress."
+        fi
+        cd -;
+        echo -e "\e[0Ksection_end:`date +%s`:deploy_app\r\e[0K";
+      else
+        echo "The CDK stack has already been deployed to the $TARGET_ENV_PROVIDER_NAME provider.";
+        echo "Skipping deploying k8s app. It can still be deployed via kubectl or via the OPA UI.";
+      fi
+  
+    - echo -e "\e[0Ksection_start:`date +%s`:backstage_entity[collapsed=true]\r\e[0KUpdate Backstage Entity"
+    - cd $CI_PROJECT_DIR/.backstage
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"EcrRepositoryUri\"] =\"${EcrRepositoryUri}\"" catalog-info.yaml
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"EcrRepositoryArn\"] =\"${EcrRepositoryArn}\"" catalog-info.yaml
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"AppResourceGroup\"] =\"${AppResourceGroup}\"" catalog-info.yaml
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"StackName\"] =\"${StackName}\"" catalog-info.yaml
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"AppAdminRoleArn\"] =\"${AppAdminRoleArn}\"" catalog-info.yaml
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"ServiceAccountRoleArn\"] =\"${ServiceAccountRoleArn}\"" catalog-info.yaml
+    - ALREADY_DEPENDS_ON="$(grep "awsenvironment:default/$TARGET_ENV_NAME" catalog-info.yaml || true)"
+    - if [[ -z "$ALREADY_DEPENDS_ON" ]]; then yq -Yi ".spec.dependsOn += [\"awsenvironment:default/${TARGET_ENV_NAME}\"]" catalog-info.yaml; fi
+    - if [[ ! -z "$AlbEndpoint" ]]; then yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"AlbEndpoint\"] =\"${AlbEndpoint}\"" catalog-info.yaml; fi
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"Namespace\"] =\"${NAMESPACE}\"" catalog-info.yaml
+    - yq -Yi ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"LogGroup\"] =\"/aws/apps/${PREFIX}-${TARGET_ENV_PROVIDER_NAME}/${NAMESPACE}\"" catalog-info.yaml
+    - cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml
+    - export LATEST_CATALOG_INFO="$(cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml)"
+    - echo -e "\e[0Ksection_end:`date +%s`:backstage_entity\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:git[collapsed=true]\r\e[0KUpdate Git Repo"
+    # undo catalog-info.yaml changes to avoid potential merge conflicts
+    - git reset HEAD $CI_PROJECT_DIR/.backstage/catalog-info.yaml
+    - git checkout -- $CI_PROJECT_DIR/.backstage/catalog-info.yaml
+    # make sure that we are up to date so that our commit will succeed
+    - git checkout $CI_COMMIT_BRANCH
+    - git pull
+    - echo "$LATEST_CATALOG_INFO" > $CI_PROJECT_DIR/.backstage/catalog-info.yaml
+    - git add $CI_PROJECT_DIR/.backstage/catalog-info.yaml
+    - git add $CI_PROJECT_DIR/$K8S_CONFIG_DIR
+    - UPDATE_COUNT=$(git diff --cached --numstat | wc -l | sed 's/ *$//g')
+    - echo "The number of files that will be committed is $UPDATE_COUNT"
+    - git status
+    - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git commit -m "updating entity details" --quiet; fi
+    - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git push -o ci.skip https://oauth2:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME; fi
+    - git checkout $CI_COMMIT_SHA # put our git repo back to where it was when the pipeline started
+    - echo -e "\e[0Ksection_end:`date +%s`:git\r\e[0K"
+
+  after_script:
+    - echo -e "\e[0Ksection_start:`date +%s`:delete-aws_creds[collapsed=true]\r\e[0KDelete AWS Creds"
+    - export ACCESS_TOKEN=$(cat $CI_PROJECT_DIR/gittoken)
+    - rm $CI_PROJECT_DIR/gittoken
+    - set -a && source $PROVIDER_PROPS_FILE && set +a
+    - export GL_API=https://$CI_SERVER_HOST/api/v4/projects/$CI_PROJECT_ID/variables
+    - >
+      curl --globoff --request DELETE --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}"
+      "${GL_API}/AWS_ACCESS_KEY_ID?filter[environment_scope]=$OPA_CI_ENVIRONMENT"
+    - >
+      curl --globoff --request DELETE --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}"
+      "${GL_API}/AWS_SECRET_ACCESS_KEY?filter[environment_scope]=$OPA_CI_ENVIRONMENT"
+    - >
+      curl --globoff --request DELETE --header "PRIVATE-TOKEN: ${ACCESS_TOKEN}"
+      "${GL_API}/AWS_SESSION_TOKEN?filter[environment_scope]=$OPA_CI_ENVIRONMENT"
+    - echo -e "\e[0Ksection_end:`date +%s`:delete-aws_creds\r\e[0K"

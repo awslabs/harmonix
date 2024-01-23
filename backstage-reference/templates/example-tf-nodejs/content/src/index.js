@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = ${{ values.app_port }} || '??port??';
+const port = ${{ values.appPort }} || '??port??';
 
 console.log("Hello World Log")
 

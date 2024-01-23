@@ -13,7 +13,7 @@ import { OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs
 export interface ServerlessAPIOperationsConstructProps extends cdk.StackProps {
   readonly opaEnv: OPAEnvironmentParams;
   KMSkey: kms.IKey;
-  vpcCollection: ec2.Vpc[];
+  vpcCollection: ec2.IVpc[];
   assumedBy: string;
   auditTable: string;
 }

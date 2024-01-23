@@ -3,11 +3,31 @@
 
 exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
 
+# function to wait for apt to finish and release all locks
+apt_wait () {
+  while sudo fuser /var/lib/dpkg/lock >/dev/null 2>&1 ; do
+    echo "/var/lib/dpkg/lock is locked"
+    sleep 1
+  done
+  while sudo fuser /var/lib/apt/lists/lock >/dev/null 2>&1 ; do
+    echo "/var/lib/apt/lists/lock is locked"
+    sleep 1
+  done
+  if [ -f /var/log/unattended-upgrades/unattended-upgrades.log ]; then
+    while sudo fuser /var/log/unattended-upgrades/unattended-upgrades.log >/dev/null 2>&1 ; do
+      echo "/var/log/unattended-upgrades/unattended-upgrades.log is locked"
+      sleep 1
+    done
+  fi
+}
+
 # Perform update - required so that jq/unzip packages are available
-apt update
-# apt upgrade -y
-apt install jq -y
-apt install unzip -y
+apt_wait
+apt-get update
+
+apt_wait
+apt-get install unzip jq -y
+
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
 echo "Unzipping AWS CLI..."
 unzip -q awscliv2.zip

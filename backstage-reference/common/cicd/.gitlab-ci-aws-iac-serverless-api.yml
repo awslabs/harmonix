@@ -1,21 +1,36 @@
 .abstract-iac-deployment:
   script:
+    - echo -e "\e[0Ksection_start:`date +%s`:set_provider_vars[collapsed=true]\r\e[0KSet Provider Variables"
     - set -a && source $PROVIDER_PROPS_FILE && set +a
     # tell CDK where to deploy to, based on provider props file
     - export CDK_DEPLOY_ACCOUNT=$ACCOUNT
     - export CDK_DEPLOY_REGION=$REGION
-    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=3600 --output json)
+    - echo -e "\e[0Ksection_end:`date +%s`:set_provider_vars\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:aws_identity[collapsed=true]\r\e[0KAssume AWS IAM Role"
+    - export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
     - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
     - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
     - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
     - aws sts get-caller-identity
+    - echo -e "\e[0Ksection_end:`date +%s`:aws_identity\r\e[0K"
+
     - cd $CI_PROJECT_DIR/.iac/
+
+    - echo -e "\e[0Ksection_start:`date +%s`:yarn_install[collapsed=true]\r\e[0KYarn Install"
     - yarn install
+    - echo -e "\e[0Ksection_end:`date +%s`:yarn_install\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:cdk_deploy[collapsed=true]\r\e[0KCDK Deploy"
     - $CI_PROJECT_DIR/.iac/node_modules/.bin/cdk deploy --outputs-file cdk-output.json --require-approval never
     - cat cdk-output.json
     - jq '.[] ' cdk-output.json | jq -r 'to_entries[]|"\(.key)=\"\(.value)\""' > cdk-output.properties
     - cat cdk-output.properties
     - set -a && source cdk-output.properties && set +a
+    - echo -e "\e[0Ksection_end:`date +%s`:cdk_deploy\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:backstage_entity[collapsed=true]\r\e[0KUpdate Backstage Entity"
     # alter entity details
     - cd $CI_PROJECT_DIR/.backstage
     - if [[ -z "$BuildBucketName" ]]; then BuildBucketName=$(cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml | yq -r ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"BuildBucketName\"]"); fi
@@ -26,12 +41,17 @@
     - ALREADY_DEPENDS_ON="$(grep "awsenvironment:default/$TARGET_ENV_NAME" catalog-info.yaml || true)"
     - if [[ -z "$ALREADY_DEPENDS_ON" ]]; then yq -Yi ".spec.dependsOn += [\"awsenvironment:default/${TARGET_ENV_NAME}\"]" catalog-info.yaml; fi
     - cat catalog-info.yaml
+    - echo -e "\e[0Ksection_end:`date +%s`:backstage_entity\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:git[collapsed=true]\r\e[0KUpdate Git Repo"
     - git add $CI_PROJECT_DIR/.backstage/catalog-info.yaml
     - UPDATE_COUNT=$(git diff --cached --numstat | wc -l | sed 's/ *$//g')
     - echo "The number of files that will be committed is $UPDATE_COUNT"
     - git status
     - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git commit -m "updating entity details" --quiet; fi
     - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git push -o ci.skip https://oauth2:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME HEAD:main; fi
+    - echo -e "\e[0Ksection_end:`date +%s`:git\r\e[0K"
+
     # Additional functionality for serverless - write file for CICD artifact output
     - echo "BuildBucketName=${BuildBucketName}" > $CI_PROJECT_DIR/serverless-ci-output-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties
   cache:
@@ -48,7 +68,8 @@
     - if [[ -z "$BuildBucketName" ]]; then BuildBucketName=$(cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml | yq -r ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"BuildBucketName\"]"); fi
     # Source output artifact file if it exists from IaC job to get BuildBucketName
     - if [[ -f "$CI_PROJECT_DIR/serverless-ci-output-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties" ]]; then set -a && source $CI_PROJECT_DIR/serverless-ci-output-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties && set +a; fi
-    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "$CI_PROJECT_NAME-$CI_JOB_STAGE" --duration-second=3600 --output json)
+    - export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
+    - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
     - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
     - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
     - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')

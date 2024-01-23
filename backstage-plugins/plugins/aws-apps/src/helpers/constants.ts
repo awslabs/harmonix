@@ -17,8 +17,9 @@ export enum ProviderType {
 export type DeployStackStatus = StackStatus | ExtraStackDeployStatus;
 
 export enum APP_SUBTYPE {
-  ECS = 'ecs',
-  SERVERLESS_REST_API = 'serverless-rest-api',
+  ECS = 'aws-ecs',
+  EKS = 'aws-eks',
+  SERVERLESS = 'aws-serverless',
 }
 
 export enum HTTP {

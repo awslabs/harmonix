@@ -2,21 +2,41 @@ default:
   image:
     name: node:18
   before_script:
+    - echo -e "\e[0Ksection_start:`date +%s`:log_os[collapsed=true]\r\e[0KOS Info"
     - cat /etc/os-release
+    - echo -e "\e[0Ksection_end:`date +%s`:log_os\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:get_tools[collapsed=true]\r\e[0KGet Tools"
     - apt-get update
-    - apt install nodejs npm git python3-pip yq jq -y
-    - export PIP_BREAK_SYSTEM_PACKAGES=1
-    - pip3 install awscli --upgrade
-    - yarn global add aws-cli typescript@latest aws-cdk@2.88.0
+    - apt install nodejs npm git python3-pip yq jq unzip -y
+    - yarn global add typescript@latest aws-cdk@2.120.0
     - yarn --version
+    - echo -e "\e[0Ksection_end:`date +%s`:get_tools\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:get_aws_cli[collapsed=true]\r\e[0KGet AWS CLI v2"
+    # Explicitly install v2 of awscli
+    - curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    - unzip -qq awscliv2.zip
+    - echo "Installing AWS CLI..."
+    - ./aws/install 1> /dev/null
+    - rm awscliv2.zip
     - aws --version
+    - echo -e "\e[0Ksection_end:`date +%s`:get_aws_cli\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:reset_aws_identity[collapsed=true]\r\e[0KReset AWS Caller Identity"
     # Unset AWS_xxx env vars so that we will use the default EC2 instance role
     - unset AWS_ACCESS_KEY_ID && unset AWS_SECRET_ACCESS_KEY && unset AWS_SESSION_TOKEN
     - aws sts get-caller-identity
+    - echo -e "\e[0Ksection_end:`date +%s`:reset_aws_identity\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:gitlab_access[collapsed=true]\r\e[0KConfigure GitLab Access"
     # Storing gitlab access token before changing role
     - export ACCESS_TOKEN=`aws secretsmanager get-secret-value --secret-id opa-admin-gitlab-secrets --region ${OPA_PLATFORM_REGION} | jq --raw-output '.SecretString' | jq -r .apiToken`
     - git config --global user.email "fsi-pace-pe@amazon.com"
     - git config --global user.name "OPA CICD User"
+    - echo -e "\e[0Ksection_end:`date +%s`:gitlab_access\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:download_ref_repo_scripts[collapsed=true]\r\e[0KGet Reference Repo Common Files"
     # Clone reference repo so that apps can utilize shared files. This allows us to have
     # a single point of change for reusable files, instead of having to change them in
     # every application repository.
@@ -25,3 +45,4 @@ default:
     - rm -rf $CI_PROJECT_DIR/backstage-reference
     - echo "Shared files are available in $CI_PROJECT_DIR/cicd"
     - ls -la $CI_PROJECT_DIR/cicd/scripts
+    - echo -e "\e[0Ksection_end:`date +%s`:download_ref_repo_scripts\r\e[0K"

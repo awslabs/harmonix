@@ -53,17 +53,17 @@ spec:
             defaultKind: AWSEnvironment
     - title: Provide database configuration
       required:
-        - db_name
-        - db_object_name
+        - dbName
+        - dbObjectName
         - db_type
         - instance_size
       properties:
-        db_name:
+        dbName:
           title: Database name
           type: string
           description: The name of a default database to create in the RDS instance
           default: usersdb
-        db_object_name:
+        dbObjectName:
           title: Object name
           type: string
           description: >-
@@ -140,11 +140,11 @@ spec:
       input:
         path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
         content: |
-          APP_SHORT_NAME=${{ parameters.component_id }}
+          APP_SHORT_NAME=${{ parameters.component_id | lower }}
           TARGET_VPCID=${{ each.value.vpcId }}
           TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
           TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
-          TARGET_DB_NAME=${{ parameters.db_name }}
+          TARGET_DB_NAME=${{ parameters.dbName }}
           TARGET_DB_TYPE=${{ parameters.db_type }}
           TARGET_DB_SIZE=${{ parameters.instance_size }}
           ACCOUNT=${{ each.value.accountId }}
@@ -160,28 +160,29 @@ spec:
         url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_rds
         targetPath: ./.iac
         values:
-          component_id: ${{ parameters.component_id }}
-          app_env_plaintext: ""
+          component_id: ${{ parameters.component_id | lower}}
+          appEnvPlaintext: ""
     - id: fetchBase
       name: Fetch Base
       action: fetch:template
       input:
         url: ./content
         values:
-          component_id: ${{ parameters.component_id }}
+          component_id: ${{ parameters.component_id | lower }}
+          title: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
           owner: ${{ parameters.owner }}
-          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
-          aws_environment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
-          aws_environment_name: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
-          aws_environment_provider_name: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].envProviderName }}
-          aws_environment_prefix: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].envProviderPrefix }}
-          aws_region: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].region }}
-          aws_account: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].accountId }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          awsEnvironmentProviderName: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].envProviderName }}
+          awsEnvironmentPrefix: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].envProviderPrefix }}
+          awsRegion: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].region }}
+          awsAccount: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].accountId }}
           destination: ${{ parameters.repoUrl | parseRepoUrl }}
           assumedRoleArn: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].assumedRoleArn }}
-          db_name: ${{ parameters.db_name }}
-          db_object_name: ${{ parameters.db_object_name }}
+          dbName: ${{ parameters.dbName }}
+          dbObjectName: ${{ parameters.dbObjectName }}
     - id: publish
       name: Publish
       action: publish:gitlab

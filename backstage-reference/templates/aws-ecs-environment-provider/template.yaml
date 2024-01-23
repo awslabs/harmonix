@@ -18,9 +18,9 @@ spec:
         - prefix
         - env_description
         - owner
-        - aws_account_id
-        - aws_region
-        - environment_role
+        - awsAccountID
+        - awsRegion
+        - environmentRole
         - cidr
       properties:
         name:
@@ -45,12 +45,12 @@ spec:
           ui:options:
             catalogFilter:
               kind: [Group]
-        aws_account_id:
+        awsAccountID:
           title: AWS Account number
           type: string
           description: Enter an AWS account number
           minLength: 12
-        aws_region:
+        awsRegion:
           title: AWS Region
           type: string
           description: Select AWS region
@@ -111,15 +111,44 @@ spec:
             - 'Middle East (Bahrain)'
             - 'Middle East (UAE)'
             - 'South America (São Paulo)'
-        environment_role:
-          title: Environment Role arn
+        environmentRole:
+          title: Environment Role ARN
           type: string
-          description: The role arn to assume in order to provision the new environment.
-        cidr:
-          title: CIDR
+          description: The IAM role ARN to assume in order to provision the new environment.
+        vpc_configuration:
+          title: VPC Configuration
+          description: Choose 'Use Existing VPC' to utilize an existing VPC, or continue with 'Create New VPC' for a new setup.
           type: string
-          description: The network cidr of the environment provider
-          default: 10.0.0.0/24
+          default: create_new
+          enum:
+            - create_new
+            - use_existing
+          enumNames:
+            - 'Create New VPC'
+            - 'Use Existing VPC'
+           
+      # Only ask for the allow-list if user chose public API access
+      dependencies:
+        vpc_configuration:
+          oneOf:
+            - properties:
+                vpc_configuration:
+                  enum:
+                    - use_existing
+                vpc_id:
+                  title: VPC ID
+                  type: string
+                  description: Specify the existing VPC ID
+            - properties:
+                vpc_configuration:
+                  enum:
+                    - create_new
+                cidr:
+                  title: CIDR
+                  type: string
+                  description: Specify the CIDR block for the new VPC. Default is 10.0.0.0/24
+                  default: 10.0.0.0/24
+
     - title: Provide Repository information
       required:
         - repoUrl
@@ -152,24 +181,48 @@ spec:
       input:
         url: ./content
         values:
-          name: ${{ parameters.name }}
+          name: ${{ parameters.name | lower }}
+          title: ${{ parameters.name }}
           description: ${{ parameters.env_description }}
           owner: ${{ parameters.owner }}
-          env_type: ecs
-          aws_region: ${{ parameters.aws_region }}
-          aws_account: ${{ parameters.aws_account_id }}
-          environment_role: ${{ parameters.environment_role }}
-          platform_role: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
-          pipeline_role: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
-          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          envType: ecs
+          awsRegion: ${{ parameters.awsRegion }}
+          awsAccount: ${{ parameters.awsAccountID }}
+          environmentRole: ${{ parameters.environmentRole }}
+          platformRole: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
+          pipelineRole: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
           prefix: ${{parameters.prefix}}
           cidr: ${{parameters.cidr}}
+          vpcid: ${{parameters.vpc_id}}
+
+   
     - id: fetchBaseIAC
       name: Fetch IAC Base
       action: fetch:plain
       input:
-        targetPath: ./.iac
-        url: "https://{{gitlab_hostname}}/opa-admin/backstage-reference/-/tree/main/environments"
+        targetPath: ./.iac/opa-ecs-environment
+        url: "https://{{gitlab_hostname}}/opa-admin/backstage-reference/-/tree/main/environments/opa-ecs-environment"
+    - id: fetchIacCommonConstructs
+      name: Fetch IaC Common Constructs
+      action: fetch:plain
+      input:
+        targetPath: ./.iac/opa-common-constructs
+        url: "https://{{gitlab_hostname}}/opa-admin/backstage-reference/-/tree/main/environments/opa-common-constructs"
+    - id: createYarnPackageFile
+      name: Configure Yarn Package Manager
+      action: roadiehq:utils:fs:write
+      input:
+        path: ./.iac/package.json
+        content: |
+          {
+            "private": true,
+            "name": "aws-application-development",
+            "workspaces": [
+              "opa-ecs-environment",
+              "opa-common-constructs"
+            ]
+          }
     - id: publish
       name: Publish
       action: publish:gitlab
@@ -177,12 +230,14 @@ spec:
         repoUrl: ${{ parameters.repoUrl }}
         repoVisibility: internal
         defaultBranch: main
+
     - id: register
       name: Register
       action: catalog:register
       input:
         repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
         catalogInfoPath: "/.backstage/catalog-info.yaml"
+
   output:
     links:
       - title: Repository

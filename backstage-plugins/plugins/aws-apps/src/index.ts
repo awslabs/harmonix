@@ -9,6 +9,7 @@ export {
   opaPlugin,
   EntityAnnotationTypeTable,
   EntityAppStateCard,
+  EntityK8sAppStateCard,
   EntityAppPromoCard,
   EntityAppStateCardCloudFormation,
   EntityLabelTable,

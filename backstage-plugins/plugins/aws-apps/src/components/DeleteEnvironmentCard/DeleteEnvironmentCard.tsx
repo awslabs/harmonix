@@ -33,7 +33,7 @@ const DeleteEnvironmentPanel = ({
 
   const deleteRepo = () => {
     const gitHost = entity.metadata['repoUrl'] ? entity.metadata['repoUrl'].toString().split("?")[0] : "";
-    const gitRepoName = entity.metadata.name;
+    const gitRepoName = entity.metadata.repoUrl?.toString().split('repo=')[1].toLowerCase() || "";
     api.deleteRepository({
       gitHost,
       gitProject: 'aws-environments',

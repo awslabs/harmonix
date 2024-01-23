@@ -16,6 +16,7 @@ import { ResourceSelectorDialog } from './ResourceSelectorDialog';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 
+// TODO: Externalize policy templates to a repo path for easy updates and access control
 const RDS_POLICY = `{
   "Effect": "Allow",
   "Action": ["rds:*"],
@@ -28,6 +29,11 @@ const SECRET_POLICY = `{
   "Resource": "@@@PLACEHOLDER@@@"
 }`;
 
+const S3_POLICY = `{
+  "Effect": "Allow",
+  "Action": ["s3:*"],
+  "Resource": [@@@PLACEHOLDER@@@]
+}`;
 
 const ResourceBindingCard = ({
   input: { awsComponent, entity, catalog },
@@ -74,7 +80,7 @@ const ResourceBindingCard = ({
       const providers = Object.keys(envAppData)
       providers.forEach(p => {
         const providerAppData = envAppData[p] as any;
-        if (et!.metadata['resource-type'] === "aws-rds") {
+        if (et!.metadata['resourceType'] === "aws-rds") {
 
           const associatedRDSResources: AssociatedResources =
           {
@@ -86,7 +92,7 @@ const ResourceBindingCard = ({
           resources.push(
             {
               resourceName: et!.metadata.name,
-              resourceType: et!.metadata['resource-type']?.toString() || "",
+              resourceType: et!.metadata['resourceType']?.toString() || "",
               provider: p,
               resourceArn: providerAppData['Arn'],
               id: providerAppData['Arn'],
@@ -98,7 +104,7 @@ const ResourceBindingCard = ({
           resources.push(
             {
               resourceName: et!.metadata.name,
-              resourceType: et!.metadata['resource-type']?.toString() || "",
+              resourceType: et!.metadata['resourceType']?.toString() || "",
               provider: p,
               resourceArn: providerAppData['Arn'],
               id: providerAppData['Arn'],
@@ -142,7 +148,15 @@ const ResourceBindingCard = ({
         policyContent: secretPolicy,
         policyResource: item.resourceType
       });
+    }  else if (item.resourceType === "aws-s3") {
+      const s3Policy = S3_POLICY.replace("@@@PLACEHOLDER@@@",`"${item.resourceArn}","${item.resourceArn}/*"`);
+      policies.push({
+        policyFileName: `statement-s3-${awsComponent.currentEnvironment.environment.name}-${item.provider}-${item.resourceName}`,
+        policyContent: s3Policy,
+        policyResource: item.resourceType
+      });
     }
+
 
     const params: BindResourceParams = {
       gitHost: awsComponent.gitHost,

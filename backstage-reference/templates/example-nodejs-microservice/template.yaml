@@ -1,0 +1,190 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: example-nodejs-microservice-template
+  title: Node.js Microservice
+  description: >-
+    Create a starter Node.js microservice application running on
+    an Express server.
+    This is demonstration only.
+  tags:
+    - nodejs
+    - aws
+spec:
+  owner: group:admins
+  type: service
+
+  # These parameters are used to generate the input form in the frontend, and are
+  # used to gather input data for the execution of the template.
+  parameters:
+    - title: Provide application information
+      required:
+        - component_id
+        - owner
+        - environment
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Help others understand what this service is for
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+        environment:
+          title: AWS Environment
+          type: string
+          description: The AWS Environment where the application is created
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AWSEnvironment
+            catalogFilter:
+              - kind: AWSEnvironment
+                metadata.environmentType: ecs
+            defaultKind: AWSEnvironment
+
+    - title: Choose a git repository location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-app
+
+  # These steps are executed in the scaffolder backend, using data that we gathered
+  # via the parameters above.
+  steps:
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+
+    - id: opaGetAwsEnvProviders
+      name: Get AWS Environment Providers
+      action: opa:get-env-providers
+      input:
+        environmentRef: ${{ parameters.environment }}
+
+    - id: debugEnvironment
+      name: Print the environment entity info
+      action: debug:log
+      input:
+        message: ${{ steps['opaGetAwsEnvProviders'].output | dump }}
+
+    - id: createProviderPropsFiles
+      each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
+      name: Store environment provider parameters
+      action: roadiehq:utils:fs:write
+      input:
+        path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
+        content: |
+          TARGET_VPCID=${{ each.value.vpcId }}
+          TARGET_ECS_CLUSTER_ARN=${{ each.value.clusterArn }}
+          TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
+          ACCOUNT=${{ each.value.accountId }}
+          REGION=${{ each.value.region }}
+          PREFIX=${{ each.value.envProviderPrefix }}
+          ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
+          OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY_IMAGE=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com/${{ parameters.component_id | lower }}-${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com
+          OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{% else %}false{% endif %}
+          
+    - id: createSecretManager
+      name: Create a Secret
+      action: opa:create-secret
+      input:
+        secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
+
+    - id: fetchIac
+      name: Fetch ECS Infrastructure as Code
+      action: fetch:template
+      input: 
+        url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_ecs
+        targetPath: ./.iac
+        values:
+          component_id: ${{ parameters.component_id | lower }}
+          appEnvPlaintext: ""
+          app_health_endpoint: "/health"
+
+    - id: fetchBase
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          appPort: "8080"
+          component_id: ${{ parameters.component_id | lower }}
+          title: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          awsSecretRepoArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+
+    - id: entityDetail
+      name: Get AWSEnvironment entity details
+      action: catalog:fetch
+      input:
+        entityRef: ${{ parameters.environment }}
+
+    - id: debugEntity
+      name: Print the workspace
+      action: debug:log
+      input:
+        message: ${{ steps['entityDetail'].output.entity | dump }}
+        listWorkspace: true
+
+    # This step publishes the contents of the working directory to GitLab.
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+
+    # Create a gitlab repository access token and store it in a SecretsManager secret
+    - id: createRepoToken
+      name: Create Repo Token
+      action: opa:createRepoAccessToken:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        projectId: ${{ steps['publish'].output.projectId }}
+        secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+        
+    # The final step is to register our new component in the catalog.
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

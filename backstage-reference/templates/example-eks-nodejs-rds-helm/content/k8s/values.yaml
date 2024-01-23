@@ -1,0 +1,42 @@
+# Default values for ${{ values.component_id }}.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+opa:
+  environmentName: ENV_PLACEHOLDER
+  
+appAdminRole: APP_ADMIN_ROLE_PLACEHOLDER
+
+namespace: NS_PLACEHOLDER
+
+configMap:
+  name: ${{ values.component_id }}-env-vars-ENV_PLACEHOLDER
+
+deployment:
+  name: ${{ values.component_id }}-mainpod-ENV_PLACEHOLDER
+  replicaCount: 2
+
+nsAdminRoleBinding:
+  name: ${{ values.component_id }}-admin-ENV_PLACEHOLDER
+
+nsViewerRoleBinding:
+  name: ${{ values.component_id }}-view-ns-ENV_PLACEHOLDER
+  
+serviceAccount:
+  name: ${{ values.component_id }}-sa-ENV_PLACEHOLDER
+  roleArn: SA_ROLE_PLACEHOLDER
+
+ingress:
+  name: ${{ values.component_id }}-ingress-ENV_PLACEHOLDER
+  albTags: "aws-apps-${{ values.component_id }}-ENV_PLACEHOLDER-ENV_PROVIDER_PLACEHOLDER=${{ values.component_id }}"
+  groupName: ${{ values.component_id }}-ENV_PLACEHOLDER
+
+service:
+  name: ${{ values.component_id }}-service-ENV_PLACEHOLDER
+
+image:
+  repository: ACCT_PLACEHOLDER.dkr.ecr.REGION_PLACEHOLDER.amazonaws.com/${{ values.component_id }}-ENV_PLACEHOLDER-ENV_PROVIDER_PLACEHOLDER
+  pullPolicy: Always
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest"
+  port: ${{ values.appPort }}

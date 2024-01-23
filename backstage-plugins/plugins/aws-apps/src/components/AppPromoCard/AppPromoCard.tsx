@@ -3,7 +3,7 @@
 
 import React, { ChangeEvent, useEffect, useState } from 'react';
 import { EmptyState, InfoCard, } from '@backstage/core-components';
-import { CatalogApi } from '@backstage/plugin-catalog-react';
+import { CatalogApi, useEntity } from '@backstage/plugin-catalog-react';
 import { Button, CardContent, FormControl, FormHelperText, Grid, InputLabel, LinearProgress, MenuItem, Select } from '@material-ui/core';
 import { Alert, AlertTitle, Typography } from '@mui/material';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
@@ -19,22 +19,26 @@ import InfoIcon from '@mui/icons-material/Info';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import { ProviderType } from '../../helpers/constants';
+import { AwsEksEnvPromoDialog } from './AwsEksEnvPromoDialog';
 
 const AppPromoCard = ({
-  input: { awsComponent, catalogApi },
+  input: { awsComponent, catalogApi, appEntity },
 }: {
-  input: { awsComponent: AWSComponent; catalogApi: CatalogApi };
+  input: { awsComponent: AWSComponent; catalogApi: CatalogApi, appEntity: Entity };
 }) => {
   const [envChoices, setEnvChoices] = useState<Entity[]>([]);
   const [selectedItem, setSelectedItem] = useState("");
   const [disabled, setDisabled] = useState(false);
   const [spinning, setSpinning] = useState(false);
+  const [openEksDialog, setOpenEksDialog] = useState(false);
   const [isPromotionSuccessful, setIsPromotionSuccessful] = useState(false);
   const [promotedEnvName, setPromotedEnvName] = useState("");
   const [promoteResultMessage, setPromoteResultMessage] = useState("");
+  const [suggestedEksNamespace, setSuggestedEksNamespace] = useState("");
+  const [suggestedIamRoleArn, setSuggestedIamRoleArn] = useState("");
 
   const api = useApi(opaApiRef);
-
+  
   function getHighestLevelEnvironment(currentEnvironments: AwsDeploymentEnvironments) {
     let highestLevel = 1;
     Object.keys(currentEnvironments).forEach(env => {
@@ -59,7 +63,7 @@ const AppPromoCard = ({
     return catalogEntities
       .filter(en => {
         return (
-          en.metadata["environment-type"] === envType &&
+          en.metadata["environmentType"] === envType &&
           !currentEnvKeys.includes(en.metadata.name) &&
           Number.parseInt(en.metadata["level"]?.toString()!) >= lowestEnvironmentLevel
         )
@@ -71,7 +75,7 @@ const AppPromoCard = ({
 
   const filterExpression = {
     'kind': "awsenvironment",
-    // 'metadata.environment-type': component.currentEnvironment.environment.envType,
+    'metadata.environmentType': awsComponent.currentEnvironment.environment.envType
     // 'spec.system': component.currentEnvironment.environment.system, TODO: when system is implemented filter on similar system.
   };
 
@@ -96,18 +100,18 @@ const AppPromoCard = ({
 
     const backendParamsOverrides = {
       appName: awsComponent.componentName,
-      awsAccount: envProviderEntity.metadata['aws-account']?.toString() || "",
-      awsRegion: envProviderEntity.metadata['aws-region']?.toString() || "",
+      awsAccount: envProviderEntity.metadata['awsAccount']?.toString() || "",
+      awsRegion: envProviderEntity.metadata['awsRegion']?.toString() || "",
       prefix: envProviderEntity.metadata['prefix']?.toString() || "",
       providerName: envProviderEntity.metadata.name
     };
 
-    const envType = envProviderEntity.metadata['env-type']?.toString().toLowerCase();
+    const envType = envProviderEntity.metadata['envType']?.toString().toLowerCase();
     if (envType === ProviderType.ECS) {
 
       const metaVpc = "vpc";
-      const metaRole = "provisioning-role";
-      const metaCluster = "cluster-name";
+      const metaRole = "provisioningRole";
+      const metaCluster = "clusterName";
       const metadataKeys = [metaVpc, metaCluster, metaRole];
 
       const ssmValues = await Promise.all(metadataKeys.map(async (metaKey) => {
@@ -123,14 +127,33 @@ const AppPromoCard = ({
         // 'TARGET_ENV_AUDIT': auditTable
       };
       return parametersMap;
-    }
-    else if (envType === ProviderType.EKS) {
-      throw new Error("TO BE IMPLEMENTED - eks"); // TODO: Implement EKS support for AppPromoCard.tsx
-    }
-    else if (envType === ProviderType.SERVERLESS) {
+
+    } else if (envType === ProviderType.EKS) {
 
       const metaVpc = "vpc";
-      const metaRole = "provisioning-role";
+      const metaRole = "provisioningRole";
+      const metaCluster = "clusterName";
+      const metadataKeys = [metaVpc, metaCluster, metaRole];
+
+      const ssmValues = await Promise.all(metadataKeys.map(async (metaKey) => {
+        const paramKey = envProviderEntity.metadata[metaKey]?.toString() || metaKey;
+        const value = (await api.getSSMParameter({ ssmParamName: paramKey, backendParamsOverrides })).Parameter?.Value || "";
+        return value;
+      }));
+
+      let parametersMap = {
+        TARGET_VPCID: ssmValues[metadataKeys.indexOf(metaVpc)],
+        TARGET_EKS_CLUSTER_ARN: ssmValues[metadataKeys.indexOf(metaCluster)],
+        ENV_ROLE_ARN: ssmValues[metadataKeys.indexOf(metaRole)],
+        TARGET_KUBECTL_LAMBDA_ARN: envProviderEntity.metadata.kubectlLambdaArn as string,
+        TARGET_KUBECTL_LAMBDA_ROLE_ARN: envProviderEntity.metadata.clusterAdminRole as string,
+      };
+      return parametersMap;
+
+    } else if (envType === ProviderType.SERVERLESS) {
+
+      const metaVpc = "vpc";
+      const metaRole = "provisioningRole";
       const vpcParam = envProviderEntity.metadata[metaVpc]?.toString() || "";
       const metaPubNet = `${vpcParam}/public-subnets`;
       const metaPrivNet = `${vpcParam}/private-subnets`;
@@ -166,7 +189,7 @@ const AppPromoCard = ({
     const selectedEnv = await catalogApi.getEntities({ filter: { 'kind': "awsenvironment", 'metadata.name': selectedItem } });
     const envEntity = selectedEnv.items[0];
 
-    const envRequiresManualApproval = !!envEntity.metadata['deployment_requires_approval'];
+    const envRequiresManualApproval = !!envEntity.metadata['deploymentRequiresApproval'];
 
     const envProviderRefs: EntityRelation[] | undefined = envEntity.relations?.filter(
       relation => parseEntityRef(relation?.targetRef).kind === 'awsenvironmentprovider')!;
@@ -183,10 +206,10 @@ const AppPromoCard = ({
           environmentName: envEntity.metadata.name,
           envRequiresManualApproval,
           providerName: et?.metadata.name || '',
-          awsAccount: et?.metadata['aws-account']?.toString() || '',
-          awsRegion: et?.metadata['aws-region']?.toString() || '',
+          awsAccount: et?.metadata['awsAccount']?.toString() || '',
+          awsRegion: et?.metadata['awsRegion']?.toString() || '',
           prefix: et?.metadata['prefix']?.toString() || '',
-          assumedRoleArn: et?.metadata['provisioning-role']?.toString() || '',
+          assumedRoleArn: et?.metadata['provisioningRole']?.toString() || '',
           parameters: providerResolvedData
         });
     }))
@@ -198,12 +221,14 @@ const AppPromoCard = ({
     setPromotedEnvName("");
   };
 
-  const handleClick = () => {
-    if (!selectedItem) {
-      alert('Select an Environment');
-      return;
-    }
+  const closeEksDialog = () => setOpenEksDialog(false);
 
+  const submitNewEksEnvironmentHandler = (namespace: string, iamRoleArn: string, roleBehavior: string) => {
+    // console.log(`CREATE ENV - namespace=${namespace}  roleBehavior=${roleBehavior} iamRoleArn=${iamRoleArn}`);
+    createNewEnvironment({["NAMESPACE"]: namespace, ["APP_ADMIN_ROLE_ARN"]: iamRoleArn, ["K8S_IAM_ROLE_BINDING_TYPE"]: roleBehavior});
+  };
+
+  const createNewEnvironment = (extraParameters?: { [key: string]: string }) => {
     setSpinning(true);
     setPromotedEnvName("");
 
@@ -220,6 +245,14 @@ const AppPromoCard = ({
         gitRepoName: awsComponent.gitRepo.split('/')[1],
         providersData: envProviders.providers
       };
+
+      if (extraParameters) {
+        Object.keys(extraParameters).forEach(key => {
+          envProviders.providers.forEach(providerParams => {
+            providerParams.parameters[key] = extraParameters[key];
+          });
+        });
+      }
 
       // now call the API and submit the promo request
       api.promoteApp(promoBody).then(results => {
@@ -255,7 +288,31 @@ const AppPromoCard = ({
       })
 
     });
+  };
 
+  const handleClick = () => {
+    if (!selectedItem) {
+      alert('Select an Environment');
+      return;
+    }
+
+    const envType = awsComponent.currentEnvironment.environment.envType.toLowerCase();
+
+    // Show dialog asking user for additional EKS input
+    if (envType === ProviderType.EKS) {
+
+      if (appEntity.metadata.appData && Object.keys(appEntity.metadata.appData).length) {
+        const firstEnv = Object.values(appEntity.metadata.appData)[0];
+        const firstEnvProvider = Object.values(firstEnv)[0] as { Namespace: string; AppAdminRoleArn: string; };
+        setSuggestedEksNamespace(`suggestions: "${appEntity.metadata.name}", "${appEntity.metadata.name}-${selectedItem}", "${firstEnvProvider.Namespace}"`);
+        setSuggestedIamRoleArn(`suggestions: "${firstEnvProvider.AppAdminRoleArn}"`);
+      }
+
+      setOpenEksDialog(true);
+      return;
+    }
+
+    createNewEnvironment();
   }
 
   return (
@@ -316,6 +373,16 @@ const AppPromoCard = ({
             </Grid>
           </Grid>
         </Grid>
+        <Typography margin={'10px'}>
+          <AwsEksEnvPromoDialog
+            isOpen={openEksDialog}
+            submitHandler={submitNewEksEnvironmentHandler}
+            closeDialogHandler={closeEksDialog}
+            environmentName={selectedItem}
+            namespaceDefault={suggestedEksNamespace}
+            iamRoleArnDefault={suggestedIamRoleArn}
+          />
+        </Typography>
         <Backdrop
           sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
           open={spinning}
@@ -330,6 +397,7 @@ const AppPromoCard = ({
 export const AppPromoWidget = () => {
   const awsAppLoadingStatus = useAsyncAwsApp();
   const catalogApi = useApi(catalogApiRef);
+  const { entity } = useEntity();
 
   if (awsAppLoadingStatus.loading) {
     return <LinearProgress />;
@@ -337,7 +405,8 @@ export const AppPromoWidget = () => {
     const component = awsAppLoadingStatus.component
     const input = {
       awsComponent: component,
-      catalogApi
+      catalogApi,
+      appEntity: entity
     };
 
     return <AppPromoCard input={input} />;

@@ -47,10 +47,10 @@ export async function createAuditRecord({
 
   let tableNameResponse;
   try {
-    tableNameResponse = await apiClient.getSSMParameter(`/${envProviderPrefix}/${envProviderName}/${envProviderName}-audit`);
+    tableNameResponse = await apiClient.getSSMParameter(`/${envProviderPrefix.toLowerCase()}/${envProviderName.toLowerCase()}/${envProviderName.toLowerCase()}-audit`);
   } catch (err) {
     response.status = 'FAILED';
-    response.message = "Audit failed - audit table name was set to FIXME.";
+    response.message = `Audit failed - audit table name was set to FIXME. ${tableNameResponse}`;
   }
 
   if (tableNameResponse?.Parameter?.Value) {

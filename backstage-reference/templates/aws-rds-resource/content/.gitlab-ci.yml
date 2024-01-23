@@ -1,11 +1,11 @@
 stages:
   - env-creation
-  - prepare-${{values.aws_environment_name}}-stage
+  - prepare-${{values.awsEnvironmentName}}-stage
 
 variables:
   APP_SHORT_NAME: "${{ values.component_id }}"
   APP_TEMPLATE_NAME: "example-generic"
-  OPA_PLATFORM_REGION: "${{ values.platform_region }}"
+  OPA_PLATFORM_REGION: "${{ values.platformRegion }}"
 
 include:
   - project: 'opa-admin/backstage-reference'

@@ -1,7 +1,8 @@
 apiVersion: aws.backstage.io/v1alpha
 kind: AWSEnvironmentProvider
 metadata:
-  name: ${{values.name | dump}}
+  name: ${{values.name | dump }}
+  title: ${{ values.title | dump }}
   prefix: ${{values.prefix | dump}}
   {%- if values.description %}
   description: ${{values.description | dump}}
@@ -10,10 +11,10 @@ metadata:
     - aws
     - aws-environment-provider
     - serverless
-  env-type: ${{values.env_type}}
-  aws-account: "${{values.aws_account}}"
-  aws-region: ${{values.aws_region}}
-  environment_role: "${{values.environment_role}}"
+  envType: ${{values.envType}}
+  awsAccount: "${{values.awsAccount}}"
+  awsRegion: ${{values.awsRegion}}
+  environmentRole: "${{values.environmentRole}}"
   vpc: ""
 spec:
   type: environment-provider

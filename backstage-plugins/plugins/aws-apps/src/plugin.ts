@@ -75,6 +75,15 @@ export const EntityAppStateCard = opaPlugin.provide(
   }),
 );
 
+export const EntityK8sAppStateCard = opaPlugin.provide(
+  createComponentExtension({
+    name: 'K8sAppStateCard',
+    component: {
+      lazy: () => import('./components/K8sAppStateCard/K8sAppStateCard').then(m => m.K8sAppStateCard),
+    },
+  }),
+);
+
 export const EntityAppStateCardCloudFormation = opaPlugin.provide(
   createComponentExtension({
     name: 'AppStateCardCloudFormation',

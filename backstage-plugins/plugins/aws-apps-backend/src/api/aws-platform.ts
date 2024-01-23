@@ -329,7 +329,7 @@ export class AwsAppsPlatformApi {
           `ACCOUNT=${provider.awsAccount}\nREGION=${provider.awsRegion}\nTARGET_ENV_NAME=${provider.environmentName}\nPREFIX=${provider.prefix}\n` +
           `TARGET_ENV_PROVIDER_NAME=${provider.providerName}\nOPA_CI_ENVIRONMENT=${provider.environmentName}-${provider.providerName}\n` +
           `OPA_CI_ENVIRONMENT_MANUAL_APPROVAL=${input.envRequiresManualApproval}\n` +
-          `OPA_CI_REGISTRY_IMAGE=${provider.awsAccount}.dkr.ecr.${provider.awsRegion}.amazonaws.com/${input.appName}-${provider.providerName}\n` +
+          `OPA_CI_REGISTRY_IMAGE=${provider.awsAccount}.dkr.ecr.${provider.awsRegion}.amazonaws.com/${input.appName}-${input.envName}-${provider.providerName}\n` +
           `OPA_CI_REGISTRY=${provider.awsAccount}.dkr.ecr.${provider.awsRegion}.amazonaws.com\n`;
 
         Object.keys(provider.parameters).forEach(key => {
@@ -474,7 +474,7 @@ export class AwsAppsPlatformApi {
 
     const commit = {
       branch: 'main',
-      commit_message: `Unbind Resource`,
+      commit_message: `UnBind Resource`,
       actions: actions,
     };
 
@@ -533,7 +533,7 @@ export class AwsAppsPlatformApi {
     if (action === 'add') {
       console.log(entityCatalog);
       const newDependencies = entityCatalog.spec.dependsOn as Array<string>;
-      newDependencies.push(`awsenvironmentprovider:default/${provider.name}`);
+      newDependencies.push(`awsenvironmentprovider:default/${provider.name.toLowerCase()}`);
       entityCatalog.spec.dependsOn = newDependencies;
       const providerContent = YAML.stringify(entityCatalog);
       console.log(providerContent);
@@ -548,7 +548,7 @@ export class AwsAppsPlatformApi {
       const dependencies = entityCatalog.spec.dependsOn as Array<string>;
       let newDependencies = Array<string>();
       dependencies.forEach(p => {
-        const providerToRemove = `awsenvironmentprovider:default/${provider.name}`;
+        const providerToRemove = `awsenvironmentprovider:default/${provider.name.toLowerCase()}`;
         if (p != providerToRemove) {
           newDependencies.push(p);
         }

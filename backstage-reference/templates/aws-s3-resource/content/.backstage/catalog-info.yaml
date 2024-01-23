@@ -1,0 +1,24 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ${{ values.component_id | dump }}
+  title: ${{ values.title | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - bucket
+    - aws-resource
+    - s3
+  annotations:
+  iacType: cdk
+  resourceType: "aws-s3"
+  bucketName: ${{ values.bucketName | dump }}
+  awsArn: ""
+spec:
+  type: aws-resource
+  subType: "arn:aws:s3"
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn: []

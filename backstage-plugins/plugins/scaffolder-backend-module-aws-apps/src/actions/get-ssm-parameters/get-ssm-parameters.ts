@@ -81,8 +81,21 @@ export function getSsmParametersAction() {
 
       // Fail early if there is no user entity
       if (ctx.user?.entity === undefined) {
-        ctx.logger.info(`No user context provided for ${ID} action`);
-        return;
+        // Verify the automationKey value.  If it matches, set an automation user in the context
+        if (ctx.secrets?.automationKey === process.env.AUTOMATION_KEY) {
+          console.log("Automation key provided to use automation user");
+          ctx.user = {
+            entity: {
+              apiVersion: 'backstage.io/v1alpha1',
+              kind: 'User',
+              metadata: { name: 'automation' },
+              spec: { profile: { displayName: "Automation User" } }
+            }
+          }
+        } else {
+          ctx.logger.info(`No user context provided for ${ID} action`);
+          throw new Error(`No user context provided for ${ID} action`);
+        }
       }
 
       const providerConnect: EnvProviderConnectMap =

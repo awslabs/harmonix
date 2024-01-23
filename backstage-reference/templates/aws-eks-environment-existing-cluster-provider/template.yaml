@@ -1,0 +1,275 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: aws-eks-environment-existing-cluster-provider
+  title: AWS EKS Environment Provider From Existing Cluster
+  description: Configure an AWS EKS environment provider. Use an existing EKS cluster instead of creating a new one.
+  tags:
+    - aws
+    - environment-provider
+    - eks
+spec:
+  owner: group:admins
+  type: aws-environment-provider
+  parameters:
+    - title: Fill in the environment provider details
+      required:
+        - name
+        - prefix
+        - env_description
+        - owner
+        - awsAccountID
+        - awsRegion
+        - environmentRole
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name for the environment provider
+          ui:autofocus: true
+        prefix:
+          title: Prefix
+          type: string
+          description: Prefix for environment - examples - payments, engineering, infra
+          default: opa
+        env_description:
+          title: Description
+          type: string
+          description: A description of the environment
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+        awsAccountID:
+          title: AWS Account number
+          type: string
+          description: Enter the AWS account number where the existing EKS cluster was deployed
+          minLength: 12
+        awsRegion:
+          title: AWS Region
+          type: string
+          description: Select AWS region where the existing EKS cluster was deployed
+          default: us-east-1
+          enum:
+            - us-east-1
+            - us-east-2
+            - us-west-1
+            - us-west-2
+            - af-south-1
+            - ap-east-1
+            - ap-south-2
+            - ap-southeast-3
+            - ap-southeast-4
+            - ap-south-1
+            - ap-northeast-3
+            - ap-northeast-2
+            - ap-southeast-1
+            - ap-southeast-2
+            - ap-northeast-1
+            - ca-central-1
+            - eu-central-1
+            - eu-west-1
+            - eu-west-2
+            - eu-south-1
+            - eu-west-3
+            - eu-south-2
+            - eu-north-1
+            - eu-central-2
+            - me-south-1
+            - me-central-1
+            - sa-east-1
+          enumNames:
+            - 'US East (N. Virginia)'
+            - 'US East (Ohio)'
+            - 'US West (N. California)'
+            - 'US West (Oregon)'
+            - 'Africa (Cape Town)'
+            - 'Asia Pacific (Hong Kong)'
+            - 'Asia Pacific (Hyderabad)'
+            - 'Asia Pacific (Jakarta)'
+            - 'Asia Pacific (Melbourne)'
+            - 'Asia Pacific (Mumbai)'
+            - 'Asia Pacific (Osaka)'
+            - 'Asia Pacific (Seoul)'
+            - 'Asia Pacific (Singapore)'
+            - 'Asia Pacific (Sydney)'
+            - 'Asia Pacific (Tokyo)'
+            - 'Canada (Central)'
+            - 'Europe (Frankfurt)'
+            - 'Europe (Ireland)'
+            - 'Europe (London)'
+            - 'Europe (Milan)'
+            - 'Europe (Paris)'
+            - 'Europe (Spain)'
+            - 'Europe (Stockholm)'
+            - 'Europe (Zurich)'
+            - 'Middle East (Bahrain)'
+            - 'Middle East (UAE)'
+            - 'South America (São Paulo)'
+        environmentRole:
+          title: Environment Role ARN
+          type: string
+          description: The IAM role ARN to assume in order to provision the new environment.
+        
+    - title: Configure EKS Cluster
+      required:
+        - existingClusterName
+        - clusterAdminRole
+        - createK8sOpaResources
+        - kubectlLambdaConfiguration
+
+      properties:
+        existingClusterName:
+          title: Existing EKS Cluster Name
+          type: string
+          description: The name of an existing EKS cluster to use for this EKS provider.
+        clusterAdminRole:
+          title: Cluster Admin IAM Role ARN
+          type: string
+          description: The IAM role ARN that has already been granted cluster admin permissions in the EKS cluster.
+        createK8sOpaResources:
+          title: Create OPA Resources In EKS Cluster
+          description: Should OPA resources be created in the EKS cluster? This can only be done once per cluster.
+          type: boolean
+          ui:widget: radio
+        kubectlLambdaConfiguration:
+          title: Kubectl Lambda Configuration
+          description: Choose 'Use Existing Kubectl Lambda' to utilize an existing Kubectl lambda that has access to the EKS cluster, or continue with 'Create New Kubectl Lambda' for a new setup.
+          type: string
+          default: create_new
+          enum:
+            - create_new
+            - use_existing
+          enumNames:
+            - 'Create New Kubectl Lambda'
+            - 'Use Existing Kubectl Lambda'
+
+      # Ask for different input based on whether the user wants to create a
+      # new Kubectl Lambda or use an existing one
+      dependencies:
+        kubectlLambdaConfiguration:
+          oneOf:
+            - properties:
+                kubectlLambdaConfiguration:
+                  enum:
+                    - use_existing
+                kubectlLambdaArn:
+                  title: Existing Kubectl Lambda ARN
+                  type: string
+                  description: Specify the existing Kubectl Lambda ARN
+                kubectlOnEventLambdaArn:
+                  title: Existing Kubectl Provider onEvent Lambda ARN
+                  type: string
+                  description: Specify the existing Kubectl Provider onEvent Lambda ARN
+                kubectlLambdaExecutionRoleArn:
+                  title: Existing Kubectl Lambda Execution Role ARN
+                  type: string
+                  description: Specify the existing Kubectl Lambda Execution Role ARN
+            - properties:
+                kubectlLambdaConfiguration:
+                  enum:
+                    - create_new
+
+    - title: Provide Repository Information
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-environment-providers
+  steps:
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+
+    - id: resolvePlatformVariables
+      name: Resolve Platform Variables
+      action: opa:get-platform-parameters
+      input:
+        paramKeys:
+          - '/opa/platform-role'
+          - '/opa/pipeline-role'
+
+    - id: fetchBase
+      name: Fetch Code Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name | lower }}
+          title: ${{ parameters.name }}
+          description: ${{ parameters.env_description }}
+          owner: ${{ parameters.owner }}
+          envType: eks
+          awsRegion: ${{ parameters.awsRegion }}
+          awsAccount: ${{ parameters.awsAccountID }}
+          environmentRole: ${{ parameters.environmentRole }}
+          platformRole: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
+          pipelineRole: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          prefix: ${{ parameters.prefix }}
+          existingClusterName: ${{parameters.existingClusterName }}
+          clusterAdminRole: ${{ parameters.clusterAdminRole }}
+          createK8sOpaResources: ${{ parameters.createK8sOpaResources }}
+          kubectlLambdaArn: ${{ parameters.kubectlLambdaArn }}
+          kubectlOnEventLambdaArn: ${{ parameters.kubectlOnEventLambdaArn }}
+          kubectlLambdaExecutionRoleArn: ${{ parameters.kubectlLambdaExecutionRoleArn }}
+
+    - id: fetchBaseIAC
+      name: Fetch IAC Base
+      action: fetch:plain
+      input:
+        targetPath: ./.iac/opa-eks-environment
+        url: "https://{{gitlab_hostname}}/opa-admin/backstage-reference/-/tree/main/environments/opa-eks-environment"
+    - id: fetchIacCommonConstructs
+      name: Fetch IaC Common Constructs
+      action: fetch:plain
+      input:
+        targetPath: ./.iac/opa-common-constructs
+        url: "https://{{gitlab_hostname}}/opa-admin/backstage-reference/-/tree/main/environments/opa-common-constructs"
+    - id: createYarnPackageFile
+      name: Configure Yarn Package Manager
+      action: roadiehq:utils:fs:write
+      input:
+        path: ./.iac/package.json
+        content: |
+          {
+            "private": true,
+            "name": "aws-application-development",
+            "workspaces": [
+              "opa-eks-environment",
+              "opa-common-constructs"
+            ]
+          }
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

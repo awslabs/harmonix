@@ -8,8 +8,8 @@ import { Entity } from '@backstage/catalog-model';
 import { ProviderType } from '../../helpers/constants';
 
 interface keyValue {
-    key: string;
-    value: string;
+  key: string;
+  value: string;
 }
 
 /** @public */
@@ -35,64 +35,88 @@ const ProviderInfo = (props: ProviderInfoProps) => {
     },
   ];
 
-    let items:keyValue[] = []
-    items.push({
-        key:"Prefix",
-        value: metadata['prefix']?.toString() || ""
-        });
-    items.push({
-        key:"Name",
-        value: metadata.name.toString() || ""
-    });
+  let items: keyValue[] = []
+  items.push({
+    key: "Prefix",
+    value: metadata['prefix']?.toString() || ""
+  });
+  items.push({
+    key: "Name",
+    value: metadata.name.toString() || ""
+  });
 
-    items.push({
-        key:"AWS Account",
-        value: metadata['aws-account']?.toString() || ""
-    });
+  items.push({
+    key: "AWS Account",
+    value: metadata['awsAccount']?.toString() || ""
+  });
 
+  items.push({
+    key: "AWS Region",
+    value: metadata['awsRegion']?.toString() || ""
+  });
+  items.push({
+    key: "Runtime",
+    value: metadata['envType']?.toString() || ""
+  });
+  items.push({
+    key: "Audit Table",
+    value: metadata['auditTable']?.toString() || ""
+  });
+  items.push({
+    key: "VPC",
+    value: metadata['vpc']?.toString() || ""
+  });
+  const envType = metadata['envType']?.toString() || "";
+  if (envType === ProviderType.ECS || envType === ProviderType.EKS) {
     items.push({
-        key:"AWS Region",
-        value: metadata['aws-region']?.toString() || ""
-        });
+      key: "Cluster Name",
+      value: metadata['clusterName']?.toString() || ""
+    });
+  }
+  if (envType === ProviderType.EKS) {
     items.push({
-        key:"Runtime",
-        value: metadata['env-type']?.toString() || ""
-        });
+      key: "Node Type",
+      value: metadata['nodeType']?.toString() || ""
+    });
+  }
+  items.push({
+    key: "Operation Role",
+    value: metadata['operationRole']?.toString() || ""
+  });
+  items.push({
+    key: "Provisioning Role",
+    value: metadata['provisioningRole']?.toString() || ""
+  });
+  if (envType === ProviderType.EKS) {
     items.push({
-        key:"Audit Table",
-        value: metadata['audit-table']?.toString() || ""
-        });
+      key: "Cluster Admin Role ARN",
+      value: metadata['clusterAdminRole']?.toString() || ""
+    });
     items.push({
-        key:"VPC",
-        value: metadata['vpc']?.toString() || ""
-        });
-    const envType = metadata['env-type']?.toString() || "";
-    if (envType === ProviderType.ECS || envType === ProviderType.EKS) {
-      items.push({
-        key:"Cluster Name",
-        value: metadata['cluster-name']?.toString() || ""
-        });
-    }
+      key: "API Endpoint Access",
+      value: metadata['apiAccess']?.toString() || ""
+    });
     items.push({
-        key:"Operation Role",
-        value: metadata['operation-role']?.toString() || ""
-        });    
+      key: "Kubectl / Helm Lambda ARN",
+      value: metadata['kubectlLambdaArn']?.toString() || ""
+    });
     items.push({
-        key:"Provisioning Role",
-        value: metadata['provisioning-role']?.toString() || ""
-        });    
-        
+      key: "Kubectl / Helm Lambda Role ARN",
+      value: metadata['kubectlLambdaAssumeRoleArn']?.toString() || ""
+    });
+  }
+
   return (
-    <InfoCard title="Provider Info">  
-       <Table
+    <InfoCard title="Provider Info">
+      <Table
         options={{
           paging: false,
           padding: 'dense',
           search: false,
           showTitle: false,
           header: false,
-          filtering:false,
-          toolbar:false
+          filtering: false,
+          toolbar: false
         }}
         data={items}
         columns={columns}
@@ -102,6 +126,6 @@ const ProviderInfo = (props: ProviderInfoProps) => {
 };
 
 export const ProviderInfoCard = () => {
-    const { entity } = useEntity();
-    return <ProviderInfo entity={entity} />;
+  const { entity } = useEntity();
+  return <ProviderInfo entity={entity} />;
 };

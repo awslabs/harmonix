@@ -17,6 +17,8 @@ import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
 import { AWSProviderParams, AWSServiceResources, BackendParams, BindResourceParams, AWSEnvironmentProviderRecord } from '@aws/plugin-aws-apps-common-for-backstage';
 import { createApiRef } from '@backstage/core-plugin-api';
 import { ContainerDetailsType } from '../types';
+import { InvokeCommandOutput } from "@aws-sdk/client-lambda";
+import { PlatformSCMParams } from "@aws/plugin-aws-apps-common-for-backstage/src/types/PlatformTypes";
 
 export const opaApiRef = createApiRef<OPAApi>({
   id: 'plugin.opa.app',
@@ -317,16 +319,51 @@ export interface OPAApi {
     providersData: AWSProviderParams[];
   }): Promise<any>;
 
-  scaleEKSDeployment({
-    deploymentName,
-    namespace,
-    replicaCount,
-    backendParamsOverrides,
+  invokeLambda({
+    functionName,
+    actionDescription,
+    body,
+    backendParamsOverrides
   }: {
-    deploymentName: string;
-    namespace: string,
-    replicaCount: number
+    functionName: string;
+    actionDescription: string;
+    body: string;
+    backendParamsOverrides?: BackendParams;
+  }): Promise<InvokeCommandOutput>;
+
+  getEKSAppManifests({
+    envName,
+    gitAdminSecret,
+    platformSCMConfig,
+    backendParamsOverrides
+  }: {
+    envName: string;
+    gitAdminSecret: string;
+    platformSCMConfig: PlatformSCMParams;
+    backendParamsOverrides?: BackendParams;
+  }): Promise<any>
+
+  updateEKSApp({
+    actionDescription,
+    envName,
+    cluster,
+    updateKey,
+    updateValue,
+    kubectlLambda,
+    lambdaRoleArn,
+    gitAdminSecret,
+    platformSCMConfig,
+    backendParamsOverrides
+  }: {
+    actionDescription: string;
+    envName: string;
+    cluster: string;
+    updateKey: string;
+    updateValue: string | number;
+    kubectlLambda: string;
+    lambdaRoleArn: string;
+    gitAdminSecret: string;
+    platformSCMConfig: PlatformSCMParams;
     backendParamsOverrides?: BackendParams;
   }): Promise<any>;
-
 }

@@ -2,6 +2,7 @@ apiVersion: backstage.io/v1alpha1
 kind: Resource
 metadata:
   name: ${{ values.component_id | dump }}
+  title: ${{ values.title | dump }}
   {%- if values.description %}
   description: ${{values.description | dump}}
   {%- endif %}
@@ -11,13 +12,14 @@ metadata:
     - aws-resource
     - database
   annotations:
-  iac-type: cdk
-  resource-type: "aws-rds"
-  db-name: ${{ values.db_name | dump }}
-  db-object-name: ${{ values.db_object_name | dump }}
-  aws-arn: ""
+  iacType: cdk
+  resourceType: "aws-rds"
+  dbName: ${{ values.dbName | dump }}
+  dbObjectName: ${{ values.dbObjectName | dump }}
+  awsArn: ""
 spec:
   type: aws-resource
+  subType: "arn:aws:rds"
   owner: ${{ values.owner | dump }}
   lifecycle: experimental
   dependsOn: []

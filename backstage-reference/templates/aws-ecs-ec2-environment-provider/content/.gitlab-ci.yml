@@ -1,0 +1,15 @@
+image: node:18
+variables:
+  AWS_ACCOUNT: "${{ values.awsAccount }}"
+  AWS_DEFAULT_REGION: "${{ values.awsRegion }}"
+  ROLE_ARN: "${{values.environmentRole}}"
+  OPA_PLATFORM_REGION: "${{ values.platformRegion }}"
+  
+stages:
+  - build
+  
+include:
+  - project: 'opa-admin/backstage-reference'
+    ref: main 
+    file:
+      - 'common/cicd/.gitlab-ci-aws-provider-ecs-ec2.yml'

@@ -15,14 +15,14 @@ const carouselContent = (
   <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='Coming soon'  >
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>AWS EKS Provider</h4>
-      <p>Adding support for AWS EKS providers to provision Kubernetes clusters and applications through the OPA on AWS platform</p>
+      <h4>Gen AI Provider</h4>
+      <p>Experiment with Gen AI applications for data scientists!</p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>AWS ECS - EC2 based Provider</h4>
-      <p> Adding support for AWS ECS - EC2-based clusters. This allows you to specify the capacity and the instance type of your ECS cluster nodes to best support various use cases including: ML workloads, Data analytics, and high compute/memory clusters</p>
+      <h4>AWS Control Tower Integration</h4>
+      <p>Allow OPA on AWS in your organization to participate in account provisioning and customization.</p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
@@ -30,14 +30,6 @@ const carouselContent = (
       <h4>Environment Binding</h4>
       <p>
         Adding support to allow binding and connecting environment networks (VPCs) using AWS Transit Gateway for inter-application connectivity
-      </p>
-    </Carousel.Caption>
-  </Carousel.Item>
-  <Carousel.Item>
-    <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>Use Existing VPC</h4>
-      <p>
-        Adding support for creating environment providers while re-using existing VPCs and subnets
       </p>
     </Carousel.Caption>
   </Carousel.Item>

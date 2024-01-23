@@ -104,8 +104,7 @@ export function isAWSEKSAppDeploymentEnvironment(variable: any): variable is AWS
     "clusterName" in variable &&
     "app" in variable &&
     "ecrArn" in variable.app &&
-    "pod" in variable.app &&
-    "node" in variable.app &&
+    "namespace" in variable.app &&
     "resourceGroupArn" in variable.app &&
     "logGroupName" in variable.app
   );
@@ -114,11 +113,9 @@ export function isAWSEKSAppDeploymentEnvironment(variable: any): variable is AWS
 export type AWSEKSAppDeploymentEnvironment = AWSDeploymentEnvironment & {
   clusterName: string;
   app: AWSDeploymentEnvironmentComponent & {
+    appAdminRoleArn: string;
     ecrArn: string;
     namespace: string;
-    deploymentName: string;
-    pod?: string[];
-    node?: string;
     resourceGroupArn: string;
     logGroupName: string;
   }
@@ -181,6 +178,7 @@ export enum AWSComponentType {
 export type AWSComponent = {
   componentName: string;
   componentType: AWSComponentType;
+  componentSubType: string;
   gitRepo: string;
   gitHost: string;
   iacType: string;
@@ -201,3 +199,37 @@ export type AWSEnvironmentProviderRecord = {
   accountNumber: string;
   region: string;
 }
+
+export enum AppStateType {
+  RUNNING = "Running",
+  STOPPED = "Stopped",
+  UPDATING = "Updating",
+  PROVISIONING = "Provisioning"
+}
+
+export type AppState = {
+  appID?: string;
+  appState?: AppStateType
+  deploymentIdentifier?: string;
+  runningCount?: number;
+  desiredCount?: number;
+  pendingCount?: number;
+  lastStateTimestamp?: Date;
+  stateObject?: any;
+  additionalInfo?: keyValue[];
+}
+
+export interface keyValue {
+  id: string;
+  key: string;
+  value: string;
+}
+
+export interface keyValueDouble {
+  id: string;
+  key: string;
+  value: string;
+  key2: string;
+  value2: string;
+}
+

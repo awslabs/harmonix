@@ -32,7 +32,7 @@ export const columnFactories = Object.freeze({
 
     return {
       title: 'Name',
-      field: 'metadata.name',
+      field: 'resolved.entityRef',
       highlight: true,
       customSort({ entity: entity1 }, { entity: entity2 }) {
         // TODO: We could implement this more efficiently by comparing field by field.
@@ -46,7 +46,6 @@ export const columnFactories = Object.freeze({
         <EntityRefLink
           entityRef={entity}
           defaultKind={options?.defaultKind || 'Component'}
-          title={entity.metadata?.name}
         />
       ),
       
@@ -69,6 +68,9 @@ export const columnFactories = Object.freeze({
     return {
       title: 'Owner',
       field: 'resolved.ownedByRelationsTitle',
+      cellStyle: {
+        minWidth:'130px'
+      },
       render: ({ resolved }) => (
         <EntityRefLinks
           entityRefs={resolved.ownedByRelations}
@@ -132,14 +134,15 @@ export const columnFactories = Object.freeze({
   createProviderAccountColumn(): TableColumn<CatalogTableRow> {
     return {
       title: 'AWS Account',
-      field: 'entity.metadata["aws-account"]',
+      field: 'entity.metadata["awsAccount"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
+        minWidth:'150px'
       },
       render: ({ entity }) => (
         <>
           {
-            entity.metadata["aws-account"]?.toString() || ""
+            entity.metadata["awsAccount"]?.toString() || ""
           }
         </>
       ),
@@ -149,14 +152,14 @@ export const columnFactories = Object.freeze({
   createProviderRegionColumn(): TableColumn<CatalogTableRow> {
     return {
       title: 'AWS Region',
-      field: 'entity.metadata["aws-region"]',
+      field: 'entity.metadata["awsRegion"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
       render: ({ entity }) => (
         <>
           {
-            entity.metadata["aws-region"]?.toString() || ""
+            entity.metadata["awsRegion"]?.toString() || ""
           }
         </>
       ),
@@ -183,7 +186,7 @@ export const columnFactories = Object.freeze({
   createAWSResourceTypeColumn(): TableColumn<CatalogTableRow> {
     return {
       title: 'Resource Type',
-      field: 'entity.metadata["resource-type"]',
+      field: 'entity.metadata["resourceType"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
         minWidth:'30px'
@@ -191,7 +194,7 @@ export const columnFactories = Object.freeze({
       render: ({ entity }) => (
         <>
           {
-            entity.metadata["resource-type"]?.toString() || ""
+            entity.metadata["resourceType"]?.toString() || ""
           }
         </>
       ),
@@ -202,14 +205,14 @@ export const columnFactories = Object.freeze({
   createIACColumn(): TableColumn<CatalogTableRow> {
     return {
       title: 'IAC',
-      field: 'entity.metadata["iac-type"]',
+      field: 'entity.metadata["iacType"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
       render: ({ entity }) => (
         <>
           {
-            entity.metadata["iac-type"]?.toString() || ""
+            entity.metadata["iacType"]?.toString() || ""
           }
         </>
       ),
@@ -219,14 +222,14 @@ export const columnFactories = Object.freeze({
   createEnvironmentTypeColumn(): TableColumn<CatalogTableRow> {
     return {
       title: 'Type',
-      field: 'entity.metadata["environment-type"]',
+      field: 'entity.metadata["environmentType"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
       render: ({ entity }) => (
         <>
           {
-            entity.metadata["environment-type"]?.toString() || ""
+            entity.metadata["environmentType"]?.toString() || ""
           }
         </>
       ),
@@ -304,14 +307,14 @@ export const columnFactories = Object.freeze({
   createEnvironmentAccountTypeColumn(): TableColumn<CatalogTableRow> {
     return {
       title: 'Account Type',
-      field: 'entity.metadata["env-type-account"]',
+      field: 'entity.metadata["envTypeAccount"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
       render: ({ entity }) => (
         <>
           {
-            entity.metadata["env-type-account"]?.toString() || ""
+            entity.metadata["envTypeAccount"]?.toString() || ""
           }
         </>
       ),
@@ -321,14 +324,14 @@ export const columnFactories = Object.freeze({
   createEnvironmentRegionTypeColumn(): TableColumn<CatalogTableRow> {
     return {
       title: 'Region Type',
-      field: 'entity.metadata["env-type-region"]',
+      field: 'entity.metadata["envTypeRegion"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
       render: ({ entity }) => (
         <>
           {
-            entity.metadata["env-type-region"]?.toString() || ""
+            entity.metadata["envTypeRegion"]?.toString() || ""
           }
         </>
       ),
@@ -338,14 +341,32 @@ export const columnFactories = Object.freeze({
   createProviderTypeColumn(): TableColumn<CatalogTableRow> {
     return {
       title: 'Provider Type',
-      field: 'entity.metadata["env-type"]',
+      field: 'entity.metadata["envType"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
       render: ({ entity }) => (
         <>
           {
-            entity.metadata["env-type"]?.toString() || ""
+            entity.metadata["envType"]?.toString() || ""
+          }
+        </>
+      ),
+      width: 'auto',
+    };
+  },
+  createComponentSubTypeColumn(): TableColumn<CatalogTableRow> {
+    return {
+      title: 'Sub Type',
+      field: 'entity.spec.subType',
+      cellStyle: {
+        padding: '0px 16px 0px 20px',
+        minWidth:'150px'
+      },
+      render: ({ entity }) => (
+        <>
+          {
+            entity.spec?.subType?.toString() || ""
           }
         </>
       ),

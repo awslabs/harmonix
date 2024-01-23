@@ -14,8 +14,6 @@ import { Construct } from "constructs";
 import * as fs from 'fs'
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
 
-
-
 interface PermissionList {
   [key: string]: string[] // adjusting require this in order to some json data type
 }
@@ -64,6 +62,12 @@ export class EcsResourcesStack extends Stack {
     if (!clusterArn) {
       throw new Error("Required environment variable: clusterArn was not provided.");
     }
+    if (!envName) {
+      throw new Error("Required environment variable: envName was not provided.");
+    }
+    if (!envProviderName) {
+      throw new Error("Required environment variable: envProviderName was not provided.");
+    }
 
     // Tag all resources so that they can be grouped together in a Resource Group
     // the prefix "aws-apps:" is a convention adopted for this implementation
@@ -72,7 +76,6 @@ export class EcsResourcesStack extends Stack {
 
     // Search for the particular env/provider permissions to apply
     const readPermissionsPath = `./permissions/${envName}/${envProviderName}/`
-
 
     // Add any tags passed as part of AWS_RESOURCE_TAGS input parameters
     const resourceTagsEnvVar = process.env.AWS_RESOURCE_TAGS;
@@ -99,11 +102,12 @@ export class EcsResourcesStack extends Stack {
       },
     });
 
-    // Create a key for encrypting the repository
+    // Create a key for encrypting the ECR repository
     const kmsKey = new kms.Key(this, "appKmsKey", {
       // alias: `${parameters.appShortName.valueAsString}-repo-key`,
       removalPolicy: RemovalPolicy.DESTROY,
       enableKeyRotation: true,
+      description: "Key used to encrypt ECS app repository"
     });
 
     // TODO: ECR repositories cannot be automatically deleted when destroying the CDK stack.
@@ -111,7 +115,7 @@ export class EcsResourcesStack extends Stack {
     //       performed via SDK as part of any teardown/destroy actions
     // Create an ECR repository for the application container images
     const ecrRepository = new ecr.Repository(this, "ecr-repository", {
-      repositoryName: `${appShortName}-${envProviderName}`.toLowerCase(),
+      repositoryName: `${appShortName}-${envName}-${envProviderName}`.toLowerCase(),
       imageScanOnPush: true,
       encryption: ecr.RepositoryEncryption.KMS,
       encryptionKey: kmsKey,
@@ -128,11 +132,11 @@ export class EcsResourcesStack extends Stack {
       securityGroups: [], // empty array required.  See https://github.com/aws/aws-cdk/issues/11146
     });
 
-    // Get application plaintext env vars from the APP_ENV_PLAINTEXT env var
+    // Get application plaintext env vars from the appEnvPlaintext env var
     let plaintextEnvVars: Record<string, string | number | boolean | Array<any>> = {};
     let environment: Record<string, string> = {};
-    {%- if values.app_env_plaintext %}
-    plaintextEnvVars = ${{values.app_env_plaintext | dump}}
+    {%- if values.appEnvPlaintext %}
+    plaintextEnvVars = ${{values.appEnvPlaintext | dump}}
     {%- endif %}
     // convert all values to strings.  ECS container definition env vars require Record<string, string>
     Object.keys(plaintextEnvVars).forEach(key => {
@@ -186,6 +190,11 @@ export class EcsResourcesStack extends Stack {
     const cfnEcsService = loadBalancedEcsService.service.node.defaultChild as ecs.CfnService;
     cfnEcsService.desiredCount = 0;
 
+    // Add the health check
+    loadBalancedEcsService.targetGroup.configureHealthCheck({
+      path: "${{values.app_health_endpoint or '/'}}",
+    });
+    
     // ensure that the execution role can decrypt the key when pulling from the repo.
     kmsKey.grantDecrypt(loadBalancedEcsService.service.taskDefinition.executionRole!);
     kmsKey.grantDecrypt(loadBalancedEcsService.service.taskDefinition.taskRole!);

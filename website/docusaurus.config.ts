@@ -64,7 +64,7 @@ const config: Config = {
       // Replace with your project's social card
     image: 'img/opa-logo.png',
     navbar: {
-      // title: 'OPA on AWS',
+      // title: 'OPA on AWS', 
       hideOnScroll: false,
       logo: {
         alt: 'OPA on AWS Logo',

@@ -1,4 +1,36 @@
-### 0.2.0 (2023-09-26))
+### 0.3.0 (2024-01-23)
+
+##### New Features
+* Support for Kubernetes: 
+  * Add AWS EKS provider
+  * Import existing AWS EKS clusters
+  * Add AWS EKS Application for K8s Kustomize pattern
+  * Add AWS EKS Application for K8s Helm pattern
+  * Add CI/CD patterns for K8s applications
+  * New UI Page for K8s with control panel to operate the application
+* S3 Bucket as a shared resource
+* Reuse existing VPC when creating providers(Import existing VPC)
+* AWS ECS provider with EC2 clusters for tailored workloads
+* Updated Backstage platform to v1.21
+* Support filter relevant environments for new apps
+
+##### New Documentation
+  * Security documentation
+  * Test cases
+  * Add a basic provider template - example for starting your own provider templates.
+  
+##### Refactor
+  * Remove hyphenated names from entities
+  * Adding support for component subType for easy identification of internal AWS component classification
+
+##### Bug Fixes
+  * Delete provider - case name issue
+  * Delete app - case name issue
+  * Delete resource - remove secret deletion + adjusted stack name mapping
+  * Remove provider from an environment after creation
+
+
+### 0.2.0 (2023-09-26)
 
 ##### New Features
 

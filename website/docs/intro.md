@@ -23,8 +23,8 @@ The [open source solution](https://github.com/awslabs/app-development-for-backst
 4. Predefined CI/CD centralized pipelines for more than 12 common patterns.
 5. Documentation, support videos, and a workshop.
 
-Refer to the [features page](/docs/features) for a complete list of capabilities.
+Refer to the [features page](features.md) for a complete list of capabilities.
 
 ## Getting Started
 
-Get started by [**creating a new platform**](/docs/category/getting-started)
+Get started by [**creating a new platform**](getting-started/deploy-the-platform.md)

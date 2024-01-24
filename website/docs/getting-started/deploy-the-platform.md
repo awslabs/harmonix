@@ -112,4 +112,4 @@ Prior to installing the OPA solution platform, you will need to ensure that the 
 > Yes. We provide a Node.js Terraform application software template for demonstration.  You may also write your own provider with Terraform.
 <br/>
 
-For more Q & A please see our [FAQ Page](/docs/faq)
+For more Q & A please see our [FAQ Page](../faq.md)

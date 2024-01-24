@@ -113,7 +113,7 @@ toc_max_heading_level: 4
 
 #### Does OPA on AWS have a CLI?
 > 
-> Not yet - Please see [features](docs/features)
+> Not yet - Please see [features](features.md)
 <br/>
 
 ---

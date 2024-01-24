@@ -29,7 +29,7 @@ jobs:
       - name: Install dependencies
         uses: borales/actions-yarn@v4
         with:
-          cmd: --cwd ./website install --frozen-lockfile
+          cmd: --cwd ./website install
       - name: Build website
         uses: borales/actions-yarn@v4
         with:

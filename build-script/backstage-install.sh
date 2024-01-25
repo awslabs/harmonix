@@ -82,6 +82,13 @@ yarn --cwd packages/app add \
     "@backstage/plugin-home" \
     "@aws/plugin-aws-apps-demo-for-backstage@${AWS_APPS_DEMO_VERSION}"
 
+# ### PATCH BEGIN
+# TODO: remove this patch when the issue is resolved in a future Backstage release
+# provide patch to pin the version of swagger-ui-react.  See https://github.com/backstage/backstage/issues/22142
+jq '.resolutions += {"swagger-ui-react": "5.10.5"} ' package.json > package.json.tmp
+mv package.json.tmp package.json
+# ### PATCH END
+
 cd -
 # Copy/overwrite modified backstage files.
 # Note that these modifications were based on modifying Backstage 1.17 files.  

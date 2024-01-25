@@ -1,7 +1,7 @@
 {
   "name": "@aws/plugin-aws-apps-demo-for-backstage",
   "description": "App Development for Backstage.io on AWS - home page and theme demo",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",

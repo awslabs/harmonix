@@ -47,7 +47,7 @@ Prior to installing the OPA solution platform, you will need to ensure that the 
   Alternatively, you can query for the AMI using the AWS CLI (substitute the appropriate region value for the `--region` option):
       ```sh
 
-      aws ec2 describe-images --owners "aws-marketplace" --filters "Name=name,Values=*GitLab CE 16.8.0*" --query 'Images[].[ImageId]' --region us-west-2 --output text
+      aws ec2 describe-images --owners "aws-marketplace" --filters "Name=name,Values=*GitLab CE 16.8.1*" --query 'Images[].[ImageId]' --region us-west-2 --output text
       ```
 
 * **GitLab Runner image** - The solution will set up an EC2 instance as a GitLab Runner to execute GitLab CI/CD pipelines.  The Amazon-provided "Jammy" image will be used for the runner image.  Save the EC2 AMI for the appropriate region for this AMI.  The following AMI command will return the appropriate image id.  Replace the value for "--region" to reflect your target region:

@@ -109,6 +109,8 @@
     - echo -e "\e[0Ksection_start:`date +%s`:catalog[collapsed=true]\r\e[0KGetting the latest catalog-info.yaml contents"
     # We need the latest catalog-info.yaml contents in case this pipeline modified this file in an earlier stage
     - git checkout $CI_COMMIT_BRANCH
+    # Make sure that unmerged commits from previous failed executions of the pipeline are cleared out
+    - git reset --hard origin/$CI_COMMIT_BRANCH
     - git pull
     - export LATEST_CATALOG_INFO="$(cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml)"
     - git checkout $CI_COMMIT_SHA # put our files back to where they were when the pipeline started

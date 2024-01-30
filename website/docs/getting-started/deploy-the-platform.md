@@ -47,20 +47,20 @@ Prior to installing the OPA solution platform, you will need to ensure that the 
   Alternatively, you can query for the AMI using the AWS CLI (substitute the appropriate region value for the `--region` option):
       ```sh
 
-      aws ec2 describe-images --owners "aws-marketplace" --filters "Name=name,Values=*GitLab CE 16.8.1*" --query 'Images[].[ImageId]' --region us-west-2 --output text
+      aws ec2 describe-images --owners "aws-marketplace" --filters "Name=name,Values=*GitLab CE 16.8.1*" --query 'Images[].[ImageId]' --region <AWS_REGION> --output text
       ```
 
 * **GitLab Runner image** - The solution will set up an EC2 instance as a GitLab Runner to execute GitLab CI/CD pipelines.  The Amazon-provided "Jammy" image will be used for the runner image.  Save the EC2 AMI for the appropriate region for this AMI.  The following AMI command will return the appropriate image id.  Replace the value for "--region" to reflect your target region:
    ```sh
 
-   aws ec2 describe-images --owners "amazon" --filters "Name=name,Values=*ubuntu-jammy-22.04-amd64-server-20230208*" --query 'Images[].[ImageId]' --region us-west-2 --output text
+   aws ec2 describe-images --owners "amazon" --filters "Name=name,Values=*ubuntu-jammy-22.04-amd64-server-20230208*" --query 'Images[].[ImageId]' --region <AWS_REGION> --output text
    ```
 
 * **Route 53 Hosted Zone** - The solution will ensure secure communcations and set up a certificate for your defined domain.  Ensure that a public hosted zone is set up in your account.  See the AWS documentation for [creating a public hosted zone](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingHostedZone.html)
 
 * **Okta authentication** - The solution uses Okta and RoadieHQ Backstage plugins for authentication of users and groups.  You will need a client id, client secret, and API key for configuration of the solution.  If you wish to use Okta for authentication and do not have an existing account, you can [sign up a free *Workforce Identity Cloud* developer account](https://developer.okta.com/signup/).  
   * Once the account is set up, you will need to [configure an Okta API key](https://developer.okta.com/docs/guides/create-an-api-token/main/) for the [RoadieHQ backend catalog plugin](https://www.npmjs.com/package/@roadiehq/catalog-backend-module-okta)
-  * A client id and secret are required to set up a Backstage Okta authentication provider.  See the [Backstage Okta auth documentation](https://backstage.io/docs/auth/okta/provider) for more details.  
+  * A client id, secret and audience  are required to set up a Backstage Okta authentication provider.  See the [Backstage Okta auth documentation](https://backstage.io/docs/auth/okta/provider) for more details.  
   * Other identity providers are supported and could be substituted using different plugins.  Configuring alternative authentication is not covered in this documentation.  Refer to the [Backstage Authentication documentation](https://backstage.io/docs/auth/) for details to install and configure alternative providers.
 
 ## Installation
@@ -75,7 +75,7 @@ Prior to installing the OPA solution platform, you will need to ensure that the 
    1. Copy the `config/sample.env` file to `config/.env`
    2. Edit the `config/.env` file and provide values for all of the environment variables.  The file is commented to explain the purpose of the variables and requires some of the information from the [Solution Platform Prerequisites](#solution-platform-prerequisites) section above.  
    :::info
-   The `SECRET_GITLAB_CONFIG_PROP_apiToken` variable **does not** need to be provided.  This will be automatically configured during installation after the platform is deployed.
+   The `SECRET_GITLAB_CONFIG_PROP_apiToken`, `OKTA_IDP` and `OKTA_AUTH_SERVER_ID` variables **does not** need to be provided.  This will be automatically configured during installation after the platform is deployed.
    :::
 
 3. Perform the installation
@@ -88,9 +88,11 @@ Prior to installing the OPA solution platform, you will need to ensure that the 
       * Push a sample repository to GitLab
       * Build and deploy the Backstage image to AWS
 
-   After the installation completes, the application will start up.  Open a browser and navigate to the 'OPA on AWS' endpoint using the Route 53 hosted zone name that you configured (e.g. `https://${R53_HOSTED_ZONE_NAME}`).  
+   - After the installation completes, the application will start up.  Open a browser and navigate to the 'OPA on AWS' endpoint using the Route 53 hosted zone name that you configured (e.g. `https://${R53_HOSTED_ZONE_NAME}`). 
+   - If any errors occur during installation, please review the `install_{datestamp}.log` file for details.
+   - a new secret manager's secret named `opa-admin-gitlab-secrets` contains the Gitlab admin's credentials for
 
-   If any errors occur during installation, please review the `install_{datestamp}.log` file for details.  
+  
    
 
 ## Installation FAQs

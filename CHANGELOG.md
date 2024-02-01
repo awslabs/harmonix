@@ -1,6 +1,21 @@
-### 0.3.0 (2024-01-23)
+# Changelog
 
-##### New Features
+## 0.3.2 - 2024-01-29
+
+### Fixed
+
+* fixes reference repository pipelines to correct build issues
+* fixes installation doc image referencing GitLab 16.8.1 in the AWS Marketplace
+## 0.3.1 - 2024-01-24
+
+### Fixed
+
+* Backstage plugin version identifiers required for 0.3.0 release
+* introduces a workaround for GitLab 16.8 error when creating new user
+* introduces a workaround for an image build error due to upgraded "swagger-ui-react" module
+## 0.3.0 - 2024-01-23
+
+### New Features
 * Support for Kubernetes: 
   * Add AWS EKS provider
   * Import existing AWS EKS clusters
@@ -14,25 +29,25 @@
 * Updated Backstage platform to v1.21
 * Support filter relevant environments for new apps
 
-##### New Documentation
+### New Documentation
   * Security documentation
   * Test cases
   * Add a basic provider template - example for starting your own provider templates.
   
-##### Refactor
+### Refactor
   * Remove hyphenated names from entities
   * Adding support for component subType for easy identification of internal AWS component classification
 
-##### Bug Fixes
+### Bug Fixes
   * Delete provider - case name issue
   * Delete app - case name issue
   * Delete resource - remove secret deletion + adjusted stack name mapping
   * Remove provider from an environment after creation
 
 
-### 0.2.0 (2023-09-26)
+## 0.2.0 - 2023-09-26
 
-##### New Features
+### New Features
 
 *  Environment and Environment provider entity types
 *  Multi-account and multi-region support
@@ -53,8 +68,8 @@
 *  Permissions framework adoption
 *  Installation improvements
 
-#### 0.1.0 (2023-04-10)
+## 0.1.0 - 2023-04-10
 
-##### New Features
+### New Features
 
-* initial release
+_initial release_

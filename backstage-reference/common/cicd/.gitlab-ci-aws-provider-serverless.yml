@@ -34,6 +34,7 @@ iac-deployment-env-provider:
     - set -a && source stack-parameters.properties && set +a
     - cd .iac/opa-serverless-environment
     - yarn install
+    - cdk bootstrap
     - cdk deploy --outputs-file cdk-output.json --require-approval never
     # once CDK finished - extract output params
     - jq '.[] ' cdk-output.json | jq -r 'to_entries[]|"\(.key)=\"\(.value)\""' > cdk-output.properties

@@ -15,7 +15,7 @@ Backstage is also integrated with a version control system. It is configured to 
 The default OPA version control system is GitLab. The platform creation scripts will set up a Community Edition of GitLab that runs on AWS, so that it can be used for demonstration purposes. It is possible through code modifications to switch to a different version control vendor that can be hosted on or outside of the AWS cloud. 
 
 <p align="center">
-![Website_Architecture_OPA_Platform.jpg](/img/diagrams/Website_Architecture_OPA_Platform.jpg)
+![Website_Architecture_OPA_Platform.jpg](/img/diagrams/opa-architecture.png)
 </p>
 
 ## Application Environments

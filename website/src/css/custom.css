@@ -90,6 +90,19 @@
 {
   border:none;
 }
+
+.templates table tr {
+  border: none;
+}
+.templates table td
+{
+  border:none;
+}
+
+.templates p {
+font-size:12px;
+}
+
 .imageSubtitle {
   color: #0d317f;
   font-weight: bold;

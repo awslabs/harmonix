@@ -4,68 +4,164 @@ sidebar_position: 8
 
 # Features
 
-## Version 0.2
+## Templates
 
-### 1. Platform engineer scope
+### Providers
 
-| Feature |  Description |
-| :- | :- |
-| **Dynamic environment provider provisioning** |  Create unlimited number of providers on multiple accounts and regions |
-| **ECS environment provider**  | Create an ECS (Elastic container servicer) based provider |
-| **Serverless environment provider**  | Create a serverless based provider |
-| **Abstracted AWS environment**  | Create a environment of which applications and resources can be created |
-| **Application pipeline**  | Create a pipeline for each application to support IAC provisioning and code change stage |
-| **Environment Deployment pipeline**  | Create a pipeline to deploy the code base of an application to another environment |
-| **Resource Binding**  | Allow Binding resources to application to provide access and sharing capabilities for AWS resources |
-| **Deploy to additional environments**  | Allow the deployment of an application to additional environments |
-| **Environments selector**  | Toggle between the environments of which the application is deployed and present relevant information for the current selected environment |
-| **Segregated auditing**  | Audit actions from platform and pipeline to a segregated auditing table of the target environment |
-| **Environment level**  | Allow to define a number representing the level of the environment thus creates hierarchies that are used for deployments |
-| **Deployment requires approval**  | Configure how the pipelines should execute against an environment automatic / require approval |
-| **Delete app**  | Remove an application from an environment |
-| **Delete provider**  | Remove a provider |
-| **Centralized pipelines**  | Load pipelines dynamically from a centralized repository  |
-| **Component Pending page**  | Present a partial page while the component IAC pipeline is still processing  |
-| **Terraform/CDK pipelines**  | Support both terraform and CDK pipelines to provision resources  |
+<div class="templates">
+<table>
+<tr>
+    <td width="20%" align="center">
+        <img src="/img/features/ecs-ec2-provider.png"/>
+    </td>
+    <td width="20%" align="center">
+          <img src="/img/features/ecs-provider.png"/>
+    </td>
+    <td width="20%" align="center">
+          <img src="/img/features/eks-provider.png"/>
+    </td>
+    <td width="20%" align="center">
+         <img src="/img/features/serverless-provider.png"/>
+    </td>
+    <td width="20%" align="center">
+         <img src="/img/features/aws-environment.png"/>
+    </td>
+</tr>
+</table>
+</div>
+
+### AWS Shared Resources
+<div class="templates">
+<table>
+<tr>
+    <td width="20%" align="center">
+        <img src="/img/features/aws-rds.png"/>
+    </td>
+    <td width="20%" align="center">
+          <img src="/img/features/aws-s3.png"/>
+    </td>
+    <td align="center">
+    </td>
+     <td align="center">
+    </td>
+     <td align="center">
+    </td>
+</tr>
+</table>
+</div>
+
+### Apps
+<div class="templates">
+<table>
+<tr>
+    <td width="20%" align="center">
+        <img  src="/img/features/k8s-node-helm-rds.png"/>
+    </td>
+    <td width="20%" align="center">
+          <img src="/img/features/k8s-node-kustomize-rds.png"/>
+    </td>
+     <td width="20%" align="center">
+        <img  src="/img/features/node-micro.png"/>
+    </td>
+     <td width="20%" align="center">
+        <img  src="/img/features/node-tf.png"/>
+    </td>
+     <td width="20%" align="center">
+        <img src="/img/features/node-ecs-rds.png"/>
+    </td>
+</tr>
+<tr>
+    <td width="20%" align="center">
+        <img src="/img/features/ecs-python-flask.png"/>
+    </td>
+    <td width="20%" align="center">
+          <img src="/img/features/k8s-flask-kustomize.png"/>
+    </td>
+     <td width="20%"  align="center">
+        <img src="/img/features/serverless-rest.png"/>
+    </td>
+     <td width="20%" align="center">
+        <img src="/img/features/k8s-java.png"/>
+    </td>
+     <td width="20%" align="center">
+        <img src="/img/features/ecs-java.png"/>
+    </td>
+</tr>
+</table>
+</div>
 
 
-### 2. Application developer scope
-
-| Feature |  Description |
-| :- | :- |
-| **Clone repository while resources are provisioned**  | The ability to clone the repository immediately after it was created without waiting for the pipeline to provision the infrastructure |
-| **Start and stop ECS task**  | Start and stop the ECS task to load the latest container changes |
-| **Change ECS task environment variable**  | Change the ECS Task definition environment variables to inject new parameters to the app runtime |
-| **View related app cloud resources**  | View related application resources that are provisioned for this app |
-| **View application logs**  | View the CloudWatch logs for the application |
-| **Visualize application software catalog relationship**  | View the application relationship including environments, shared resources and owner|
-| **Automatic deployment for additional environment**  | Deploy the application to another environment with a click of a button|
-| **Delete app**  | Delete the application and it's related resources|
-| **Bind application to resource**  | Permit an application to use a shared resource such as RDS database, S3 bucket, EFS etc.|
-| **View application  CI/CD pipelines**  | View the application CI/CD pipelines|
-
-## Coming up
-
-| Feature | Scope  | Description | Timeline
-| :- | :- | :- | :- |
-| **EKS environment provider** | Platform Engineer | Create a Kubernetes based provider | Jan 2024 |
-| **Environment Binding** | Platform Engineer | Bind Environments to allow network communication across multiple VPC's through AWS Transit gateway | February 2024 |
 
 
-## Provided examples and templates
-| Feature | Description | Type |
-| :- | :- | :- |
-| AWS ECS Environment Provider | a provider IAC for ECS runtime | Provider |
-| AWS Serverless Environment Provider | a provider IAC for Serverless runtime | Provider |
-| AWS RDS Database | an RDS database template | Resource |
-| Node.js Terraform Web App | a node.js application provisioning by terraform | Application |
-| Node.js Express Web App With RDS | a node.js application with a baked in starter code to connect to RDS database | Application |
-| Node.js Express Web App | a node.js application | Application |
-| Python Flask starter application | a python flask web server application | Application |
-| Serverless REST API (TypeScript) | a lambda based serverless REST API application template for typescript | Application |
-| Java Spring Boot Web Service | a java springboot application | Application |
 
-## Backlog
+## Platform Engineer Features
 
-| Feature | Scope  | Description |
-| :- | :- | :- |
+### Add/Remove providers
+Allow the platform engineer to configure environments with multiple providers.
+<br/>
+**Use case**: a platform engineer design an environment where application should be running on two regions for resiliency purposes. Two providers with different regions can be associated to the same environment.
+<br/>
+**Use case**: a platform engineer design an environment where application needs to be access by local regional teams. Two providers with different regions can be associated to the same environment.
+
+:::info
+Once at least one provider is selected, you can add more providers of the same type: ie: ECS->ECS, EKS->EKS, Serverless->Serverless
+:::
+
+<br/>
+
+<img  src="/img/features/multi-providers.png"/>
+
+### Delete providers / environments
+Allow the platform engineer to delete a provider or environment and their associated resources.
+
+<div class="templates">
+<table>
+<tr>
+    <td width="50%" align="center">
+        <img  src="/img/features/delete-provider.png"/>
+    </td>
+    <td width="50%" align="center">
+          <img src="/img/features/delete-environment.png"/>
+    </td>
+</tr>
+</table>
+</div>
+
+### Segregated auditing
+Allow separation of audit logs for each environment. Audit logs are created only for the applications which run on the particular environment provider. 
+
+### Deployment requires approval
+Configure additional control for sensitive environment when automated deployment is not desired. If requires approval is set to the environment - all application pipelines deployed on this environment will require approval before proceeding.
+
+<img width="60%" src="/img/features/require-approval.png"/>
+
+## Application developer Features
+### Resource binding
+Allow the application developer to bind shared AWS resources to an application to it can access the shared resource.
+
+<img  src="/img/features/resource-binding.png"/>
+
+### Deploy application to additional environments
+Allow the application developer to deploy an application to additional environments
+
+<img width="60%" src="/img/features/deploy-env.png"/>
+
+### Toggle between the environments
+Allow the application developer to toggle between the environments of which an application is deployed and present relevant information for the current selected environment 
+
+<img width="60%" src="/img/features/toggle-env.png"/>
+
+### Delete an App
+Delete an application from one or many environments.
+
+<img width="60%" src="/img/features/delete-app.png"/>
+
+### App Development
+1. Clone repository: The ability to clone the repository immediately after it was created without waiting for the pipeline to provision the infrastructure
+2. Start & stop App: For containerize application - the ability to stop / start the application.
+3. Update & delete App: For Serverless application - deploy or remove the API
+4. Change application environment variables
+5. View related AWS app cloud resources: View related application resources that have been provisioned for this app
+6. View application logs: View the CloudWatch logs for the application
+7. Visualize application software catalog relationship: View the application relationships including environments, shared resources and owners
+8. View application  CI/CD pipelines: View the application CI/CD pipelines

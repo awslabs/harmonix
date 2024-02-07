@@ -44,7 +44,7 @@ iac-deployment-env-provider:
     - echo -e "\e[0Ksection_start:`date +%s`:existing_cluster[collapsed=true]\r\e[0KLookup Existing Cluster If Applicable"
     - |
       if [[ -z "$VPC_ID" && ! -z "$EXISTING_CLUSTER_NAME" ]]; then
-        export VPC_ID=$(aws eks describe-cluster --name $EXISTING_CLUSTER_NAME --region us-west-2 --query "cluster.resourcesVpcConfig.vpcId" --output text)
+        export VPC_ID=$(aws eks describe-cluster --name $EXISTING_CLUSTER_NAME --region $AWS_DEFAULT_REGION --query "cluster.resourcesVpcConfig.vpcId" --output text)
         echo "Imported EKS Cluster VPC_ID is $VPC_ID"
         echo "VPC_ID=$VPC_ID" >> stack-parameters.properties
         git add stack-parameters.properties

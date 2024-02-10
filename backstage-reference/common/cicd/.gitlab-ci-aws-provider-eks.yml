@@ -50,7 +50,7 @@ iac-deployment-env-provider:
         git add stack-parameters.properties
       fi
     - echo -e "\e[0Ksection_end:`date +%s`:existing_cluster\r\e[0K"
-
+    - cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION
     - cd .iac/opa-eks-environment
 
     - echo -e "\e[0Ksection_start:`date +%s`:yarn_install[collapsed=true]\r\e[0KYarn Install"
@@ -59,7 +59,6 @@ iac-deployment-env-provider:
 
     - echo -e "\e[0Ksection_start:`date +%s`:cdk_deploy[collapsed=true]\r\e[0KCDK Deploy"
     - echo "Deploying the cluster and saving outputs in a file"
-    - cdk bootstrap
     - cdk deploy --outputs-file cdk-output.json --require-approval never
     - echo -e "\e[0Ksection_end:`date +%s`:cdk_deploy\r\e[0K"
 

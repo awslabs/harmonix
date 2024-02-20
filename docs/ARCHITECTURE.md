@@ -19,7 +19,7 @@ One way to provide the OPA team with feedback on a tool or service you'd like to
 
 ### High-Level Architecture
 
-In the below diagram, the top row/box depicts an AWS account that is hosting Backstage itself on ECS with Fargate. Backstage makes use of a Postgres RDS database. There are also EC2 instances in this account that run GitLab. These EC2s are configured for reference implementation purposes and are not intended for production use, as is.
+In the below diagram, the top row/box depicts an AWS account that is hosting Backstage itself on ECS with Fargate. Backstage makes use of an Amazon Aurora PostgreSQL RDS database. There are also EC2 instances in this account that run GitLab. These EC2s are configured for reference implementation purposes and are not intended for production use, as is.
 
 The second row of the below diagram depicts runtime environments that have been set up to run workloads on various AWS accounts and regions. Each workload account has an IAM role configured for operations and provisioning. The Backstage back end and the CICD pipelines running on the top row account will assume the IAM roles in the workload accounts in order to interact with them.
 

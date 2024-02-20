@@ -28,6 +28,7 @@ iac-deployment-env-provider:
   script:
     # Export environment variables
     - set -a && source stack-parameters.properties && set +a
+    - cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION
     - cd .iac/opa-ecs-ec2-environment
 
     - echo -e "\e[0Ksection_start:`date +%s`:yarn_install[collapsed=true]\r\e[0KYarn Install"

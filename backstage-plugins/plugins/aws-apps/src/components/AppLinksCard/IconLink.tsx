@@ -35,7 +35,7 @@ export function IconLink(props: {
       </Box>
       <Box flexGrow="1">
         <Link to={href} target="_blank" rel="noopener">
-          {text || href}
+          {text ?? href}
         </Link>
       </Box>
     </Box>

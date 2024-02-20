@@ -61,7 +61,7 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
 
     const requester = identity?.identity.userEntityRef.split('/')[1] || '';
 
-    const owner = creds.owner || '';
+    const owner = creds.owner ?? '';
 
     return { apiClient, apiClientConfig: { apiClient, roleArn, awsAccount, awsRegion, requester, owner, prefix, providerName, appName } };
   }
@@ -553,10 +553,10 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
 
     const oldTaskDefinition = await apiClient.describeTaskDefinition(taskDefinition);
     const newCd = oldTaskDefinition.taskDefinition?.containerDefinitions?.map((td, index) => {
-      return Object.assign({}, td, { name: envVar[index].containerName, environment: envVar[index].env });
+      return { ...td, name: envVar[index].containerName, environment: envVar[index].env }
     });
 
-    const newTd = Object.assign({}, oldTaskDefinition.taskDefinition, { containerDefinitions: newCd });
+    const newTd = {...oldTaskDefinition.taskDefinition, containerDefinitions: newCd };
     const output = await apiClient.registerTaskDefinition(newTd);
     const auditResponse = await createRouterAuditRecord({
       actionType: 'Update TaskDefinition',

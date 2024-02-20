@@ -1,9 +1,7 @@
-import { CfnOutput, Stack, StackProps, Tags } from "aws-cdk-lib";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
+import { CfnOutput, RemovalPolicy, Stack, StackProps, Tags } from "aws-cdk-lib";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import * as rg from "aws-cdk-lib/aws-resourcegroups";
 import { Construct } from "constructs";
-import { RemovalPolicy } from 'aws-cdk-lib';
 
 const StackVarNames = {
   appShortName: "APP_SHORT_NAME",

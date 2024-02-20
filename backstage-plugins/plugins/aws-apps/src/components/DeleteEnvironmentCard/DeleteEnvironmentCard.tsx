@@ -1,19 +1,17 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Button, CardContent, Grid } from "@material-ui/core";
-import { InfoCard } from "@backstage/core-components";
-import React, { useState } from "react";
-import { useApi } from "@backstage/core-plugin-api";
-import { OPAApi, opaApiRef } from '../../api';
-import { Alert, AlertTitle, Typography } from "@mui/material";
 import { Entity } from "@backstage/catalog-model";
-import { useEntity } from "@backstage/plugin-catalog-react";
+import { InfoCard } from "@backstage/core-components";
+import { useApi } from "@backstage/core-plugin-api";
+import { CatalogApi, catalogApiRef, useEntity } from "@backstage/plugin-catalog-react";
+import { Button, CardContent, Grid } from "@material-ui/core";
+import { Alert, AlertTitle, Typography } from "@mui/material";
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import { CatalogApi } from '@backstage/plugin-catalog-react';
+import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
+import { OPAApi, opaApiRef } from '../../api';
 import { sleep } from "../../helpers/util";
 
 const DeleteEnvironmentPanel = ({

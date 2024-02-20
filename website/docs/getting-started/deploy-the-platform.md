@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # Installation
 
-Installing the Orchestrate Platforms and Applications (OPS) on AWS solution will provide you with the complete reference implementation including authentication/authorization, a Backstage platform instance, source code management, and CI/CD pipelines. By following this guide you will:
+Installing the Orchestrate Platforms and Applications (OPA) on AWS solution will provide you with the complete reference implementation including authentication/authorization, a Backstage platform instance, source code management, and CI/CD pipelines. By following this guide you will:
 
 - Deploy the AWS infrastructure required to run OPA on AWS
 - Deploy a GitLab source code management instance including provisioning of resources to run CI/CD pipelines
@@ -75,7 +75,7 @@ Prior to installing the OPA solution platform, you will need to ensure that the 
    1. Copy the `config/sample.env` file to `config/.env`
    2. Edit the `config/.env` file and provide values for all of the environment variables.  The file is commented to explain the purpose of the variables and requires some of the information from the [Solution Platform Prerequisites](#solution-platform-prerequisites) section above.  
    :::info
-   The `SECRET_GITLAB_CONFIG_PROP_apiToken`, `OKTA_IDP` and `OKTA_AUTH_SERVER_ID` variables **does not** need to be provided.  This will be automatically configured during installation after the platform is deployed.
+   The `SECRET_GITLAB_CONFIG_PROP_apiToken`, `OKTA_IDP` and `OKTA_AUTH_SERVER_ID` variables **do not** need to be provided.  This will be automatically configured during installation after the platform is deployed.
    :::
 
 3. Perform the installation

@@ -24,6 +24,8 @@ import {
   getExistingKubectlLambdaExecutionRoleArn,
   getExistingVpcId,
   getIsPrivateCluster,
+  getNodeType,
+  NODE_TYPE,
   getPipelineRoleArn,
   getPlatformRoleArn,
   getPrefix,
@@ -139,7 +141,7 @@ export class OPAEKSEnvStack extends cdk.Stack {
     );
 
     let podExecutionRole;
-    if (!getExistingClusterName()) {
+    if (getNodeType() === NODE_TYPE.FARGATE && !getExistingClusterName()) {
       // Create pod execution role
       // Only needed for Fargate
       podExecutionRole = new EKSPodExecutionRoleConstruct(

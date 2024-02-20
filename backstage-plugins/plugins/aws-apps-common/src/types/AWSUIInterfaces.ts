@@ -216,16 +216,16 @@ export type AppState = {
   pendingCount?: number;
   lastStateTimestamp?: Date;
   stateObject?: any;
-  additionalInfo?: keyValue[];
+  additionalInfo?: KeyValue[];
 }
 
-export interface keyValue {
+export interface KeyValue {
   id: string;
   key: string;
   value: string;
 }
 
-export interface keyValueDouble {
+export interface KeyValueDouble {
   id: string;
   key: string;
   value: string;

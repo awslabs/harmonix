@@ -69,9 +69,9 @@ export async function createAuditRecord({
       assumedRole: roleArn,
       targetAccount: awsAccount,
       targetRegion: awsRegion,
-      request: requestArgs || '',
+      request: requestArgs ?? '',
       status,
-      message: message || ''
+      message: message ?? ''
     });
 
     if (auditResponse.$metadata.httpStatusCode == 200) {

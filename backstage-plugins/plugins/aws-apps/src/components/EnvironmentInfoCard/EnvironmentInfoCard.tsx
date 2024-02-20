@@ -6,7 +6,7 @@ import React from 'react';
 import { InfoCard, Table, TableColumn } from '@backstage/core-components';
 import { Entity } from '@backstage/catalog-model';
 
-interface keyValue {
+interface KeyValue {
   key: string;
   value: string;
 }
@@ -35,7 +35,7 @@ const EnvironmentInfo = (props: ProviderInfoProps) => {
     },
   ];
 
-  let items: keyValue[] = []
+  let items: KeyValue[] = []
 
   items.push({
     key: "Name",

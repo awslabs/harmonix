@@ -1,22 +1,21 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Button, CardContent, Grid, LinearProgress } from "@material-ui/core";
-import { useAsyncAwsApp } from "../../hooks/useAwsApp";
 import { AWSComponent, AWSComponentType, AWSEKSAppDeploymentEnvironment, AWSResourceDeploymentEnvironment, GenericAWSEnvironment } from "@aws/plugin-aws-apps-common-for-backstage";
-import { EmptyState, InfoCard } from "@backstage/core-components";
-import React, { useState } from "react";
-import { useApi } from "@backstage/core-plugin-api";
-import { OPAApi, opaApiRef } from '../../api';
-import { useNavigate } from 'react-router-dom';
-import { Alert, AlertTitle, Typography } from "@mui/material";
 import { Entity } from "@backstage/catalog-model";
-import { CatalogApi, useEntity } from "@backstage/plugin-catalog-react";
+import { EmptyState, InfoCard } from "@backstage/core-components";
+import { useApi } from "@backstage/core-plugin-api";
+import { CatalogApi, catalogApiRef, useEntity } from "@backstage/plugin-catalog-react";
+import { Button, CardContent, Grid, LinearProgress } from "@material-ui/core";
+import { Alert, AlertTitle, Typography } from "@mui/material";
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import { catalogApiRef } from '@backstage/plugin-catalog-react';
-import { sleep } from "../../helpers/util";
+import React, { useState } from "react";
+import { useNavigate } from 'react-router-dom';
+import { OPAApi, opaApiRef } from '../../api';
 import { APP_SUBTYPE } from "../../helpers/constants";
+import { sleep } from "../../helpers/util";
+import { useAsyncAwsApp } from "../../hooks/useAwsApp";
 
 const DeleteAppPanel = ({
   input: { awsComponent, entity, catalogApi, api }

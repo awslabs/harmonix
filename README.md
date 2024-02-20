@@ -5,11 +5,11 @@
 :star: **OPA on AWS v0.3 now available!** :star:
 * S3 Bucket as a shared resource
 * Reuse existing VPC when creating providers
-* AWS ECS provider with EC2 clusters for tailored workloads
-* AWS EKS provider
-* Import existing AWS EKS clusters
-* AWS EKS Application for K8s Kustomize pattern
-* AWS EKS Application for K8s Helm pattern
+* Amazon ECS provider with EC2 clusters for tailored workloads
+* Amazon EKS provider
+* Import existing Amazon EKS clusters
+* Amazon EKS Application for K8s Kustomize pattern
+* Amazon EKS Application for K8s Helm pattern
 * CI/CD patterns for K8s applications
 * Updated Backstage platform to v1.21
 * Filter relevant environments for new apps

@@ -5,109 +5,26 @@ sidebar_position: 5
 
 # Security
 
-## Authentication with Backstage
-OPA on AWS comes pre-configured to use OKTA as an Identity provider. While this demonstrates one type of identity provider, it can easily be changed to other common identity providers such as Active Directory or any other OAuth 2 supported provider.
+OPA on AWS is built on the Backstage open source project and, thus, inherits the security considerations applicable to the platform.  
 
-:::info
-There are multiple Identity Providers that are supported by Backstage. For the complete list, consult the [Backstage reference](https://backstage.io/docs/auth/)
+The sections below capture details about the OPA on AWS reference implementation to help you understand the out-of-the-box implementations related to security.  Many of the configurations can easily be changed to meet your specific access control needs.
+
+:::warning
+It is **strongly** recommended that you read the [Backstage Threat Model](https://backstage.io/docs/overview/threat-model) documentation to familiarize yourself with the trust model and integrator responsibilities to secure access.
 :::
 
-### Identity providers with Backstage
+## Authentication
+The [Backstage Authentication system](https://backstage.io/docs/auth/) provides for sign-in and identification of users.  The OPA on AWS reference implementation is pre-configured to use Okta as an authentication provider. This demonstrates one type of authentication provider; however, it can easily be changed to other common identity providers such as Active Directory and other OAuth 2 supported providers.
 
-```mermaid
-flowchart LR
-    idps["OKTA
-    Active Directory
-    Atlassian
-    Azure
-    Bitbucket
-    GitHub
-    Google IAP
-    Gitlab
-    OAuth 2 Custom Proxy"]
-    backstage["Backstage Platform"]
-    idps --> backstage
-```
+:::info
+Multiple providers are supported by Backstage. For the complete list, consult the [Backstage "Included providers" documentation](https://backstage.io/docs/auth/)
+:::
 
-The configurations to use an external IDP with Backstage require mapping to Backstage schemas - in particular the "Users" and "Groups" Schemas.
-Backstage offers two kinds: 
-```
-"kind": "Group"
-"kind": "User"
-```
-The prescribed relationship between them can be expressed as (Okta example):
-```
-  {
-        "metadata": {
-            "namespace": "default",
-            "annotations": {
-                "backstage.io/managed-by-location": "okta-org:all",
-                "backstage.io/managed-by-origin-location": "okta-org:all"
-            },
-            "name": "some user name",
-            "title": "********@amazon.com",
-            "uid": "44e7bc31-4343-4145-ba7a-37796d7df965",
-            "etag": "15bd46919fe1befaea71cec3293584b82231e3db"
-        },
-        "kind": "User",
-        "apiVersion": "backstage.io/v1alpha1",
-        "spec": {
-            "profile": {
-                "email": ""********@@amazon.com"
-            },
-            "memberOf": []
-        },
-        "relations": [
-            {
-                "type": "memberOf",
-                "targetRef": "group:default/admins",
-                "target": {
-                    "kind": "group",
-                    "namespace": "default",
-                    "name": "admins"
-                }
-            },
-            {
-                "type": "memberOf",
-                "targetRef": "group:default/developers",
-                "target": {
-                    "kind": "group",
-                    "namespace": "default",
-                    "name": "developers"
-                }
-            },
-        ]
-    },
-```
+## Organizational data
+Backstage provides support to map organizational data such as users and groups into entities in the Backstage catalog.  The OPA on AWS reference implementation is pre-configured to use the `OktaOrgEntityProvider` from the [catalog-backend-module-okta plugin](https://www.npmjs.com/package/@roadiehq/catalog-backend-module-okta) from [Roadie](https://roadie.io).  This plugin will read Okta Users and Groups from a configured Okta instance and create entities in the catalog.  Once they are populated in the catalog, user and group entities can be used for creating relationships (e.g. "ownedBy") with other entities.  User and Group entities can also be used in the Backstage permission framework to enforce allow/deny policy decisions.
 
-OPA on AWS uses the Backstage schema (entity provider) to allow access, both on the Backstage platform and on AWS. Therefore, if you change the source which populates the Backstage identity schema, the behavior remains the same.
+Alternatives for organizational data ingestion can be configured for [OpenLDAP](https://backstage.io/docs/integrations/ldap/org), [GitHub](https://backstage.io/docs/integrations/github/org), [GitLab](https://backstage.io/docs/integrations/gitlab/org), and more.  Consult the [Backstage Integrations documentation](https://backstage.io/docs/integrations/) and [Backstage plugin directory](https://backstage.io/plugins/) for additional options and details.
 
-To configure LDAP with Backstage, consult the Backstage reference on [LDAP Organizational Data](https://backstage.io/docs/integrations/ldap/org/)
-
-### Populating Backstage identity schema
-OPA on AWS uses the [**roadiehq catalog-backend-module-okta**](https://www.npmjs.com/package/@roadiehq/catalog-backend-module-okta) plugin to connect and update OKTA users and groups back to Backstage.
-
-Here are some configuration options you may want to consider:
-1.  userNamingStrategy (i.e: strip-domain-email)
-2.  groupNamingStrategy (i.e: kebab-case-name)
-3.  hierarchyConfig (i.e: key: 'profile.orgId', parentKey: 'profile.parentOrgId')
-
-
-[Backstage Okta Provider Documentation](https://backstage.io/docs/auth/okta/provider)
-
-## Backstage permission model
-
-### Introduction
-
-TODO
-
-### Restricting access to templates
-
-TODO
-
-### Restricting access to kinds
-
-TODO
 
 ## AWS Security
 
@@ -179,12 +96,12 @@ flowchart LR
 ```
 
 :::info
-Environment provider authors can reason about the required set of permissions for provisioning and operating applications for this environment. OPA on AWS provides sample templates for AWS ECS, AWS EKS, and Serverless environment providers.
+Environment provider authors can reason about the required set of permissions for provisioning and operating applications for this environment. OPA on AWS provides sample templates for Amazon ECS, Amazon EKS, and Serverless environment providers.
 :::
 
 ### Diving deep to access roles trust policy
 
-As described above, OPA on AWS provides a pattern of assuming access to particular AWS environments. Out of the box - When provisioning a new environment provider, the *provisioning role* and *operations role* are created and their trust policy is modified to enable the platform role and pipeline role respectively.
+As described above, OPA on AWS provides a pattern of assuming access to particular AWS environments. Out of the box, when provisioning a new environment provider, the *provisioning role* and *operations role* are created and their trust policy is modified to enable the platform role and pipeline role respectively.
 
 example of: commercial-us-commercial-dev-**provisioning-role** - Assumed by gitlab pipeline role
 ```json
@@ -194,7 +111,7 @@ example of: commercial-us-commercial-dev-**provisioning-role** - Assumed by gitl
         {
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::31**********:role/opa-platform-GitlabRunnerConstructGitlabRunnerIamR"
+                "AWS": "arn:aws:iam::123456789012:role/opa-platform-GitlabRunnerConstructGitlabRunnerIamR"
             },
             "Action": "sts:AssumeRole"
         }
@@ -210,7 +127,7 @@ example of: commercial-us-commercial-dev-**operations-role** - Assumed by the pl
         {
             "Effect": "Allow",
             "Principal": {
-                "AWS": "arn:aws:iam::31**********:role/backstage-master-role"
+                "AWS": "arn:aws:iam::123456789012:role/backstage-master-role"
             },
             "Action": "sts:AssumeRole"
         }

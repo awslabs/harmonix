@@ -38,9 +38,10 @@ do
     
     # Create bucket for state and resource group
     ENV_IDENTIFIER=$(echo "$PREFIX-$TARGET_ENV_PROVIDER_NAME-$APP_NAME" | tr '[:upper:]' '[:lower:]')
-    STATE_BUCKET_NAME="opa-tf-state-$ENV_IDENTIFIER"
-    # limit bucket name to 63 characters max
-    STATE_BUCKET_NAME=$(echo "${STATE_BUCKET_NAME:0:63}")
+    # create a 6 char uniq identifier to append to the bucket name
+    UNIQ_ID=$(LC_ALL=C tr -dc a-f0-9 </dev/urandom | head -c 6)
+    # Ensure that the bucket name is unique across all environments and 63 characters or less
+    STATE_BUCKET_NAME="opa-tf-state-${ENV_IDENTIFIER:0:42}-${UNIQ_ID}"
     echo "STATE_BUCKET_NAME for $TARGET_ENV_PROVIDER_NAME is $STATE_BUCKET_NAME"
     echo "s3 bucket will be created in the $REGION region"
     aws s3api head-bucket --bucket $STATE_BUCKET_NAME || BUCKET_NOT_EXIST=true

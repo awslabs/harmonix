@@ -56,12 +56,26 @@ Our goal is to provide a simple, safe, easy-to-use solution, that reduces the ov
         Kareem Abdol-Hamid
     </td>
     <td align="center">
-        <img src="img/team/hemal.jpeg"/><br/>
+        <img src="img/team/daniela.jpeg"/><br/>
         Hemal Gadhiya
     </td>
     <td align="center">
         <img src="img/team/pierre.jpg"/><br/>
         Pierre Nkola
+    </td>
+</tr>
+<tr>
+    <td align="center">
+        <img src="img/team/hemal.jpeg"/><br/>
+        Hemal Gadhiya
+    </td>
+    <td align="center"> 
+    </td>
+    <td align="center">
+    </td>
+    <td align="center">
+    </td>
+    <td align="center">
     </td>
 </tr>
 </table>

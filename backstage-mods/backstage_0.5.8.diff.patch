@@ -1,6 +1,6 @@
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/app-config.yaml backstage/app-config.yaml
---- backstage_0.5.8/app-config.yaml	2024-02-20 12:44:38
-+++ backstage/app-config.yaml	2024-02-20 12:44:20
+--- backstage_0.5.8/app-config.yaml	2024-02-21 18:53:22
++++ backstage/app-config.yaml	2024-02-21 18:52:57
 @@ -1,9 +1,11 @@
  app:
 -  title: Scaffolded Backstage App
@@ -187,16 +187,16 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +          frequency: { minutes: 30 }
 +          timeout: { minutes: 3 }
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/backstage.json backstage/backstage.json
---- backstage_0.5.8/backstage.json	2024-02-20 12:44:38
-+++ backstage/backstage.json	2024-02-20 12:44:20
+--- backstage_0.5.8/backstage.json	2024-02-21 18:53:22
++++ backstage/backstage.json	2024-02-21 18:52:57
 @@ -1,3 +1,3 @@
  {
 -  "version": "1.21.0"
 +  "version": "1.21.1"
  }
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/app/e2e-tests/app.test.ts backstage/packages/app/e2e-tests/app.test.ts
---- backstage_0.5.8/packages/app/e2e-tests/app.test.ts	2024-02-20 12:44:38
-+++ backstage/packages/app/e2e-tests/app.test.ts	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/app/e2e-tests/app.test.ts	2024-02-21 18:53:22
++++ backstage/packages/app/e2e-tests/app.test.ts	2024-02-21 18:52:57
 @@ -13,11 +13,8 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.
@@ -210,8 +210,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
    await expect(page.getByText('My Company Catalog')).toBeVisible();
  });
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/app/src/App.tsx backstage/packages/app/src/App.tsx
---- backstage_0.5.8/packages/app/src/App.tsx	2024-02-20 12:44:38
-+++ backstage/packages/app/src/App.tsx	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/app/src/App.tsx	2024-02-21 18:53:22
++++ backstage/packages/app/src/App.tsx	2024-02-21 18:52:57
 @@ -27,15 +27,38 @@
  import { searchPage } from './components/search/SearchPage';
  import { Root } from './components/Root';
@@ -365,8 +365,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  );
  
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/app/src/apis.ts backstage/packages/app/src/apis.ts
---- backstage_0.5.8/packages/app/src/apis.ts	2024-02-20 12:44:38
-+++ backstage/packages/app/src/apis.ts	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/app/src/apis.ts	2024-02-21 18:53:22
++++ backstage/packages/app/src/apis.ts	2024-02-21 18:52:57
 @@ -7,13 +7,29 @@
    AnyApiFactory,
    configApiRef,
@@ -398,8 +398,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
    ScmAuth.createDefaultApiFactory(),
  ];
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/app/src/components/Root/Root.tsx backstage/packages/app/src/components/Root/Root.tsx
---- backstage_0.5.8/packages/app/src/components/Root/Root.tsx	2024-02-20 12:44:38
-+++ backstage/packages/app/src/components/Root/Root.tsx	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/app/src/components/Root/Root.tsx	2024-02-21 18:53:22
++++ backstage/packages/app/src/components/Root/Root.tsx	2024-02-21 18:52:57
 @@ -23,9 +23,14 @@
    SidebarSpace,
    useSidebarOpenState,
@@ -484,8 +484,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
          <SidebarItem icon={LibraryBooks} to="docs" text="Docs" />
          <SidebarItem icon={CreateComponentIcon} to="create" text="Create..." />
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/app/src/components/catalog/EntityPage.tsx backstage/packages/app/src/components/catalog/EntityPage.tsx
---- backstage_0.5.8/packages/app/src/components/catalog/EntityPage.tsx	2024-02-20 12:44:38
-+++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/app/src/components/catalog/EntityPage.tsx	2024-02-21 18:53:22
++++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2024-02-21 18:52:57
 @@ -27,6 +27,7 @@
    isOrphan,
    hasRelationWarnings,
@@ -617,8 +617,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
      <EntitySwitch.Case if={isKind('group')} children={groupPage} />
      <EntitySwitch.Case if={isKind('user')} children={userPage} />
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/Dockerfile backstage/packages/backend/Dockerfile
---- backstage_0.5.8/packages/backend/Dockerfile	2024-02-20 12:44:38
-+++ backstage/packages/backend/Dockerfile	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/backend/Dockerfile	2024-02-21 18:53:22
++++ backstage/packages/backend/Dockerfile	2024-02-21 18:52:57
 @@ -22,7 +22,6 @@
  # in which case you should also move better-sqlite3 to "devDependencies" in package.json.
  RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
@@ -635,8 +635,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +CMD ["node", "packages/backend", "--config", "app-config.yaml", "--config", "app-config.production.yaml"]
 \ No newline at end of file
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
---- backstage_0.5.8/packages/backend/src/index.ts	2024-02-20 12:44:38
-+++ backstage/packages/backend/src/index.ts	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/backend/src/index.ts	2024-02-21 18:53:22
++++ backstage/packages/backend/src/index.ts	2024-02-21 18:52:57
 @@ -28,9 +28,12 @@
  import proxy from './plugins/proxy';
  import techdocs from './plugins/techdocs';
@@ -681,7 +681,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
    apiRouter.use(notFoundHandler());
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts
 --- backstage_0.5.8/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts	1969-12-31 19:00:00
-+++ backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts	2024-02-20 12:44:20
++++ backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts	2024-02-21 18:52:57
 @@ -0,0 +1,94 @@
 +import { readOpaAppAuditPermission } from '@aws/plugin-aws-apps-common-for-backstage';
 +import { DEFAULT_NAMESPACE, stringifyEntityRef } from '@backstage/catalog-model';
@@ -778,8 +778,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +  }
 +}
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/auth.ts backstage/packages/backend/src/plugins/auth.ts
---- backstage_0.5.8/packages/backend/src/plugins/auth.ts	2024-02-20 12:44:38
-+++ backstage/packages/backend/src/plugins/auth.ts	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/backend/src/plugins/auth.ts	2024-02-21 18:53:22
++++ backstage/packages/backend/src/plugins/auth.ts	2024-02-21 18:52:57
 @@ -49,6 +49,23 @@
            // resolver: providers.github.resolvers.usernameMatchingUserEntityName(),
          },
@@ -806,7 +806,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  }
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/awsApps.ts backstage/packages/backend/src/plugins/awsApps.ts
 --- backstage_0.5.8/packages/backend/src/plugins/awsApps.ts	1969-12-31 19:00:00
-+++ backstage/packages/backend/src/plugins/awsApps.ts	2024-02-20 12:44:20
++++ backstage/packages/backend/src/plugins/awsApps.ts	2024-02-21 18:52:57
 @@ -0,0 +1,24 @@
 +//awsApps.ts
 +
@@ -834,8 +834,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +}
 \ No newline at end of file
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/catalog.ts backstage/packages/backend/src/plugins/catalog.ts
---- backstage_0.5.8/packages/backend/src/plugins/catalog.ts	2024-02-20 12:44:38
-+++ backstage/packages/backend/src/plugins/catalog.ts	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/backend/src/plugins/catalog.ts	2024-02-21 18:53:22
++++ backstage/packages/backend/src/plugins/catalog.ts	2024-02-21 18:52:57
 @@ -2,13 +2,37 @@
  import { ScaffolderEntitiesProcessor } from '@backstage/plugin-catalog-backend-module-scaffolder-entity-model';
  import { Router } from 'express';
@@ -876,7 +876,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  }
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/gitlab.ts backstage/packages/backend/src/plugins/gitlab.ts
 --- backstage_0.5.8/packages/backend/src/plugins/gitlab.ts	1969-12-31 19:00:00
-+++ backstage/packages/backend/src/plugins/gitlab.ts	2024-02-20 12:44:20
++++ backstage/packages/backend/src/plugins/gitlab.ts	2024-02-21 18:52:57
 @@ -0,0 +1,12 @@
 +import { PluginEnvironment } from '../types';
 +import { Router } from 'express-serve-static-core';
@@ -892,7 +892,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +}
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/permission.ts backstage/packages/backend/src/plugins/permission.ts
 --- backstage_0.5.8/packages/backend/src/plugins/permission.ts	1969-12-31 19:00:00
-+++ backstage/packages/backend/src/plugins/permission.ts	2024-02-20 12:44:20
++++ backstage/packages/backend/src/plugins/permission.ts	2024-02-21 18:52:57
 @@ -0,0 +1,15 @@
 +import { createRouter } from '@backstage/plugin-permission-backend';
 +import { Router } from 'express';
@@ -910,8 +910,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +  });
 +}
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/packages/backend/src/plugins/scaffolder.ts backstage/packages/backend/src/plugins/scaffolder.ts
---- backstage_0.5.8/packages/backend/src/plugins/scaffolder.ts	2024-02-20 12:44:38
-+++ backstage/packages/backend/src/plugins/scaffolder.ts	2024-02-20 12:44:20
+--- backstage_0.5.8/packages/backend/src/plugins/scaffolder.ts	2024-02-21 18:53:22
++++ backstage/packages/backend/src/plugins/scaffolder.ts	2024-02-21 18:52:57
 @@ -1,7 +1,33 @@
  import { CatalogClient } from '@backstage/catalog-client';
 -import { createRouter } from '@backstage/plugin-scaffolder-backend';
@@ -995,8 +995,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
    });
  }
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.8/playwright.config.ts backstage/playwright.config.ts
---- backstage_0.5.8/playwright.config.ts	2024-02-20 12:44:38
-+++ backstage/playwright.config.ts	2024-02-20 12:44:20
+--- backstage_0.5.8/playwright.config.ts	2024-02-21 18:53:22
++++ backstage/playwright.config.ts	2024-02-21 18:52:57
 @@ -13,20 +13,16 @@
   * See the License for the specific language governing permissions and
   * limitations under the License.

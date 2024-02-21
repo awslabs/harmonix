@@ -3,7 +3,6 @@
   "position": 7,
   "link": {
     "type": "generated-index",
-    "description": "5 minutes to learn the most important Docusaurus concepts."
-  },
-  "className": "hidden"
+    "description": "Getting started with migrations to the AWS cloud using OPA on AWS"
+  }
 }

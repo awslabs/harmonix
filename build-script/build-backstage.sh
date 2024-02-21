@@ -10,6 +10,6 @@ source ${configDir}/.env
 yarn --cwd  $backstageDir tsc
 yarn --cwd  $backstageDir build:all
 # yarn build-image
-DOCKER_BUILDKIT=1
+export DOCKER_BUILDKIT=1
 docker build . -f ${configDir}/aws-production.Dockerfile --tag opa-backstage
 echo "Backstage app build finished"

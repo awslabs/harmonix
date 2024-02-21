@@ -96,7 +96,7 @@ export class OPARootRoleConstruct extends Construct {
         "secretsmanager:PutSecretValue",
         "secretsmanager:UpdateSecret",
         "secretsmanager:TagResource",
-        "secretsmanager:DeleteSecret"
+        "secretsmanager:DeleteSecret",
       ],
       effect: iam.Effect.ALLOW,
       resources: [`arn:aws:secretsmanager:*:${this.props.opaEnv.awsAccount}:secret:*`],

@@ -72,6 +72,7 @@ cicd/iam-role/final-cicd-iam-role.json
 iac/bootstrap/final-tf-backend-cf-stack.json
 *.bak
 config/.env
+localenv.sh
 
 # transpiled JavaScript, Typings and test files
 

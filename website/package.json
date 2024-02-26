@@ -1,6 +1,6 @@
 {
   "name": "@aws/opa-on-aws-website",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "private": true,
   "scripts": {
     "docusaurus": "docusaurus",

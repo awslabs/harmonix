@@ -676,7 +676,7 @@ const OpaAppStateOverview = ({
                     <NumberInput
                       placeholder="Number of pods"
                       defaultValue={1}
-                      onChange={(_event, val) => deploymentState.desiredCount = val}
+                      onChange={(_event, val) => deploymentState.desiredCount = val || 0}
                       min={0}
                       max={10}
                       slots={{

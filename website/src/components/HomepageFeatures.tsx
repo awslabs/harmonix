@@ -15,12 +15,6 @@ const carouselContent = (
   <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='Coming soon'  >
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>Gen AI Provider</h4>
-      <p>Experiment with Gen AI applications for data scientists!</p>
-    </Carousel.Caption>
-  </Carousel.Item>
-  <Carousel.Item>
-    <Carousel.Caption style={{minHeight:'120px'}}>
       <h4>AWS Control Tower Integration</h4>
       <p>Allow OPA on AWS in your organization to participate in account provisioning and customization.</p>
     </Carousel.Caption>

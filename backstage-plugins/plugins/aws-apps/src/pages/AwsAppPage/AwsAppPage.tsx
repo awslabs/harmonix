@@ -170,6 +170,7 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         <EntitySwitch.Case if={isAppType('ecs', env)}>{AwsECSAppEntityPage}</EntitySwitch.Case>
         <EntitySwitch.Case if={isAppType('eks', env)}>{AwsEKSAppEntityPage}</EntitySwitch.Case>
         <EntitySwitch.Case if={isAppType('serverless', env)}>{AwsServerlessAppEntityPage}</EntitySwitch.Case>
+        <EntitySwitch.Case if={isAppType('gen-ai-serverless', env)}>{AwsServerlessAppEntityPage}</EntitySwitch.Case>
         <EntitySwitch.Case>
           <h1>Application Type "{env.providerData.providerType}" Is Not Supported At This Time</h1>
         </EntitySwitch.Case>

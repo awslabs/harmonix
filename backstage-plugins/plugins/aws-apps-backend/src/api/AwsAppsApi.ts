@@ -801,6 +801,7 @@ export class AwsAppsApi {
       Parameters: parameters,
       Capabilities: [
         Capability.CAPABILITY_IAM,
+        Capability.CAPABILITY_NAMED_IAM,
         Capability.CAPABILITY_AUTO_EXPAND,
       ],
       Tags: [

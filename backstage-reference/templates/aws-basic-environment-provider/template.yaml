@@ -17,9 +17,9 @@ spec:
         - prefix
         - env_description
         - owner
-        - aws_account_id
-        - aws_region
-        - environment_role
+        - awsAccountID
+        - awsRegion
+        - environmentRole
       properties:
         name:
           title: Name
@@ -43,12 +43,12 @@ spec:
           ui:options:
             catalogFilter:
               kind: [Group]
-        aws_account_id:
+        awsAccountID:
           title: AWS Account number
           type: string
           description: Enter an AWS account number
           minLength: 12
-        aws_region:
+        awsRegion:
           title: AWS Region
           type: string
           description: Select AWS region
@@ -109,7 +109,7 @@ spec:
             - 'Middle East (Bahrain)'
             - 'Middle East (UAE)'
             - 'South America (São Paulo)'
-        environment_role:
+        environmentRole:
           title: Environment Role arn
           type: string
           description: The role arn to assume in order to provision the new environment.
@@ -149,12 +149,12 @@ spec:
           description: ${{ parameters.env_description }}
           owner: ${{ parameters.owner }}
           env_type: serverless
-          platform_region: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
-          aws_region: ${{ parameters.aws_region }}
-          aws_account: ${{ parameters.aws_account_id }}
-          environment_role: ${{ parameters.environment_role }}
-          platform_role: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
-          pipeline_role: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          awsRegion: ${{ parameters.awsRegion }}
+          awsAccountID: ${{ parameters.awsAccountID }}
+          environmentRole: ${{ parameters.environmentRole }}
+          platformRole: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
+          pipelineRole: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
           prefix: ${{parameters.prefix}}
     - id: fetchBaseIAC
       name: Fetch IAC Base

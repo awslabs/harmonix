@@ -1,0 +1,28 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.component_id | dump }}
+  title: ${{ values.title | dump }}
+  kebabName: ${{ values.kebabName | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - rest
+    - swagger
+    - openapi
+    - apigateway
+    - serverless
+    - gen-ai
+  # links:
+  #   - title: Example Title
+  #     url: http://www.example.com
+  iacType: cdk
+  repoSecretArn: ${{ values.awsSecretRepoArn | dump }}
+spec:
+  type: aws-app
+  subType: aws-serverless-genai
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn: []

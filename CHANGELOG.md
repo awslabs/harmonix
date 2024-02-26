@@ -1,10 +1,12 @@
 # Changelog
 
-## 0.3.3 - 2024-02-xx
+## 0.3.3 - 2024-02-26
 
 ### New Features
 * Amazon ECS using EC2 nodes sample added to reference template
 * Add check for cdk bootstrap during environment provider provisioning to avoid manual pre-req
+* GenAI runtime environment provider template
+* GenAI RAG application template
 
 ### Bug Fixes
 * Ensure Terraform state bucket name uniqueness
@@ -17,6 +19,7 @@
   * Contribution guidance
   * Architecture description and diagram improvements
   * General fixes to typos and clarifications
+  * GenAI runtime and template docs
 
 ## 0.3.2 - 2024-01-29
 

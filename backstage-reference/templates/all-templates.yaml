@@ -18,6 +18,7 @@ spec:
         - ./example-python-flask/template.yaml
         - ./example-python-flask-eks/template.yaml
         - ./example-tf-nodejs/template.yaml
+        - ./aws-gen-ai-rag/template.yaml
         # Environments
         - ./aws-environment/template.yaml
         - ./aws-ecs-environment-provider/template.yaml
@@ -25,6 +26,7 @@ spec:
         - ./aws-eks-environment-provider/template.yaml
         - ./aws-eks-environment-existing-cluster-provider/template.yaml
         - ./aws-serverless-environment-provider/template.yaml
+        - ./aws-gen-ai-environment-provider/template.yaml
         # - ./aws-basic-environment-provider/template.yaml
         # AWS Resources
         - ./aws-rds-resource/template.yaml

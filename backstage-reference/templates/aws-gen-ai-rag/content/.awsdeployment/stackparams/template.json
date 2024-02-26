@@ -1,0 +1,30 @@
+[
+  {
+    "ParameterKey": "AppName",
+    "ParameterValue": "AppNameValue"
+  },
+  {
+    "ParameterKey": "ComponentId",
+    "ParameterValue": "ComponentIdValue"
+  },
+  {
+    "ParameterKey": "Stage",
+    "ParameterValue": "StageValue"
+  },
+  {
+    "ParameterKey": "Domain",
+    "ParameterValue": "DomainValue"
+  },
+  {
+    "ParameterKey": "VpcId",
+    "ParameterValue": "VpcIdValue"
+  },
+  {
+    "ParameterKey": "VpcSubnetIds",
+    "ParameterValue": "VpcSubnetIdsValue"
+  },
+  {
+    "ParameterKey": "ResourcePolicyArn",
+    "ParameterValue": "ResourcePolicySsmValue"
+  }
+]

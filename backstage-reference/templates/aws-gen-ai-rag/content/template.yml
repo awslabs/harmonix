@@ -1,0 +1,527 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: "gen-ai-software-template"
+
+
+Parameters:
+  AppName:
+    Type: String
+    Description: "Application name in kebab case"
+  ComponentId:
+    Type: String
+    Description: "Backstage component ID"
+  Stage:
+    Type: String
+    Description: "API stage"
+  Domain:
+    Type: String
+    Default: "na"
+    Description: "The base domain, which will be prepended automatically with $Stage.api."
+  VpcId:
+    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::VPC::Id>'
+    Description: "ID of the VPC that the lambda functions will run in"
+  VpcSubnetIds:
+    Type: 'AWS::SSM::Parameter::Value<List<AWS::EC2::Subnet::Id>>'
+    Description: The subnets that the lambda functions should run in.
+  ResourcePolicyArn:
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Description: SSM param key for param that holds the ARN of the resource binding managed policy
+  LogRetentionDays:
+    Type: 'String'
+    Default: '14'
+    Description: "The number of days to retain Cloudwatch Logs"
+
+Globals:
+  Function:
+    Runtime: python3.11
+    Layers:
+      - !Sub arn:aws:lambda:${AWS::Region}:017000801446:layer:AWSLambdaPowertoolsPythonV2-Arm64:42
+    Architectures: 
+      - arm64
+    Environment:
+      Variables:
+        OPENSEARCH_ENDPOINT: !GetAtt OpenSearchCollection.CollectionEndpoint
+        REGION: !Ref AWS::Region
+        APP_NAME: !Ref AppName
+    Timeout: 300 
+    VpcConfig:
+        SecurityGroupIds:
+          - !Ref LambdaSecurityGroup
+        SubnetIds: !Ref VpcSubnetIds
+  Api:
+    OpenApiVersion: 3.0.3
+    Cors:
+      AllowMethods: "'GET,POST,OPTIONS'"
+      AllowHeaders: "'content-type'"
+      AllowOrigin: "'*'"
+
+Resources:
+
+# Lambda Security Group
+  LambdaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    DeletionPolicy: Retain
+    Properties:
+      GroupName: !Sub '${AppName}-lambda-sg'
+      GroupDescription: !Sub 'A Security Group for ${AppName} lambda functions'
+      VpcId: !Ref VpcId
+
+# Default Lambda 
+  LambdaDefaultRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AppName}-lambda-default-role'
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        - "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonBedrockFullAccess"
+        - "arn:aws:iam::aws:policy/AWSLambda_FullAccess"
+        - !Ref ResourcePolicyArn
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - es.amazonaws.com
+                - lambda.amazonaws.com
+                - opensearchservice.amazonaws.com
+
+  # Lambda Role with OpenSearch Permissions
+  LambdaOpenSearchAccessRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${AppName}-lambda-os-role'
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole"
+        - "arn:aws:iam::aws:policy/AmazonBedrockFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonSSMFullAccess"
+        - "arn:aws:iam::aws:policy/AmazonS3FullAccess"
+        - !Ref ResourcePolicyArn
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: sts:AssumeRole
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+                - es.amazonaws.com
+                - lambda.amazonaws.com
+                - opensearchservice.amazonaws.com
+
+  # Lambda OpenSearch Access
+  LambdaOpenSearchPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub '${AppName}-lambda-opensearch-policy'
+      Roles: 
+        - !Ref LambdaOpenSearchAccessRole
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action:
+              # - aoss:CreateCollection
+              # - aoss:ListCollections
+              # - aoss:BatchGetCollection
+              # - aoss:DeleteCollection
+              # - aoss:CreateAccessPolicy
+              # - aoss:ListAccessPolicies
+              # - aoss:UpdateAccessPolicy
+              # - aoss:CreateSecurityPolicy
+              # - aoss:GetSecurityPolicy
+              # - aoss:UpdateSecurityPolicy
+              - aoss:*
+              - iam:ListUsers
+              - iam:ListRoles
+            Resource: "*"
+
+  ClassificationFunctionLogGroup:
+    DependsOn: ClassificationLambda
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ClassificationLambda}'
+      RetentionInDays: !Ref LogRetentionDays  # Optional: define the number of days to retain logs (default to 30 when not defined as with other AWS services)
+
+# Classification Lambda
+  ClassificationLambda:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: !Sub '${AppName}-ClassificationLambda'
+      CodeUri: lambdas/classification_lambda/
+      Handler: classify_lambda.lambda_handler
+      Role: !GetAtt LambdaDefaultRole.Arn
+      Environment:
+        Variables:
+          RETRIEVAL_FUNCTION: !Ref RetrievalLambda
+          RESPONSE_FUNCTION: !Ref ResponseLambda
+      Events:
+        ApiEvent:
+          Type: Api 
+          Properties:
+            Path: /classification
+            Method: post
+            RestApiId:
+              Ref: Api
+
+  RetrievalFunctionLogGroup:
+    DependsOn: RetrievalLambda
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${RetrievalLambda}'
+      RetentionInDays: !Ref LogRetentionDays  # Optional: define the number of days to retain logs (default to 30 when not defined as with other AWS services)
+
+# Retrieval Lambda
+  RetrievalLambda:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: !Sub '${AppName}-RetrievalLambda'
+      CodeUri: lambdas/retrieval_lambda/
+      Handler: retrieval_lambda.lambda_handler
+      Role: !GetAtt LambdaOpenSearchAccessRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api 
+          Properties:
+            Path: /retrieval
+            Method: post
+            RestApiId:
+              Ref: Api
+
+  ResponseFunctionLogGroup:
+    DependsOn: ResponseLambda
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${ResponseLambda}'
+      RetentionInDays: !Ref LogRetentionDays  # Optional: define the number of days to retain logs (default to 30 when not defined as with other AWS services)
+
+# Response Lambda
+  ResponseLambda:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: !Sub '${AppName}-ResponseLambda'
+      CodeUri: lambdas/response_lambda/
+      Handler: generate_response_lambda.lambda_handler
+      Role: !GetAtt LambdaDefaultRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api 
+          Properties:
+            Path: /response
+            Method: post
+            RestApiId:
+              Ref: Api
+
+  IndexFunctionLogGroup:
+    DependsOn: IndexLambda
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${IndexLambda}'
+      RetentionInDays: !Ref LogRetentionDays  # Optional: define the number of days to retain logs (default to 30 when not defined as with other AWS services)
+
+# Index Lambda
+  IndexLambda:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: !Sub '${AppName}-IndexLambda'
+      CodeUri: lambdas/index_data_lambda/
+      Handler: index_data_lambda.lambda_handler
+      Role: !GetAtt LambdaOpenSearchAccessRole.Arn
+      Events:
+        S3ObjectCreatedEvent:
+          Type: S3 
+          Properties:
+            Bucket: !Ref DataBucket
+            Events: s3:ObjectCreated:*
+        S3ObjectRemovedEvent:
+          Type: S3 
+          Properties:
+            Bucket: !Ref DataBucket
+            Events: s3:ObjectRemoved:*
+        
+
+# Data Bucket
+  DataBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+        - ServerSideEncryptionByDefault:
+            SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+  DataBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket:
+        Ref: DataBucket
+      PolicyDocument:
+        Statement:
+        - Action: s3:*
+          Condition:
+            Bool:
+              aws:SecureTransport: 'false'
+          Effect: Deny
+          Principal:
+            AWS: "*"
+          Resource:
+          - Fn::GetAtt:
+            - DataBucket
+            - Arn
+          - Fn::Join:
+            - ''
+            - - Fn::GetAtt:
+                - DataBucket
+                - Arn
+              - "/*"
+        Version: '2012-10-17'
+
+
+# API Gateway
+  ApiRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      Path: 
+        Fn::Sub: /${Stage}/${AppName}/serviceRoles/
+      RoleName: 
+        Fn::Sub: ${AppName}-api-execution-role-${Stage} 
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service:
+                - 'apigateway.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: !Sub '${AppName}-${Stage}-api-execution-role-policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action: 'lambda:InvokeFunction'
+                Resource: 
+                  - !GetAtt ClassificationLambda.Arn
+                  - !GetAtt RetrievalLambda.Arn 
+                  - !GetAtt ResponseLambda.Arn
+                  - !GetAtt SetConfigurationLambda.Arn
+              - Effect: 'Allow'
+                Action: 
+                    - 'logs:CreateLogGroup'
+                    - 'logs:CreateLogStream'
+                    - 'logs:DescribeLogGroups'
+                    - 'logs:DescribeLogStreams'
+                    - 'logs:PutLogEvents'
+                    - 'logs:GetLogEvents'
+                    - 'logs:FilterLogEvents'
+                Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:API-Gateway-Execution-Logs_*'
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      EndpointConfiguration: REGIONAL
+      Name: !Sub '${AppName}-api-${Stage}'
+      StageName: !Ref Stage
+      DefinitionBody:
+        Fn::Transform:
+          Name: AWS::Include
+          Parameters:
+            Location: api-swagger.yaml
+      MethodSettings:
+        - ResourcePath: '/*' # allows for logging on any resource
+          HttpMethod: '*' # allows for logging on any method
+      Variables:
+        Stage:
+          Fn::Sub: ${Stage}
+
+
+
+
+# OpenSearch Serverless
+  OpenSearchSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: !Ref VpcId
+      GroupDescription: Enable communication between function and cluster
+      SecurityGroupIngress:
+        - IpProtocol: -1  
+          SourceSecurityGroupId: !GetAtt LambdaSecurityGroup.GroupId  
+          Description: Allow all traffic from Lambdas
+  # OpenSearchVpcEndpoint:
+  #   Type: AWS::OpenSearchServerless::VpcEndpoint
+  #   Properties:
+  #     Name: !Sub '${AppName}-os-ep'
+  #     SecurityGroupIds: 
+  #       - !Ref OpenSearchSecurityGroup
+  #     SubnetIds: 
+  #       - !Select [0, !Ref VpcSubnetIds]
+  #     VpcId: !Ref VpcId
+  NetworkPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: !Sub '${AppName}-os-net'
+      Type: network
+      Policy: 
+        !Sub >-
+        [{"Rules":[{"Resource":["collection/${AppName}-opensearch"],
+        "ResourceType":"collection"},{"Resource":["collection/${AppName}-opensearch"],
+        "ResourceType":"dashboard"}],"AllowFromPublic":true,"Description":"opensearch-rule"}]
+    DependsOn: 
+      - OpenSearchCollection
+  EncryptionPolicy:
+    Type: AWS::OpenSearchServerless::SecurityPolicy
+    Properties:
+      Name: !Sub '${AppName}-os-sec'
+      Type: encryption
+      Policy: 
+        !Sub >-
+        {"Rules":[{"ResourceType":"collection","Resource":["collection/${AppName}-opensearch"]}],"AWSOwnedKey":true}
+  DataAccessPolicy:
+    Type: AWS::OpenSearchServerless::AccessPolicy
+    Properties:
+      Name: !Sub '${AppName}-os-data'
+      Type: data
+      Policy: 
+        !Sub >- 
+        [{"Description": "lambda-access-collection","Rules": [{"Resource": ["collection/${AppName}-opensearch"],"Permission": 
+        ["aoss:CreateCollectionItems","aoss:DeleteCollectionItems","aoss:UpdateCollectionItems",
+        "aoss:DescribeCollectionItems"],"ResourceType":"collection"},{"Resource":["index/${AppName}-opensearch/*"],
+        "Permission": ["aoss:CreateIndex","aoss:DeleteIndex","aoss:UpdateIndex",
+        "aoss:DescribeIndex","aoss:ReadDocument","aoss:WriteDocument"],"ResourceType":"index"}],
+        "Principal":["arn:aws:iam::${AWS::AccountId}:root",
+        "arn:aws:iam::${AWS::AccountId}:role/${AppName}-lambda-os-role"]}]   
+    DependsOn: 
+      - LambdaOpenSearchAccessRole
+      - OpenSearchCollection
+  OpenSearchCollection:
+    Type: 'AWS::OpenSearchServerless::Collection'
+    Properties:
+      Name: !Sub ${AppName}-opensearch
+      Type: VECTORSEARCH
+    DependsOn: EncryptionPolicy
+
+  SetConfigurationLogGroup:
+    DependsOn: SetConfigurationLambda
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub '/aws/lambda/${SetConfigurationLambda}'
+      RetentionInDays: !Ref LogRetentionDays  # Optional: define the number of days to retain logs (default to 30 when not defined as with other AWS services)
+
+  # Set Configuration Lambda
+  SetConfigurationLambda:
+    Type: AWS::Serverless::Function 
+    Properties:
+      FunctionName: !Sub '${AppName}-SetConfigurationLambda'
+      CodeUri: lambdas/set_configuration_lambda/
+      Handler: set_configuration_lambda.lambda_handler
+      Role: !GetAtt LambdaDefaultRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api 
+          Properties:
+            Path: /setConfiguration
+            Method: post
+            RestApiId:
+              Ref: Api
+
+
+  # SSM Parameters
+  TemperatureParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /opa/gen-ai/${AppName}/temperature
+      Type: String
+      Value: "1"
+      Description: Parameter for OPA Gen AI Temperature
+  ClassificationPromptParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /opa/gen-ai/${AppName}/classification_prompt
+      Type: String
+      Value: "Human: We want to detect which company is related to the following question \"{question}\". the list of possible topics names are {topics}. if no one is related, answer none. Provide the response following the JSON format as above example: {string} Assistant:"
+      Description: Parameter for OPA Gen AI Classification Prompt
+  ResponsePromptParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /opa/gen-ai/${AppName}/response_prompt
+      Type: String
+      Value: "Use the following documents to answer the following \"{question}\". Here are the documents, between <document></document> XML tags:{documents} Do not directly mention the content of the documents if not relevant to the question. Ensure that your answer is accurate and uses the information from the documents previously provided."
+      Description: Parameter for OPA Gen AI Response Prompt
+  TopicsParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /opa/gen-ai/${AppName}/topics
+      Type: String
+      Value: "[]"
+      Description: Parameter for OPA Gen AI Topics
+  MaxTokensParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /opa/gen-ai/${AppName}/max_tokens_to_sample
+      Type: String
+      Value: "400"
+      Description: Parameter for OPA Gen AI Max Tokens to Sample
+  RelevantDocsCountParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /opa/gen-ai/${AppName}/relevant_documents_count
+      Type: String
+      Value: "3"
+      Description: Parameter for OPA Gen AI Relevant Documents Count
+  ChunkSizeParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /opa/gen-ai/${AppName}/chunk_size
+      Type: String
+      Value: "28000"
+      Description: Parameter for OPA Gen AI Chunk Size
+  ChunkOverlapParameter:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /opa/gen-ai/${AppName}/chunk_overlap
+      Type: String
+      Value: "0"
+      Description: Parameter for OPA Gen AI Chunk Overlap
+
+Outputs:
+  ApiGatewayEndpoint:
+    Description: 'API Gateway endpoint URL for stage'
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}'
+  ApiGatewayEndpointWithPath:
+    Description: 'API Gateway endpoint URL with Open API path for stage'
+    Value: !Sub 'https://${Api}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/'
+  ClassificationFunction:
+    Description: Classification Lambda Function ARN
+    Value: !GetAtt ClassificationLambda.Arn
+  RetrievalFunction:
+    Description: Retreival Lambda Function ARN
+    Value: !GetAtt RetrievalLambda.Arn
+  ResponseFunction:
+    Description: Response Lambda Function ARN
+    Value: !GetAtt ResponseLambda.Arn
+  IndexFunction:
+    Description: Index Lambda Function ARN
+    Value: !GetAtt IndexLambda.Arn
+  SetConfigurationFunction:
+    Description: Set Configuration Lambda Function ARN
+    Value: !GetAtt SetConfigurationLambda.Arn
+  LogGroupsArray:
+    Description: JSON Array of Log Group Names
+    Value: !Sub '
+      [
+        "${ClassificationFunctionLogGroup}",
+        "${RetrievalFunctionLogGroup}",
+        "${ResponseFunctionLogGroup}",
+        "${IndexFunctionLogGroup}",
+        "${SetConfigurationLogGroup}"
+      ]'

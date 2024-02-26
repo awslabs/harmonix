@@ -1,0 +1,12 @@
+// To trigger ONLY the Classification Lambda
+{
+    "message": "Ask your question to the Chatbot here!",
+    "operation_mode": "exclusive"
+}
+
+
+// To trigger Classification, Retriever and Response Lambda
+{
+    "message": "Ask your question to the Chatbot here!",
+    "operation_mode": "inclusive"
+}

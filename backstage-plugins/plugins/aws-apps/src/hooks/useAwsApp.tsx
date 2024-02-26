@@ -434,6 +434,10 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
     if (awsComponent.currentEnvironment.providerData.providerType === ProviderType.SERVERLESS && componentType === "aws-app") {
       await populateServerlessState(awsComponent.currentEnvironment as AWSServerlessAppDeploymentEnvironment);
     }
+    if (awsComponent.currentEnvironment.providerData.providerType === ProviderType.GENAI_SERVERLESS && componentType === "aws-app") {
+      // consider populating different GenAI-related data here
+      await populateServerlessState(awsComponent.currentEnvironment as AWSServerlessAppDeploymentEnvironment);
+    }
 
     return awsComponent as AWSComponent;
   }

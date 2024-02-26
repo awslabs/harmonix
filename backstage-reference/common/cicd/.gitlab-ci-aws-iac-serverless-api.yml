@@ -68,17 +68,28 @@
     - if [[ -z "$BuildBucketName" ]]; then BuildBucketName=$(cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml | yq -r ".metadata.appData[\"${TARGET_ENV_NAME}\"][\"${TARGET_ENV_PROVIDER_NAME}\"][\"BuildBucketName\"]"); fi
     # Source output artifact file if it exists from IaC job to get BuildBucketName
     - if [[ -f "$CI_PROJECT_DIR/serverless-ci-output-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties" ]]; then set -a && source $CI_PROJECT_DIR/serverless-ci-output-${TARGET_ENV_NAME}-${TARGET_ENV_PROVIDER_NAME}.properties && set +a; fi
+    
+    - echo -e "\e[0Ksection_start:`date +%s`:aws_identity[collapsed=true]\r\e[0KAssume AWS IAM Role"
     - export ROLE_NAME=$CI_PROJECT_NAME-$CI_JOB_STAGE # store role session name so that a single env var can be truncated to allowed character length
     - ROLE_OUTPUT=$(aws sts assume-role --role-arn "$ENV_ROLE_ARN" --role-session-name "${ROLE_NAME:0:63}" --duration-second=3600 --output json)
     - export AWS_ACCESS_KEY_ID=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.AccessKeyId')
     - export AWS_SECRET_ACCESS_KEY=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SecretAccessKey')
     - export AWS_SESSION_TOKEN=$(echo ${ROLE_OUTPUT} | jq -r '.Credentials.SessionToken')
     - aws sts get-caller-identity
+    - echo -e "\e[0Ksection_end:`date +%s`:aws_identity\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:get_tools[collapsed=true]\r\e[0KGet Tools"
     - apt-get install python3.11-venv -y
     - python3 -m venv .venv
     - source .venv/bin/activate
     - pip3 install aws-sam-cli --upgrade
+    - echo -e "\e[0Ksection_end:`date +%s`:get_tools\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:sam_build[collapsed=true]\r\e[0KSAM Build"
     - sam build
+    - echo -e "\e[0Ksection_end:`date +%s`:sam_build\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:stage_build[collapsed=true]\r\e[0KStage Build in S3"
     - echo "sam package will upload to S3 bucket \"$BuildBucketName\""
     - sam package --force-upload --region $REGION --s3-bucket $BuildBucketName --output-template-file packaged.yaml
     # put the latest build file into S3 and overwrite the previous file
@@ -87,4 +98,6 @@
     - export today=$(date +%m-%d-%Y_%H-%M-%S)
     - aws s3api put-object --bucket $BuildBucketName --key packaged-${today}.yaml --body packaged.yaml
     - cat packaged.yaml
+    - echo -e "\e[0Ksection_end:`date +%s`:stage_build\r\e[0K"
+
     - echo "SUCCESS"

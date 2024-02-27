@@ -32,6 +32,7 @@ iac-deployment-env-provider:
   script:
     # Export environment variables
     - set -a && source stack-parameters.properties && set +a
+    - cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION
     - cd .iac/opa-serverless-environment
     - yarn install
     - cdk deploy --outputs-file cdk-output.json --require-approval never

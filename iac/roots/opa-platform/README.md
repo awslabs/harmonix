@@ -27,7 +27,6 @@ Be sure to replace "\$ACCOUNT_ID" with your AWS account id and "\$AWS_PRIMARY_RE
 ```sh
 yarn install
 cdk bootstrap aws://$ACCOUNT_ID/$AWS_PRIMARY_REGION
-cdk bootstrap aws://$ACCOUNT_ID/$AWS_SECONDARY_REGION
 ```
 * ignore warnings such as 'xxx is declared but its value is never read'.
 * Make sure docker is installed and running

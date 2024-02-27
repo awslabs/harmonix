@@ -71,7 +71,7 @@ toc_max_heading_level: 4
 
 #### How can OPA on AWS accelerate applications migration?
 > 
-> Please see our [Migration page](migrations/migration-pcf.md) 
+> Please see our [Migration page](migrations/overview.md) 
 <br/>
 
 

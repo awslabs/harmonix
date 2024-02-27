@@ -27,6 +27,19 @@ sidebar_position: 8
          <img src="/img/features/aws-environment.png"/>
     </td>
 </tr>
+<tr>
+    <td width="20%" align="center">
+        <img src="/img/features/genai-provider.png"/>
+    </td>
+    <td width="20%" align="center">
+    </td>
+    <td width="20%" align="center"> 
+    </td>
+    <td width="20%" align="center">  
+    </td>
+    <td width="20%" align="center">
+    </td>
+</tr>
 </table>
 </div>
 
@@ -85,6 +98,19 @@ sidebar_position: 8
     </td>
      <td width="20%" align="center">
         <img src="/img/features/ecs-java.png"/>
+    </td>
+</tr>
+<tr>
+    <td width="20%" align="center">
+        <img src="/img/features/genai-rag-app.png"/>
+    </td>
+    <td width="20%" align="center">
+    </td>
+     <td width="20%"  align="center">
+    </td>
+     <td width="20%" align="center">
+    </td>
+     <td width="20%" align="center">
     </td>
 </tr>
 </table>

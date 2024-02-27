@@ -91,7 +91,7 @@ The above described guidelines are to set the standard of submitting Pull Reques
 
 ### Submitting Contribution
 
-Before submitting any contribution type please make sure it adheres to the OPA on AWS [architecture](/website/docs/techdocs/architecture.md)
+Before submitting any contribution type please make sure it adheres to the OPA on AWS [architecture](https://opaonaws.io/docs/techdocs/architecture)
 
 ### Contributing an OPA on AWS provider
 

@@ -1,1 +1,0 @@
-"use strict";(self.webpackChunk_aws_opa_on_aws_website=self.webpackChunk_aws_opa_on_aws_website||[]).push([[4304],{3564:(e,s,a)=>{a.r(s),a.d(s,{default:()=>w});a(1504);var r=a(5456),c=a(5756),_=a(5864),n=a(5464),t=a(3180),u=a(7624);function w(e){return(0,u.jsx)(c.cr,{className:(0,r.c)(_.W.wrapper.docsPages),children:(0,u.jsx)(t.c,{children:(0,n.k)(e.route.routes)})})}}}]);

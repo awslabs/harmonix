@@ -1,3 +1,7 @@
+---
+sidebar_position: 12
+---
+
 ## Contributing
 
 Thank you for your interest in contributing to our project. Whether it's a bug report, new feature, correction, or additional
@@ -56,7 +60,7 @@ If you discover a potential security issue in this project we ask that you notif
 
 ### Licensing
 
-See the [LICENSE](LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
+See the [LICENSE](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
 
 
 ## Contributing Assets to OPA on AWS
@@ -87,7 +91,7 @@ The above described guidelines are to set the standard of submitting Pull Reques
 
 ### Submitting Contribution
 
-Before submitting any contribution type please make sure it adheres to the OPA on AWS [architecture](https://opaonaws.io/docs/techdocs/architecture)
+Before submitting any contribution type please make sure it adheres to the OPA on AWS [architecture](/website/docs/techdocs/architecture.md)
 
 ### Contributing an OPA on AWS provider
 
@@ -104,9 +108,9 @@ Questions to consider when designing new provider:
 Start with designing the architecture that will meet the particular type of workloads this provider needs to support. <br/>
 Express the architecture with your choice of IAC(CDK, TF, Pulumi etc.)
 
-<br/>
+:::idea
 example: building an ECS provider - will require an AWS ECS cluster - which also requires a VPC and support for logs, encryption and load balancer to allow access to the containers. an AWS ECR is also required to store the container images.
-<br/>
+:::
 
 **Step 2**<br/>
 Define the *Provisioning role* and *Operations role* permissions - this needs to be reason with the expected user interactions and IAC requirements. It is best practice to set your roles with least privileges permissions.
@@ -116,20 +120,20 @@ Configure an appropriate pipeline to deploy and update this provider
 
 **Step 4**<br/>
 Create a provider backstage template and load the template to the backstage-reference repository
-<br/>
+:::tip
 Don't forget to update all-templates.yaml with your new template path
-<br/>
+:::
 
 #### Test your provider
 **Step 1**<br/>
 Make sure you are able to provision your new provider template.
-We highly recommend to test different context for this step as described in the [test-cases](https://opaonaws.io/docs/tests)
+We highly recommend to test different context for this step as described in the [test-cases](/website/docs/tests.md)
 
 **Step 2**<br/>
 Make sure you can update the provider configurations or IAC and the pipeline will apply the changes succufully 
 
 **Step 3**<br/>
-Add entries in  [test-cases](https://opaonaws.io/docs/tests) document for the new provider implemented.
+Add entries in  [test-cases](/website/docs/tests.md) document for the new provider implemented.
 
 #### Submit your PR
 Submit a pull request for the new provider following the instructions in this page.
@@ -150,30 +154,30 @@ Questions to consider when designing a new application pattern:
 **Step 1**<br/>
 Start with designing the architecture that for this type of workload, this include the desired runtime(Java, .Net, python etc.), the resource that compose this application express by IAC(CDK, TF, Pulumi)
 
-<br/><br/>
+:::idea
 example: building an ECS application - will require an AWS ECS Task and Task definition , in addition the application log will need a log group and you may need to add additional supporting resources such as RDS database or S3 bucket. The application IAC will have dependencies on expected resources such as an existing VPC or ECS cluster. this will be provided by the corresponding selected environment and injected to the application repository. the pipeline will stich all this together and express those arguments as environment variables
-<br/>
+:::
 
 **Step 2**<br/>
 Define the identity of the application in a shape of an IAM role. This application identity role is used not only to describe the current permission the application needs but also the future permission the application may be granted as a result of the *resource binding* process.
 
-<br/><br/>
+:::tip
 Make sure you IAC supports external ingestion of JSON permission policies. [See DeclareJSONStatements example here](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-reference/common/aws_ecs/src/cdk-ecs-module-stack.ts)
-<br/>
+:::
 
 **Step 3**<br/>
 Configure an appropriate pipeline to deploy and update this application
 
 **Step 4**<br/>
 Create an application backstage template and load the template to the backstage-reference repository
-<br/><br/>
+:::tip
 Don't forget to update all-templates.yaml with your new template path
-<br/>
+:::
 
 #### Test your application
 **Step 1**<br/>
 Make sure you are able to provision your new application template.
-We highly recommend to test different context for this step as described in the [test-cases](https://opaonaws.io/docs/tests).
+We highly recommend to test different context for this step as described in the [test-cases](/website/docs/tests.md).
 You should also test provisioning another application on the same environment to make sure there's not conflict of configurations and/or resources.
 
 **Step 2**<br/>
@@ -181,7 +185,7 @@ You should also test provisioning another application on the same environment to
 2. Make sure you can update the application code /src and CD pipeline will build and deploy the new application  
 
 **Step 3**<br/>
-Add entries in  [test-cases](https://opaonaws.io/docs/tests) document for the new application implemented.
+Add entries in  [test-cases](/website/docs/tests.md) document for the new application implemented.
 
 #### Submit your PR
 Submit a pull request for the new provider following the instructions in this page.

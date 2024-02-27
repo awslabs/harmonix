@@ -193,21 +193,21 @@ const config: Config = {
       name: "content",
       sourceBaseUrl: "https://raw.githubusercontent.com/awslabs/app-development-for-backstage-io-on-aws/main/",
       outDir: "docs",
-      documents: ["CHANGELOG.md", "CONTRIBUTING.md"],
+      documents: ["CHANGELOG.md"],
       performCleanup: true,
       // in the plugin's options:
-      modifyContent(filename, content) {
-        if (filename.includes("CONTRIBUTING")) {
-          const re = /\[LICENSE\]\(LICENSE\)/g;
-          const licenseUrl = "https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/LICENSE"
-          var newContent = content.replace(re, `[LICENSE](${licenseUrl})`);   
-          return {
-              content: newContent
-          }
-        }
-        // don't want to modify this item, since it doesn't contain "CONTRIBUTING" in the name
-        return undefined
-      },
+      // modifyContent(filename, content) {
+      //   if (filename.includes("CONTRIBUTING")) {
+      //     const re = /\[LICENSE\]\(LICENSE\)/g;
+      //     const licenseUrl = "https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/LICENSE"
+      //     var newContent = content.replace(re, `[LICENSE](${licenseUrl})`);   
+      //     return {
+      //         content: newContent
+      //     }
+      //   }
+      //   // don't want to modify this item, since it doesn't contain "CONTRIBUTING" in the name
+      //   return undefined
+      // },
     }]
   ],
 }

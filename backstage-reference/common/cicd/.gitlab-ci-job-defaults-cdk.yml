@@ -6,12 +6,12 @@ default:
     - cat /etc/os-release
     - echo -e "\e[0Ksection_end:`date +%s`:log_os\r\e[0K"
 
-    - echo -e "\e[0Ksection_start:`date +%s`:get_tools[collapsed=true]\r\e[0KGet Tools"
+    - echo -e "\e[0Ksection_start:`date +%s`:get_tools1[collapsed=true]\r\e[0KGet Tools"
     - apt-get update
     - apt install nodejs npm git python3-pip yq jq unzip -y
     - yarn global add typescript@latest aws-cdk@2.120.0
     - yarn --version
-    - echo -e "\e[0Ksection_end:`date +%s`:get_tools\r\e[0K"
+    - echo -e "\e[0Ksection_end:`date +%s`:get_tools1\r\e[0K"
 
     - echo -e "\e[0Ksection_start:`date +%s`:get_aws_cli[collapsed=true]\r\e[0KGet AWS CLI v2"
     # Explicitly install v2 of awscli

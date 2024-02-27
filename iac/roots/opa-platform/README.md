@@ -112,7 +112,7 @@ make push-backstage-reference-repo
 
 ### 7. Restart the Backstage ECS service
 
-Lastly - to accommodate all the changes above, please login to the AWS ECS console and restart/kill Backstage tasks to reload the application with all of the required reference data.
+Lastly - to accommodate all the changes above, please login to the Amazon ECS console and restart/kill Backstage tasks to reload the application with all of the required reference data.
 
 At this point, you should be able to login to Backstage using your {{route53DNSName}} in your browser. Make sure the security group of the Backstage loadbalancer allows access from your IP.
 Once on the main screen, use your Okta credentials to connect to Backstage.

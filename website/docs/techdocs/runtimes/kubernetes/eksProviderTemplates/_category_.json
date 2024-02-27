@@ -1,0 +1,8 @@
+{
+  "label": "EKS Provider Templates",
+  "position": 2,
+  "link": {
+    "type": "generated-index",
+    "description": "Explore the EKS Provider templates that come with OPA."
+  }
+}

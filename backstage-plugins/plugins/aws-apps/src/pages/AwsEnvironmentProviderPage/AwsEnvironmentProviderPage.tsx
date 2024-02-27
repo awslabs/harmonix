@@ -35,6 +35,9 @@ export function AwsEnvironmentProviderPage(/* {children}: AwsEnvironmentProvider
       <EntitySwitch.Case if={isProviderType(ProviderType.SERVERLESS, entity)}>
         <AwsServerlessEnvironmentProviderPage />
       </EntitySwitch.Case>
+      <EntitySwitch.Case if={isProviderType(ProviderType.GENAI_SERVERLESS, entity)}>
+        <AwsServerlessEnvironmentProviderPage />
+      </EntitySwitch.Case>
       <EntitySwitch.Case>
         <h1>Environment Provider Type "{entity.metadata["envType"]}" Is Not Supported At This Time</h1>
       </EntitySwitch.Case>

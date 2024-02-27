@@ -10,10 +10,10 @@ metadata:
   tags:
     - aws
     - aws-environment-provider
-  env-type: ${{values.env_type}}
-  aws-account: "${{values.aws_account}}"
-  aws-region: ${{values.aws_region}}
-  environment_role: "${{values.environment_role}}"
+  envType: ${{values.env_type}}
+  awsAccount: "${{values.awsAccountID}}"
+  awsRegion: ${{values.awsRegion}}
+  environmentRole: "${{values.environmentRole}}"
   vpc: ""
 spec:
   type: environment-provider

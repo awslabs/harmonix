@@ -118,7 +118,11 @@ export class GitlabHostingConstruct extends Construct {
       blockDevices: [rootVolume],
       // requireImdsv2: true,  // !FIXME: Use IMDSv2 during initial creation when support is available.  See https://gitlab.com/gitlab-org/gitlab/-/issues/334160
     });
-
+    new cdk.CfnOutput(this, "GitlabAmiOutput", {
+      value: JSON.stringify(props.GitlabAmi),
+      description: "The AMI ID used for the GitLab instance",
+    });
+    
     NagSuppressions.addResourceSuppressions(gitlabHost, [
       { id: 'AwsSolutions-EC28', reason: 'Gitlab is a 3rd party scm used by the prototype to simulate customer environment.  Customer environment will not use EC2 and, therefore, detailed monitoring and incurring extra cost is not required.' },
       { id: 'AwsSolutions-EC29', reason: 'Gitlab is a 3rd party scm used by the prototype to simulate customer environment.  Autoscaling is not required, nor appropriate for this scm implementation.' },
@@ -231,10 +235,10 @@ export class GitlabHostingConstruct extends Construct {
     // allow traffic to the ALB from the restricted IP security group
     gitlabAlb.connections.addSecurityGroup(props.network.allowedIpsSg);
 
-    new cdk.CfnOutput(this, `GITLab loadBalancer Domain Name Param`, {
+    new cdk.CfnOutput(this, `GitLab loadBalancer Domain Name Param`, {
       value: lbDNSParam.parameterName,
     });
-    new cdk.CfnOutput(this, `GITLab loadBalancer URL Param`, {
+    new cdk.CfnOutput(this, `GitLab loadBalancer URL Param`, {
       value: lbUrlParam.parameterName,
     });
     this.alb = gitlabAlb;

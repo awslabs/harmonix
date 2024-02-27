@@ -9,7 +9,7 @@ import CreateResources5Img from '/img/docs/create-resources-5.png';
 
 # Create Resources
 
-In this tutorial, you will create a new AWS resource.  Specifically, you'll build out a shared AWS RDS database from the OPA on AWS interface which can then be accessed by multiple applications.
+In this tutorial, you will create a new AWS resource.  Specifically, you'll build out a shared Amazon RDS database from the OPA on AWS interface which can then be accessed by multiple applications.
 
 :::info
 This tutorial assumes that you have run the [Create an Environment](/docs/tutorials/create-environments) tutorial and expects input values from that setup.  If you have created different Environment entities, then substitute the appropriate values.

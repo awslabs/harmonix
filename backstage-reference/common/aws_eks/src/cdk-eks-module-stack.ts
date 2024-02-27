@@ -1,6 +1,5 @@
 
 import { Construct } from "constructs";
-import * as cdk from "aws-cdk-lib";
 import * as ecr from "aws-cdk-lib/aws-ecr"
 import * as kms from "aws-cdk-lib/aws-kms";
 import * as rg from "aws-cdk-lib/aws-resourcegroups";

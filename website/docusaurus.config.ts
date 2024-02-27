@@ -182,6 +182,7 @@ const config: Config = {
     prism: {
       theme: prismThemes.github,
       darkTheme: prismThemes.dracula,
+      additionalLanguages: ['diff']
     },
   } satisfies Preset.ThemeConfig,
   plugins: [
@@ -192,7 +193,7 @@ const config: Config = {
       name: "changelog",
       sourceBaseUrl: "https://raw.githubusercontent.com/awslabs/app-development-for-backstage-io-on-aws/main/",
       outDir: "docs",
-      documents: ["CHANGELOG.md"],
+      documents: ["CHANGELOG.md", "CONTRIBUTING.md"],
     }]
   ],
 }

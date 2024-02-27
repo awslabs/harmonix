@@ -120,14 +120,14 @@ Lastly we define the expected result with the letter **"E"**, this will describe
 
 | ID | Context | Description | Expected Result
 | :- | :- | :- | :- |
-| T400 | C01 + C02 | Provision a node.js application on AWS ECS environment with a single provider | E05|
-| T401 | C01 + C02 | Provision a Java SpringBoot application on AWS ECS environment with a single provider | E05|
-| T402 | C01 + C02 | Provision a python application on AWS ECS environment with a single provider | E05|
-| T403 | C01 + C02 | Provision a node.js Terraform application on AWS ECS environment with a single provider | E05|
-| T404 | C01 + C03 | Provision a node.js application on AWS EKS environment with a single provider | E06|
-| T405 | C01 + C03 | Provision a Java SpringBoot application on AWS EKS environment with a single provider | E06|
-| T406 | C01 + C03 | Provision a python application on AWS EKS environment with a single provider | E06|
-| T407 | C01 + C03 | Provision a node.js Terraform application on AWS EKS environment with a single provider | E06|
+| T400 | C01 + C02 | Provision a node.js application on Amazon ECS environment with a single provider | E05|
+| T401 | C01 + C02 | Provision a Java SpringBoot application on Amazon ECS environment with a single provider | E05|
+| T402 | C01 + C02 | Provision a python application on Amazon ECS environment with a single provider | E05|
+| T403 | C01 + C02 | Provision a node.js Terraform application on Amazon ECS environment with a single provider | E05|
+| T404 | C01 + C03 | Provision a node.js application on Amazon EKS environment with a single provider | E06|
+| T405 | C01 + C03 | Provision a Java SpringBoot application on Amazon EKS environment with a single provider | E06|
+| T406 | C01 + C03 | Provision a python application on Amazon EKS environment with a single provider | E06|
+| T407 | C01 + C03 | Provision a node.js Terraform application on Amazon EKS environment with a single provider | E06|
 | T408 | C01 + C04 | Provision a Serverless REST API application on AWS Serverless environment with a single provider | E07|
 
 #### Application operations

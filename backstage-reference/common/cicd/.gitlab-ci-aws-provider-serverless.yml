@@ -32,15 +32,29 @@ iac-deployment-env-provider:
   script:
     # Export environment variables
     - set -a && source stack-parameters.properties && set +a
+
+    - echo -e "\e[0Ksection_start:`date +%s`:cdk_bootstrap[collapsed=true]\r\e[0KCDK Bootstrap"
     - cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION
+    - echo -e "\e[0Ksection_end:`date +%s`:cdk_bootstrap\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:yarn_install[collapsed=true]\r\e[0KYarn Install"
     - cd .iac/opa-serverless-environment
     - yarn install
+    - echo -e "\e[0Ksection_end:`date +%s`:yarn_install\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:cdk_deploy[collapsed=true]\r\e[0KCDK Deploy"
     - cdk deploy --outputs-file cdk-output.json --require-approval never
+    - echo -e "\e[0Ksection_end:`date +%s`:cdk_deploy\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:extract_cdk_output[collapsed=true]\r\e[0KExport CDK Output"
     # once CDK finished - extract output params
     - jq '.[] ' cdk-output.json | jq -r 'to_entries[]|"\(.key)=\"\(.value)\""' > cdk-output.properties
     # export the new variables
     - cat cdk-output.properties
     - set -a && source cdk-output.properties && set +a
+    - echo -e "\e[0Ksection_end:`date +%s`:extract_cdk_output\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:backstage_entity[collapsed=true]\r\e[0KUpdate Backstage Entity"
     # alter entity details
     - cd $CI_PROJECT_DIR/.backstage
     - yq -Yi ".metadata.vpc =\"${VPC}\"" catalog-info.yaml
@@ -49,6 +63,9 @@ iac-deployment-env-provider:
     - yq -Yi ".metadata[\"provisioningRole\"] = \"${ProvisioningRoleARN}\"" catalog-info.yaml
     - yq -Yi ".metadata[\"stackName\"] = \"${StackName}\"" catalog-info.yaml
     - cat catalog-info.yaml
+    - echo -e "\e[0Ksection_end:`date +%s`:backstage_entity\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:git[collapsed=true]\r\e[0KUpdate Git Repo"
     - git config --global user.email "fsi-pace-pe@amazon.com"
     - git config --global user.name "OPA CICD User"
     - git add catalog-info.yaml
@@ -57,3 +74,4 @@ iac-deployment-env-provider:
     - echo "The number of files that will be committed is $UPDATE_COUNT"
     - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git commit -m "updating entity details" --quiet; fi
     - if [[ "$UPDATE_COUNT" -gt "0" ]]; then git push -o ci.skip https://oauth2:$ACCESS_TOKEN@$CI_SERVER_HOST/$CI_PROJECT_NAMESPACE/$CI_PROJECT_NAME HEAD:main; fi
+    - echo -e "\e[0Ksection_end:`date +%s`:git\r\e[0K"

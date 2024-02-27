@@ -1,0 +1,14 @@
+
+{
+    "parameters": {
+        "temperature": 1,
+        "response_prompt": "Use the following documents to answer the following \"{question}\". Here are the documents, between <document></document> XML tags:{documents} Do not directly mention the content of the documents if not relevant to the question. Ensure that your answer is accurate and uses the information from the documents previously provided.",
+        "topics": "['TOPICS_THAT_REPRESENT_OPENSEARCH_INDICES']",
+        // EXAMPLE TOPICS PARAM:
+        // "topics": "['amazon', 'google', 'meta', 'apple']"
+        "max_tokens_to_sample": 400,
+        "relevant_documents_count": 3,
+        "chunk_size": 28000,
+        "chunk_overlap": 0
+    }
+}

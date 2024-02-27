@@ -45,7 +45,7 @@ export const columnFactories = Object.freeze({
       render: ({ entity }) => (
         <EntityRefLink
           entityRef={entity}
-          defaultKind={options?.defaultKind || 'Component'}
+          defaultKind={options?.defaultKind ?? 'Component'}
         />
       ),
       
@@ -412,7 +412,7 @@ export const columnFactories = Object.freeze({
     options?: { title?: string; defaultValue?: string },
   ): TableColumn<CatalogTableRow> {
     return {
-      title: options?.title || 'Label',
+      title: options?.title ?? 'Label',
       field: 'entity.metadata.labels',
       cellStyle: {
         padding: '0px 16px 0px 20px',

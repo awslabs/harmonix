@@ -1,0 +1,148 @@
+openapi: 3.0.3
+
+info:
+  title: GenAI Rag Framework API
+  description: API operations for calling RAG backend
+  version: v1.0
+
+x-amazon-apigateway-request-validators:
+  all:
+    validateRequestBody: true
+    validateRequestParameters: true
+  params:
+    validateRequestBody: true
+    validateRequestParameters: true
+  body:
+    validateRequestBody: true
+    validateRequestParameters: false
+
+paths:
+
+  /:
+    get:
+      summary: Show documentation
+      responses:
+        "200":
+          description: Successful operation
+      x-amazon-apigateway-integration:
+        responses:
+          default:
+            statusCode: "200"
+            responseTemplates:
+              application/json: '{"message": "Welcome to the Gen AI Demo!"}'
+        passthroughBehavior: when_no_match
+        requestTemplates:
+          application/json: '{"statusCode": 200}'
+        type: mock
+
+  /classification:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid request
+      x-amazon-apigateway-request-validator: body
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::Sub: ${ApiRole.Arn}
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ClassificationLambda.Arn}/invocations
+        timeoutInMillis: 29000
+        type: "aws_proxy"
+
+  /retrieval:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                index:
+                  type: string
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid request
+      x-amazon-apigateway-request-validator: body
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::Sub: ${ApiRole.Arn}
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${RetrievalLambda.Arn}/invocations
+        timeoutInMillis: 29000
+        type: "aws_proxy"
+  
+  /response:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                message:
+                  type: string
+                index:
+                  type: string
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid request
+      x-amazon-apigateway-request-validator: body
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::Sub: ${ApiRole.Arn}
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ResponseLambda.Arn}/invocations
+        timeoutInMillis: 29000
+        type: "aws_proxy"
+
+  /setConfiguration:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                prompt:
+                  type: string
+                index:
+                  temperature: number
+      responses:
+        "200":
+          description: Successful operation
+        "400":
+          description: Invalid request
+      x-amazon-apigateway-request-validator: body
+      x-amazon-apigateway-integration:
+        credentials: 
+          Fn::Sub: ${ApiRole.Arn}
+        httpMethod: POST
+        uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${SetConfigurationLambda.Arn}/invocations
+        timeoutInMillis: 29000
+        type: "aws_proxy"
+
+

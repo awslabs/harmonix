@@ -6,7 +6,7 @@ Based on [Backstage](https://backstage.io/) which is an open-source platform ena
 
 <br/>
 
-## About FSI PACE Platform Engineering Team
+## FSI PACE Platform Engineering Team
 
 FSI PACE Platform engineering team is focused on unblocking customers and accelerate their journey to the cloud. While working with different customers in the financial services industry, we kept seeing the same challenges being surfaced about landing zones, lack of cloud skills, and difficulties building an internal developer platforms. Many of our customers have been trying to build internal solutions, or found themselves paying hefty fees for external services. Along with our customers, we’ve embarked on this journey of simplifying their internal AWS experience. Thus came to be OPA on AWS.
 
@@ -56,12 +56,47 @@ Our goal is to provide a simple, safe, easy-to-use solution, that reduces the ov
         Kareem Abdol-Hamid
     </td>
     <td align="center">
-        <img src="img/team/hemal.jpeg"/><br/>
-        Hemal Gadhiya
+        <img src="img/team/daniela.jpeg"/><br/>
+        Daniela Vargas
     </td>
     <td align="center">
-        <img src="img/team/pierre.jpg"/><br/>
-        Pierre Nkola
+       <img src="img/team/hemal.jpeg"/><br/>
+        Hemal Gadhiya
+    </td>
+</tr>
+<tr>
+    <td align="center"> 
+    </td>
+    <td align="center">
+    </td>
+    <td align="center">
+    </td>
+    <td align="center">
+    </td>
+</tr>
+</table>
+</div>
+
+### Collaborations
+
+<div class="aboutTable">
+<table border="0">
+<tr>
+    <td align="left">
+    <img width="50%" src="img/platform-engineering.png"/>        
+    </td>
+     <td align="left">
+        OPA on AWS is a supporter of platform engineering community. 
+        https://platformengineering.org/       
+    </td>
+</tr>
+<tr>
+    <td align="left">
+    <img width="40%" src="img/the-platformers.webp"/>        
+    </td>
+     <td align="left">
+        OPA on AWS is a proud member of The Platformers community. 
+        https://www.platformers.community/       
     </td>
 </tr>
 </table>

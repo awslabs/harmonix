@@ -26,7 +26,7 @@ import { NagSuppressions } from "cdk-nag";
 
 function getEnvVarValue(envVar: string | undefined): string {
   if (!envVar || envVar === "blank") {
-    return ""
+    return "";
   }
   return envVar;
 }

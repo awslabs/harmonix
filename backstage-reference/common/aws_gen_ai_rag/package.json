@@ -1,0 +1,23 @@
+{
+  "name": "aws_genai_api",
+  "version": "0.1.0",
+  "bin": {
+    "aws_genai_api": "src/cdk-gen-ai-rag-app.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "cdk": "cdk"
+  },
+  "devDependencies": {
+    "@types/node": "^20.3.1",
+    "aws-cdk": "2.120.0",
+    "ts-node": "^10.9.1",
+    "typescript": "~5.0.4"
+  },
+  "dependencies": {
+    "@aws-sdk/util-arn-parser": "^3.208.0",
+    "aws-cdk-lib": "2.120.0",
+    "constructs": "^10.0.0"
+  }
+}

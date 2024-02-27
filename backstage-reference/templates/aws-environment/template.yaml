@@ -50,10 +50,12 @@ spec:
             - ecs
             - eks
             - serverless
+            - gen-ai-serverless
           enumNames:
             - AWS ECS
             - AWS EKS
             - AWS Serverless
+            - AWS Gen AI Serverless
         deploymentRequiresApproval:
           title: Deployment requires approval
           description: is approval required before deploying to this environment?

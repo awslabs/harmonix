@@ -11,7 +11,8 @@ export enum ExtraStackDeployStatus {
 export enum ProviderType {
   ECS = "ecs",
   EKS = "eks",
-  SERVERLESS = "serverless"
+  SERVERLESS = "serverless",
+  GENAI_SERVERLESS = "gen-ai-serverless"
 }
 
 export type DeployStackStatus = StackStatus | ExtraStackDeployStatus;

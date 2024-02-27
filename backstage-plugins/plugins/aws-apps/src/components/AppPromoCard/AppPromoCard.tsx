@@ -1,24 +1,22 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { ChangeEvent, useEffect, useState } from 'react';
-import { EmptyState, InfoCard, } from '@backstage/core-components';
-import { CatalogApi, useEntity } from '@backstage/plugin-catalog-react';
-import { Button, CardContent, FormControl, FormHelperText, Grid, InputLabel, LinearProgress, MenuItem, Select } from '@material-ui/core';
-import { Alert, AlertTitle, Typography } from '@mui/material';
-import { useAsyncAwsApp } from '../../hooks/useAwsApp';
-import { AWSComponent, AwsDeploymentEnvironments } from '@aws/plugin-aws-apps-common-for-backstage';
-import { useApi } from '@backstage/core-plugin-api';
-import { catalogApiRef } from '@backstage/plugin-catalog-react';
+import { AWSComponent, AWSProviderParams, AwsDeploymentEnvironments } from '@aws/plugin-aws-apps-common-for-backstage';
 import { CompoundEntityRef, Entity, EntityRelation, parseEntityRef } from '@backstage/catalog-model';
-import { opaApiRef } from '../../api';
-import { AWSProviderParams } from '@aws/plugin-aws-apps-common-for-backstage';
+import { EmptyState, InfoCard, } from '@backstage/core-components';
+import { useApi } from '@backstage/core-plugin-api';
+import { CatalogApi, catalogApiRef, useEntity } from '@backstage/plugin-catalog-react';
+import { Button, CardContent, FormControl, FormHelperText, Grid, InputLabel, LinearProgress, MenuItem, Select } from '@material-ui/core';
+import InfoIcon from '@mui/icons-material/Info';
+import { Alert, AlertTitle, Typography } from '@mui/material';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import InfoIcon from '@mui/icons-material/Info';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import React, { ChangeEvent, useEffect, useState } from 'react';
+import { opaApiRef } from '../../api';
 import { ProviderType } from '../../helpers/constants';
+import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { AwsEksEnvPromoDialog } from './AwsEksEnvPromoDialog';
 
 const AppPromoCard = ({

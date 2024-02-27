@@ -1,25 +1,24 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { InfoCard, EmptyState } from '@backstage/core-components';
-import { TableBody, TableCell, TableRow, Table } from '@material-ui/core';
-import { useApi } from '@backstage/core-plugin-api';
-import { LinearProgress } from '@material-ui/core';
-import { Button, CardContent, Divider, Grid, Typography } from '@mui/material';
-import React, { useEffect, useState, useRef } from 'react';
-import { opaApiRef } from '../../api';
-import { useAsyncAwsApp } from '../../hooks/useAwsApp';
-import { AWSComponent, AWSEKSAppDeploymentEnvironment, AppState, AppStateType, keyValue } from '@aws/plugin-aws-apps-common-for-backstage';
-import { useEntity } from '@backstage/plugin-catalog-react';
-import { base64PayloadConvert } from '../../helpers/util';
-import { Entity } from '@backstage/catalog-model';
-import { Unstable_NumberInput as NumberInput } from '@mui/base/Unstable_NumberInput';
-import { styled } from '@mui/system';
-import RemoveIcon from '@mui/icons-material/Remove';
-import AddIcon from '@mui/icons-material/Add';
-import { useCancellablePromise } from '../../hooks/useCancellablePromise';
-import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
 import { InvokeCommandOutput } from '@aws-sdk/client-lambda';
+import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
+import { AWSComponent, AWSEKSAppDeploymentEnvironment, AppState, AppStateType, KeyValue } from '@aws/plugin-aws-apps-common-for-backstage';
+import { Entity } from '@backstage/catalog-model';
+import { EmptyState, InfoCard } from '@backstage/core-components';
+import { useApi } from '@backstage/core-plugin-api';
+import { useEntity } from '@backstage/plugin-catalog-react';
+import { LinearProgress, Table, TableBody, TableCell, TableRow } from '@material-ui/core';
+import { Unstable_NumberInput as NumberInput } from '@mui/base/Unstable_NumberInput';
+import AddIcon from '@mui/icons-material/Add';
+import RemoveIcon from '@mui/icons-material/Remove';
+import { Button, CardContent, Divider, Grid, Typography } from '@mui/material';
+import { styled } from '@mui/system';
+import React, { useEffect, useRef, useState } from 'react';
+import { opaApiRef } from '../../api';
+import { base64PayloadConvert } from '../../helpers/util';
+import { useAsyncAwsApp } from '../../hooks/useAwsApp';
+import { useCancellablePromise } from '../../hooks/useCancellablePromise';
 
 const blue = {
   100: '#daecff',
@@ -273,7 +272,7 @@ const OpaAppStateOverview = ({
     }
   }
 
-  const getDeploymentEnvVars = (deploymentName: string): keyValue[] => {
+  const getDeploymentEnvVars = (deploymentName: string): KeyValue[] => {
     if (!appStateData || !variablesJson) {
       return [];
     }
@@ -290,7 +289,7 @@ const OpaAppStateOverview = ({
       return [];
     }
 
-    const variables: keyValue[] = [];
+    const variables: KeyValue[] = [];
     Object.keys(configMap.data).forEach((key: string, index: number) => {
       variables.push({
         id: `${index}`,
@@ -677,7 +676,7 @@ const OpaAppStateOverview = ({
                     <NumberInput
                       placeholder="Number of pods"
                       defaultValue={1}
-                      onChange={(_event, val) => deploymentState.desiredCount = val}
+                      onChange={(_event, val) => deploymentState.desiredCount = val || 0}
                       min={0}
                       max={10}
                       slots={{

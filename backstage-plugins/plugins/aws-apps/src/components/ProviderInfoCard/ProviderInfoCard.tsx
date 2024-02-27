@@ -7,7 +7,7 @@ import { InfoCard, Table, TableColumn } from '@backstage/core-components';
 import { Entity } from '@backstage/catalog-model';
 import { ProviderType } from '../../helpers/constants';
 
-interface keyValue {
+interface KeyValue {
   key: string;
   value: string;
 }
@@ -35,7 +35,7 @@ const ProviderInfo = (props: ProviderInfoProps) => {
     },
   ];
 
-  let items: keyValue[] = []
+  let items: KeyValue[] = []
   items.push({
     key: "Prefix",
     value: metadata['prefix']?.toString() || ""

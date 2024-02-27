@@ -50,7 +50,11 @@ iac-deployment-env-provider:
         git add stack-parameters.properties
       fi
     - echo -e "\e[0Ksection_end:`date +%s`:existing_cluster\r\e[0K"
+
+    - echo -e "\e[0Ksection_start:`date +%s`:cdk_bootstrap[collapsed=true]\r\e[0KCDK Bootstrap"
     - cdk bootstrap aws://$AWS_ACCOUNT_ID/$AWS_DEFAULT_REGION
+    - echo -e "\e[0Ksection_end:`date +%s`:cdk_bootstrap\r\e[0K"
+
     - cd .iac/opa-eks-environment
 
     - echo -e "\e[0Ksection_start:`date +%s`:yarn_install[collapsed=true]\r\e[0KYarn Install"

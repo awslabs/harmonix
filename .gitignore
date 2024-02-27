@@ -10,7 +10,7 @@
 # Crash log files
 crash.log
 
-*.zip
+# *.zip
 *.pem
 
 # Ignore any .tfvars files that are generated automatically for each Terraform run. Most
@@ -72,6 +72,7 @@ cicd/iam-role/final-cicd-iam-role.json
 iac/bootstrap/final-tf-backend-cf-stack.json
 *.bak
 config/.env
+localenv.sh
 
 # transpiled JavaScript, Typings and test files
 

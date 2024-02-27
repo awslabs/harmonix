@@ -1,0 +1,8 @@
+{
+    "message": "The same question used in the request above will be used here.",
+    "response": [
+            {
+                "page_content": "An extensive string containing relevant document context..."
+            }
+    ]
+}

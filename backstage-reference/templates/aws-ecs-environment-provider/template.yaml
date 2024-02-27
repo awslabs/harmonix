@@ -2,7 +2,7 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: aws-ecs-environment-provider
-  title: AWS ECS Environment Provider
+  title: AWS ECS Fargate Environment Provider
   description: Configure an AWS ECS environment provider
   tags:
     - aws

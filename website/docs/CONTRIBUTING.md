@@ -91,7 +91,7 @@ The above described guidelines are to set the standard of submitting Pull Reques
 
 ### Submitting Contribution
 
-Before submitting any contribution type please make sure it adheres to the OPA on AWS [architecture](/website/docs/techdocs/architecture.md)
+Before submitting any contribution type please make sure it adheres to the OPA on AWS [architecture](https://opaonaws.io/docs/techdocs/architecture)
 
 ### Contributing an OPA on AWS provider
 
@@ -127,13 +127,13 @@ Don't forget to update all-templates.yaml with your new template path
 #### Test your provider
 **Step 1**<br/>
 Make sure you are able to provision your new provider template.
-We highly recommend to test different context for this step as described in the [test-cases](/website/docs/tests.md)
+We highly recommend to test different context for this step as described in the [test-cases](https://opaonaws.io/docs/tests)
 
 **Step 2**<br/>
 Make sure you can update the provider configurations or IAC and the pipeline will apply the changes succufully 
 
 **Step 3**<br/>
-Add entries in  [test-cases](/website/docs/tests.md) document for the new provider implemented.
+Add entries in  [test-cases](https://opaonaws.io/docs/tests) document for the new provider implemented.
 
 #### Submit your PR
 Submit a pull request for the new provider following the instructions in this page.
@@ -177,7 +177,7 @@ Don't forget to update all-templates.yaml with your new template path
 #### Test your application
 **Step 1**<br/>
 Make sure you are able to provision your new application template.
-We highly recommend to test different context for this step as described in the [test-cases](/website/docs/tests.md).
+We highly recommend to test different context for this step as described in the [test-cases](https://opaonaws.io/docs/tests).
 You should also test provisioning another application on the same environment to make sure there's not conflict of configurations and/or resources.
 
 **Step 2**<br/>
@@ -185,7 +185,7 @@ You should also test provisioning another application on the same environment to
 2. Make sure you can update the application code /src and CD pipeline will build and deploy the new application  
 
 **Step 3**<br/>
-Add entries in  [test-cases](/website/docs/tests.md) document for the new application implemented.
+Add entries in  [test-cases](https://opaonaws.io/docs/tests) document for the new application implemented.
 
 #### Submit your PR
 Submit a pull request for the new provider following the instructions in this page.

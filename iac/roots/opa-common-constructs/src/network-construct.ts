@@ -108,8 +108,8 @@ export class NetworkConstruct extends Construct {
         const allocationIds: string[] = [];
         this.publicEIPref = [];
 
-      // Create as many EIP as there are AZ/Subnets and store their allocIds & refs.
-      for (let i = 0; i < props.vpcAzCount; i++) {
+      // Create as many EIP as there are NAT Gateways and store their allocIds & refs.
+      for (let i = 0; i < props.publicVpcNatGatewayCount; i++) {
           const eip = new ec2.CfnEIP(this, `VPCPublicSubnet${i + 1}NATGatewayEIP${i}`, {
             domain: "vpc",
             tags: [

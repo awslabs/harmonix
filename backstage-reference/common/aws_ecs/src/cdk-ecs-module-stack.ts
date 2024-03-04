@@ -110,17 +110,14 @@ export class EcsResourcesStack extends Stack {
       description: "Key used to encrypt ECS app repository"
     });
 
-    // TODO: ECR repositories cannot be automatically deleted when destroying the CDK stack.
-    //       Emptying the repository of all images and then deleting the repo will need to be
-    //       performed via SDK as part of any teardown/destroy actions
     // Create an ECR repository for the application container images
     const ecrRepository = new ecr.Repository(this, "ecr-repository", {
       repositoryName: `${appShortName}-${envName}-${envProviderName}`.toLowerCase(),
       imageScanOnPush: true,
       encryption: ecr.RepositoryEncryption.KMS,
       encryptionKey: kmsKey,
-      removalPolicy:RemovalPolicy.DESTROY,
-      autoDeleteImages:true
+      removalPolicy: RemovalPolicy.DESTROY,
+      emptyOnDelete: true
     });
 
     // Get references to the existing cluster and Vpc for the environment where the app will be deployed

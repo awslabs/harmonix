@@ -225,43 +225,47 @@ export class OPAPlatformStack extends cdk.Stack {
     // wait till gitlab host is done.
     gitlabRunner.node.addDependency(gitlabHostingConstruct);
 
-    // create the environment provisioning role.
-    const envProvisioningRole = new iam.Role(this, "EnvProvisioningRole", {
-      assumedBy: new iam.CompositePrincipal(
-        new iam.ArnPrincipal(backstageRootRole.IAMRole.roleArn),
-        new iam.ArnPrincipal(gitlabRunner.gitlabEc2Role.roleArn)
-      ),
-      roleName: "opa-envprovisioning-role", // Optional: specify a role name
-    });
+   
 
-    // Attach the AdministratorAccess policy to the role
-    // !FIXME: scope this policy down
-    const customAdminPolicy = new iam.ManagedPolicy(this, "CustomAdministratorAccess", {
-      statements: [
-        new iam.PolicyStatement({
-          actions: ["*"],
-          resources: ["*"],
-        }),
-      ],
-    });
-    envProvisioningRole.addManagedPolicy(customAdminPolicy);
+    // Attach the AdministratorAccess policy to the role if required
+    
+    const createEnvRole = getEnvVarValue(process.env.CREATE_ENV_PROVISIONING_ROLE);
+    if (!createEnvRole){
 
-    NagSuppressions.addResourceSuppressions(customAdminPolicy, [
-      {
-        id: "AwsSolutions-IAM5",
-        reason:
-          "The CustomAdministratorAccess policy is intentionally designed to grant full administrative access to AWS services for specific administrative roles. This use case has been reviewed and accepted by our security team.",
-      },
-    ]);
+      // create the environment provisioning role.
+      const envProvisioningRole = new iam.Role(this, "EnvProvisioningRole", {
+        assumedBy: new iam.CompositePrincipal(
+          new iam.ArnPrincipal(backstageRootRole.IAMRole.roleArn),
+          new iam.ArnPrincipal(gitlabRunner.gitlabEc2Role.roleArn)
+        ),
+        roleName: "opa-envprovisioning-role", // Optional: specify a role name
+      });
+      
+      //TODO: Reduce permissions before release to PROD
+      envProvisioningRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"));
 
-    // store the provisioning role arn to ssm
-    new ssm.StringParameter(this, `${opaParams.prefix}-provisioning-role`, {
-      allowedPattern: ".*",
-      description: "This role is assumed by platform to provision environments",
-      parameterName: `/${opaParams.prefix}/provisioning-role`,
-      stringValue: envProvisioningRole.roleArn,
-    });
+      NagSuppressions.addResourceSuppressions(envProvisioningRole, [
+        {
+          id: "AwsSolutions-IAM4",
+          reason:
+            "The power access policy is intentionally designed to grant full administrative access to AWS services for specific administrative roles. This use case has been reviewed and accepted by our security team.",
+        },
+      ]);
 
+      // store the provisioning role arn to ssm
+      new ssm.StringParameter(this, `${opaParams.prefix}-provisioning-role`, {
+        allowedPattern: ".*",
+        description: "This role is assumed by platform to provision environments",
+        parameterName: `/${opaParams.prefix}/provisioning-role`,
+        stringValue: envProvisioningRole.roleArn,
+      });
+
+      new cdk.CfnOutput(this, `${opaParams.prefix}-envprovisioning-role-arn`, {
+        value: envProvisioningRole.roleArn,
+        description: "Role will be assumed to provision environments",
+      });
+    }
+    
     // Create a regional WAF Web ACL for load balancers
     const wafConstruct = new Wafv2BasicConstruct(this, `${opaParams.prefix}-regional-wafAcl`, {
       wafScope: WafV2Scope.REGIONAL,
@@ -284,9 +288,6 @@ export class OPAPlatformStack extends cdk.Stack {
       description: "ECR repository for backstage platform images",
     });
 
-    new cdk.CfnOutput(this, `${opaParams.prefix}-envprovisioning-role-arn`, {
-      value: envProvisioningRole.roleArn,
-      description: "Role will be assumed to provision environments",
-    });
+    
   }
 }

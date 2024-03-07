@@ -57,10 +57,19 @@ echo "Checking for git-defender"
 IS_DEFENDER=$(type "git-defender" 2>/dev/null) || true
 # if the system is using git-defender and the repo is not configured, configure it
 if [[ ! -z "$IS_DEFENDER" ]] && ! grep -q "\[defender\]" .git/config ; then
-  echo "Found git-defender, but repo is not configured.  Proceeding to configure repo for git-defender"
-  (sleep 1; echo -e "y\n"; sleep 1; echo -e "y\n";)|git defender --setup
-  echo ""
-  echo ""
+  # echo "Found git-defender, but repo is not configured.  Proceeding to configure repo for git-defender"
+  # (sleep 1; echo -e "y\n"; sleep 1; echo -e "y\n";)|git defender --setup
+  # echo ""
+  # echo ""
+  echo -e "\nGit Defender detected. Populating git-temp/.git/config for Defender.\n"
+  echo -e "" >> .git/config
+  echo -e "[defender]" >> .git/config
+  echo -e "\tallowrepo = https://$SSM_GITLAB_HOSTNAME/opa-admin/backstage-reference.git" >> .git/config
+  echo -e "\tallowemail = $(whoami)@amazon.com" >> .git/config
+  echo -e "\tregistered = true" >> .git/config
+  echo -e "" >> .git/config
+elif grep -q "\[defender\]" .git/config ; then
+  echo -e "Git Defender has alredy been configured in git-temp/.git/config\n"
 fi
 
 # Add and commit changes to repo if there are files to commit

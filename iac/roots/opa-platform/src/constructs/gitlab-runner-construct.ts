@@ -156,21 +156,37 @@ export class GitlabRunnerConstruct extends Construct {
     const userDataScript = readFileSync("./src/scripts/gitlab-runner-user-data.sh", "utf8");
     userData.addCommands(userDataScript);
 
-    const amznLinux2023Ami = ssm.StringParameter.valueForStringParameter(this, 
-      ec2.AmazonLinux2023ImageSsmParameter.ssmParameterName({
-        kernel: ec2.AmazonLinux2023Kernel.KERNEL_6_1,
-        cpuType: ec2.AmazonLinuxCpuType.X86_64,
-        edition: ec2.AmazonLinuxEdition.STANDARD
-      })
-    );
+   // Get the latest Ubuntu machine image map
+    // Defaults will use "jammy" (22.04) on x86_64, but can be overridden with env vars
+    const UBUNTU_OWNER_ID = "099720109477"; // The official owner ID for Canonical-owned images
+    const ubuntuName = process.env.UBUNTU_NAME || "jammy";
+    // const ubuntuVersion = getEnvVarValue(process.env.UBUNTU_VERSION) || "22.04";
+    const ubuntuArch = process.env.UBUNTU_ARCH || ec2.InstanceArchitecture.X86_64;
+    const ubuntuLookupProps = {
+      // `YEAR-ARCH` are the first two stars
+      name: `ubuntu/images/hvm-ssd/ubuntu-${ubuntuName}-*-*-server-*`,
+      owners: [UBUNTU_OWNER_ID],
+      filters: {
+        architecture: [ubuntuArch],
+        "image-type": ["machine"],
+        state: ["available"],
+        "root-device-type": ["ebs"],
+        "virtualization-type": ["hvm"],
+      },
+    }
+    // short-circuit the creation of the amiMap if one was passed in via properties; otherwise lookup using the props above
+    const linuxAmiMap = props.GitlabAmi || { [props.opaEnv.awsRegion]: new ec2.LookupMachineImage(ubuntuLookupProps).getImage(this).imageId }
+    const machineImage = ec2.MachineImage.genericLinux(linuxAmiMap);
     
+
+
     const launchTemplate = new ec2.LaunchTemplate(this, "GitLabRunnerLaunchTemplate", {
       instanceType: ec2.InstanceType.of(props.instanceClass, props.instanceSize),
       userData,
       securityGroup: instanceSecurityGroup,
       requireImdsv2: true,
       role: this.gitlabEc2Role,
-      machineImage: ec2.MachineImage.genericLinux(props.GitlabAmi || {[props.opaEnv.awsRegion] : amznLinux2023Ami}),
+      machineImage,
       httpPutResponseHopLimit: 2,
       blockDevices: [blockDevice],
       httpTokens: ec2.LaunchTemplateHttpTokens.REQUIRED,

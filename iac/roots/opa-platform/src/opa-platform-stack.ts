@@ -230,7 +230,7 @@ export class OPAPlatformStack extends cdk.Stack {
     // Attach the AdministratorAccess policy to the role if required
     
     const createEnvRole = getEnvVarValue(process.env.CREATE_ENV_PROVISIONING_ROLE);
-    if (!createEnvRole){
+    if (createEnvRole.toLowerCase() === 'true'){
 
       // create the environment provisioning role.
       const envProvisioningRole = new iam.Role(this, "EnvProvisioningRole", {

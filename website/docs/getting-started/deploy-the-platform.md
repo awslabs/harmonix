@@ -25,13 +25,15 @@ The following software is required to perform the installation of the platform s
 - [jq](https://stedolan.github.io/jq/)
 - [docker](https://www.docker.com/)
 - [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-
+- [python](https://www.python.org/downloads/)
+*Make sure to use Python 3.11, Python 3.12+ has issues due to distutils removal*
 
 :::note
 The installation instructions documented here were tested using the following versions:
 - node v18.19
 - aws-cdk v2.95
 - yarn 1.22.21
+- python 3.11
 :::
 
 ### Solution Platform prerequisites

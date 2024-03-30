@@ -1,0 +1,8 @@
+{
+  "label": "Integration",
+  "position": 7,
+  "link": {
+    "type": "generated-index",
+    "description": "Getting started with integration to the AWS cloud using OPA on AWS"
+  }
+}

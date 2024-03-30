@@ -9,22 +9,46 @@ type FeatureGroup = {
   FeatureItems: FeatureItem[]
 }
 
+const opaMainVideoContent = (
+  <div className=''>
+    <h4>OPA on AWS at BackstageCon 2024</h4>
+    <iframe width="600" height="300" src="https://www.youtube.com/embed/40B6YmmhOvI/2.jpg?start=670" title="Let’s Go Backstage: End to End IDP Tips &amp; Tricks for Platform Engineers - Oshrat Nir &amp; Guy Menahem" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <br/><br/>
+    <h5><i>Upcoming OPA on AWS conference sessions: <a href="https://platformcon.com/">PlatformCon 2024</a></i></h5>
+  </div>
+)
+
+
 const carouselContent = (
   <div className='carouselTitle'>
-    <h3>Coming Soon</h3>
-  <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='Coming soon'  >
+  <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='' >
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>AWS Control Tower Integration</h4>
-      <p>Allow OPA on AWS in your organization to participate in account provisioning and customization.</p>
+      <h4>🚀 NEW 🚀</h4>
+      <p><b>GenAI provider and RAG app</b></p>
+      <p>New GenAI Provider for development of GenAI Applications and a new RAG demo app to get you started quickly with experimenting with GenAI applications. <a href="/docs/category/generative-ai">Click here for more details</a></p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>Environment Binding</h4>
-      <p>
-        Adding support to allow binding and connecting environment networks (VPCs) using AWS Transit Gateway for inter-application connectivity
-      </p>
+      <h4>🚀 NEW 🚀</h4>
+      <p><b>AWS Control Tower & AFT Integration</b></p>
+      <p>Step by Step <a href="/docs/integration/control-tower-and-aft" >Documentation</a> how to integrate OPA on AWS <br/> with AWS Control Tower and AFT (Account Factory for Terraform)</p>
+    </Carousel.Caption>
+  </Carousel.Item>
+  
+  <Carousel.Item>
+    <Carousel.Caption style={{minHeight:'120px'}}>
+      <h4>🔜 Coming Soon 🔜</h4>
+      <p><b>Terraform ECS Cluster Template</b></p>
+      <p>A New Terraform template to provision AWS ECS Clusters</p>
+    </Carousel.Caption>
+  </Carousel.Item>
+  <Carousel.Item>
+    <Carousel.Caption style={{minHeight:'120px'}}>
+      <h4>🔜 Coming Soon 🔜</h4>
+      <p><b>GitHub Source Control Integration</b></p>
+      <p>Integrating OPA on AWS with GitHub Source control</p>
     </Carousel.Caption>
   </Carousel.Item>
 </Carousel>
@@ -80,6 +104,21 @@ const opaDescription : FeatureItem[] = [
   },
 ]
 
+const opaMainVideo : FeatureItem[] = [
+  {
+    title: 'video',
+    Svg: require('@site/static/img/regulations.svg').default,
+    noSVG:true,
+    minHeight:'300px',
+    customTextStyle:{fontSize:'24px', maxWidth:'70%', margin:'auto',minHeight:'170px'},
+    description: (
+      <>
+       {opaMainVideoContent}
+      </>
+    ),
+  },
+]
+
 const opaCarousel : FeatureItem[] = [
   {
     title: 'Updates',
@@ -129,6 +168,7 @@ const SpeedFeatureList: FeatureItem[] = [
       </>
     ),
   },
+
 ];
 
 const ScaleFeatureList: FeatureItem[] = [
@@ -290,17 +330,21 @@ const FeatureRowList: FeatureGroup[] = [
   },
   {
     direction: "ltr",
-    FeatureItems: EnterpriseFeatureList,
+    FeatureItems: opaMainVideo,
   },
-
   {
     direction: "ltr",
     FeatureItems: opaDescription,
   },
+  
 
   {
     direction: "ltr",
     FeatureItems: opaImageList,
+  },
+  {
+    direction: "ltr",
+    FeatureItems: EnterpriseFeatureList,
   },
   {
     direction: "ltr",

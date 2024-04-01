@@ -66,6 +66,8 @@ Our goal is to provide a simple, safe, easy-to-use solution, that reduces the ov
 </tr>
 <tr>
     <td align="center"> 
+      <img src="img/team/alseny.jpeg"/><br/>
+        Alseny Diallo
     </td>
     <td align="center">
     </td>

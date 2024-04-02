@@ -9,8 +9,8 @@ start_local() {
 	echo "Starting a local PostgreSQL container"
 	docker compose -f $appRootDir/config/docker-compose.yml up --build --detach
 	echo "Starting the backstage app"
-	# set -a && source $appRootDir/config/.env && set +a && yarn --cwd $backstageDir dev
-	yarn --cwd $backstageDir dev
+	set -a && source $appRootDir/config/.env && set +a && yarn --cwd $backstageDir dev
+	# yarn --cwd $backstageDir dev
 	echo "Local dev startup completed"
 }
 
@@ -18,7 +18,7 @@ start_local_debug(){  ## Start the backstage app for local development with debu
 	echo "Starting a local PostgreSQL container"
 	docker compose -f $appRootDir/config/docker-compose.yml up --build --detach
 	echo "Starting the backstage app with debug"
-	# set -a && source $appRootDir/config/.env && set +a && yarn --cwd ./backstage dev-debug
+	set -a && source $appRootDir/config/.env && set +a && yarn --cwd ./backstage dev-debug
 	$backstageDir/node_modules/.bin/concurrently "yarn --cwd $backstageDir start" "yarn --cwd $backstageDir start-backend --inspect"
 	echo "Local dev startup completed"
 }

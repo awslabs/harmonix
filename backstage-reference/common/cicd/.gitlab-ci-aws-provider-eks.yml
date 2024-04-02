@@ -31,8 +31,8 @@ iac-deployment-env-provider:
 
     - echo -e "\e[0Ksection_start:`date +%s`:get_kubectl[collapsed=true]\r\e[0KInstall Kubectl"
     - apt install sudo
-    - curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-archive-keyring.gpg
-    - echo "deb [signed-by=/etc/apt/keyrings/kubernetes-archive-keyring.gpg] https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee /etc/apt/sources.list.d/kubernetes.list
+    - curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    - echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
     - sudo apt update
     - sudo apt install kubectl
     - echo -e "\e[0Ksection_end:`date +%s`:get_kubectl\r\e[0K"

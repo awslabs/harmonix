@@ -32,7 +32,10 @@ install: verify-env
 	@echo -e "Visit the application at https://${R53_HOSTED_ZONE_NAME}" 2>&1 | tee -a $(LOGFILE)
 
 verify-env:
-	@if [ -f ./config/.envblah ]; then $(error The configuration file at ./config/.env is missing.  Please configure the .env file first.);
+ifeq (,$(wildcard ./config/.env))
+    $(error The configuration file at ./config/.env is missing.  Please configure the .env file first.)
+endif
+	@echo "Found a ./config/.env file.  Proceeding..."
 ifndef AWS_ACCOUNT_ID
 	$(error AWS_ACCOUNT_ID is undefined.  Please ensure this is set in the config/.env file)
 endif

@@ -230,6 +230,8 @@ export class OPAApiClient implements OPAApi {
       envName: params.envName,
       policies: params.policies,
       resourceName: params.resourceName,
+      resourceArn: params.resourceArn,
+      appRoleArn: params.appRoleArn,
       resourceEntityRef: params.resourceEntityRef
     }
 
@@ -260,6 +262,8 @@ export class OPAApiClient implements OPAApi {
       envName: params.envName,
       policies: params.policies,
       resourceName: params.resourceName,
+      resourceArn: params.resourceArn,
+      appRoleArn: params.appRoleArn,
       resourceEntityRef: params.resourceEntityRef
     }
 

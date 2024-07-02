@@ -57,6 +57,8 @@ export interface BindResourceParams {
   envName: string;
   providerName: string;
   resourceName:string;
+  resourceArn:string;
+  appRoleArn:string;
   resourceEntityRef:string;
   policies: ResourcePolicy[];
   appName: string;

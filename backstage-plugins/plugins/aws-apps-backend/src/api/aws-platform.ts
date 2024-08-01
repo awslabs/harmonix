@@ -52,6 +52,7 @@ export class AwsAppsPlatformApi {
     this.logger.info(`platformRegion: ${this.platformRegion}`);
     this.logger.info(`awsAccount: ${this.awsAccount}`);
     this.logger.info(`awsRegion: ${this.awsRegion}`);
+    this.logger.info(`THIS IS A TEST TO SEE IF THIS UPDATE IS WORKING`)
   }
 
   /**
@@ -390,6 +391,11 @@ export class AwsAppsPlatformApi {
     gitProjectId = await this.getGitProjectId(input.gitHost, input.gitProjectGroup, input.gitRepoName, gitToken);
     console.log(`Got GitLab project ID: ${gitProjectId} for ${input.gitProjectGroup}/${input.gitRepoName}`);
 
+    // 1. get repo name for resource if it's a secret
+    let resourceProjectId: string;
+    resourceProjectId = await this.getGitProjectId(input.gitHost, "aws-resources", input.resourceName, gitToken);
+    console.log(`resource project id is: ${resourceProjectId}`)
+
     const actions = input.policies.map(p => {
       const policyFile = `.iac/permissions/${input.envName}/${input.providerName}/${p.policyFileName}.json`;
       const policyContent = p.policyContent;
@@ -400,6 +406,46 @@ export class AwsAppsPlatformApi {
         content: policyContent,
       };
     });
+
+    /// START OF RESOURCE UPDATES
+
+    // 1. get repo name for resource if it's a secret
+    // 2. add to CDK stack a tag of the app name e.g. something like associated/bound app
+    // 3. add to CDK stack a resource policy that denies access if associated/bound app tag != ${aws:PrincipalTag/appName}
+    // let resourceProjectId: string;
+    // resourceProjectId = await this.getGitProjectId(input.gitHost, "aws-resources", input.resourceName, gitToken);
+    // console.log(`resource project id is: ${resourceProjectId}`)
+    const resourcecdkupdate = `import * as cdk from "aws-cdk-lib"; import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager"; const mySecretFromCompleteArn = secretsmanager.Secret.fromSecretCompleteArn(this, 'SecretFromCompleteArn', ${input.resourceArn}); Tags.of(mySecretFromCompleteArn).add('BoundApps', '${input.appName}');`
+    const resourcecdkupdatefile = `.iac/src/cdk-resourcebinding.ts`
+
+    const r_actions = {
+      action: 'create',
+      file_path: resourcecdkupdatefile,
+      content: resourcecdkupdate,
+    };
+
+    
+    const r_commit = {
+      branch: 'main',
+      commit_message: `Bind Resource`,
+      actions: r_actions,
+    };
+
+    const r_url = `https://${input.gitHost}/api/v4/projects/${resourceProjectId}/repository/commits`;
+    const r_result = await fetch(new URL(r_url), {
+      method: 'POST',
+      body: JSON.stringify(r_commit),
+      headers: {
+        'PRIVATE-TOKEN': gitToken,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    console.log(r_result)
+
+
+
+    /// END OF RESOURCE UPDATES
 
     const resourceBindContent = `RESOURCE_ENTITY_REF=${input.resourceEntityRef}\nRESOURCE_ENTITY=${input.resourceName}\nTARGET_ENV_NAME=${input.envName}\nTARGET_ENV_PROVIDER_NAME=${input.providerName}`;
     const resourceBindFile = `.awsdeployment/resource-binding-params-temp.properties`;

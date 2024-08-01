@@ -331,6 +331,8 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const gitProjectGroup = req.body.gitProjectGroup?.toString();
     const gitRepoName = req.body.gitRepoName?.toString();
     const resourceName = req.body.resourceName?.toString();
+    const resourceArn = req.body.resourceArn?.toString();
+    const appRoleArn = req.body.appRoleArn?.toString();
     const resourceEntityRef = req.body.resourceEntityRef?.toString();
     const policies = req.body.policies;
     const params: BindResourceParams = {
@@ -342,6 +344,8 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
       gitRepoName,
       providerName,
       resourceName,
+      resourceArn,
+      appRoleArn,
       resourceEntityRef,
       policies
     };
@@ -369,6 +373,8 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const gitProjectGroup = req.body.gitProjectGroup?.toString();
     const gitRepoName = req.body.gitRepoName?.toString();
     const resourceName = req.body.resourceName?.toString();
+    const resourceArn = req.body.resourceArn?.toString();
+    const appRoleArn = req.body.appRoleArn?.toString();
     const resourceEntityRef = req.body.resourceEntityRef?.toString();
     const policies = req.body.policies;
     const params: BindResourceParams = {
@@ -380,6 +386,8 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
       gitRepoName,
       providerName,
       resourceName,
+      resourceArn,
+      appRoleArn,
       resourceEntityRef,
       policies
     };

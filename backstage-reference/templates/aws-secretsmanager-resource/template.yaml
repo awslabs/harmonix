@@ -1,0 +1,203 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+# https://backstage.io/docs/features/software-catalog/descriptor-format#kind-template
+kind: Template
+metadata:
+  name: aws-secretsmanager
+  title: AWS Secret
+  description: >-
+    Create an Amazon Secrets Manager Secret.
+  tags:
+    - aws-resource
+    - secrets-manager
+    - aws
+spec:
+  owner: group:admins
+  type: resource
+  parameters:
+    - title: Provide resource information
+      required:
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component (will be used for secret name too)
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: what this secret will be used for
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the resource
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind:
+                - Group
+        cross_account_roles:
+          title: Cross-account role ARN
+          type: string
+          description: Comma separated list of Cross-Account Role ARNs if you need to give access to this secret from another account(s)
+          pattern: ^arn:aws:iam::\d{12}:role\/(?:[a-zA-Z0-9_+=,.@-]+\/)*[a-zA-Z0-9_+=,.@-]+(?:,arn:aws:iam::\d{12}:role\/(?:[a-zA-Z0-9_+=,.@-]+\/)*[a-zA-Z0-9_+=,.@-]+)*$
+        hosted_rotation:
+          title: Hosted Rotation
+          type: string
+          description: If for a database, provide the database type to configure automatic rotation/management of the secret
+          default: None
+          enum:
+            - None
+            - mariaDbMultiUser
+            - mariaDbSingleUser
+            - mongoDbMultiUser
+            - mongoDbSingleUser
+            - mysqlMultiUser
+            - mysqlSingleUser
+            - oracleMultiUser
+            - oracleSingleUser
+            - postgreSqlMultiUser
+            - postgreSqlSingleUser
+            - redshiftMultiUser
+            - redshiftSingleUser
+            - sqlServerMultiUser
+            - sqlServerSingleUser
+        kms_cmk_arn:
+          title: Create KMS CMK
+          type: string
+          default: False
+          enum:
+            - "False"
+            - "True"
+          description: Whether you want a KMS CMK to be used for encryption
+    - title: Provide deployment information for the resource
+      required:
+        - environment
+      properties:
+        environment:
+          title: AWS Environment
+          type: string
+          description: The AWS Environment where the secret is created
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AWSEnvironment
+            defaultKind: AWSEnvironment
+    - title: Choose a git repository location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - git.reinforce24.bffranze.people.aws.dev
+            allowedOwners:
+              - aws-resources
+  steps:
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+    - id: opaGetAwsEnvProviders
+      name: Get AWS Environment Providers
+      action: opa:get-env-providers
+      input:
+        environmentRef: ${{ parameters.environment }}
+    - id: debugEnvironment
+      name: Print the environment entity info
+      action: debug:log
+      input:
+        message: ${{ steps['opaGetAwsEnvProviders'].output | dump }}
+    - id: createProviderPropsFiles
+      each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
+      name: Store environment provider parameters
+      action: roadiehq:utils:fs:write
+      input:
+        path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}.properties
+        #### FOR CONTENT PARAMETER BELOW, HOSTED ROTATION AND CROSS ACCOUNT ROLE ACCESS ####
+        content: >
+          SECRET_HOSTED_ROTATION=${{ parameters.hosted_rotation }}
+
+          SECRET_CROSS_ACCOUNT_ROLES=${{ parameters.cross_account_roles }}
+
+          SECRET_KMS_CMK=${{ parameters.kms_cmk_arn }}
+          
+          APP_SHORT_NAME=${{ parameters.component_id | lower }}
+
+          TARGET_VPCID=${{ each.value.vpcId }}
+
+          TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
+
+          TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
+
+          TARGET_SECRET_NAME=${{ parameters.component_id }}
+
+          SECRET_DESCRIPTION=${{ parameters.description }}
+
+          ACCOUNT=${{ each.value.accountId }}
+
+          REGION=${{ each.value.region }}
+
+          PREFIX=${{ each.value.envProviderPrefix }}
+
+          ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
+
+          OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName
+          }}-${{ each.value.envProviderName }}
+
+          OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if
+          steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{%
+          else %}false{% endif %}
+    - id: fetchIac
+      name: Fetch Secrets Manager Infrastructure as Code
+      action: fetch:template
+      input:
+        url: https://git.reinforce24.bffranze.people.aws.dev/opa-admin/backstage-reference/-/tree/main/common/aws_secretsmanager
+        targetPath: ./.iac
+        values:
+          component_id: ${{ parameters.component_id | lower}}
+          appEnvPlaintext: ""
+    - id: fetchBase
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          component_id: ${{ parameters.component_id | lower }}
+          title: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          awsEnvironmentProviderName: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].envProviderName }}
+          awsEnvironmentPrefix: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].envProviderPrefix }}
+          awsRegion: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].region }}
+          awsAccount: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].accountId }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          assumedRoleArn: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].assumedRoleArn }}
+          secretName: ${{ parameters.component_id }}
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: /.backstage/catalog-info.yaml
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

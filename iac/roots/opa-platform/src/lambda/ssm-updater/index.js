@@ -1,7 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { PutParameterCommand, SSMClient } from "@aws-sdk/client-ssm";
+// import { PutParameterCommand, SSMClient } from "@aws-sdk/client-ssm"; // ES Modules import
+const { SSMClient, PutParameterCommand } = require("@aws-sdk/client-ssm"); // CommonJS import
 
 exports.handler = async function (event) {
   console.log(process.env.SSM_PARAM);

@@ -2,26 +2,27 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-  OPAEnvironmentParams,
   DynamoDBConstruct,
   HostedZoneConstruct,
   NetworkConstruct,
+  OPAEnvironmentParams,
   RdsConstruct,
   Wafv2BasicConstruct,
+  WafV2Scope
 } from "@aws/aws-app-development-common-constructs";
-import { WafV2Scope } from "@aws/aws-app-development-common-constructs/src/wafv2-basic-construct";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as ecr from "aws-cdk-lib/aws-ecr";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as kms from "aws-cdk-lib/aws-kms";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
-import { OPARootRoleConstruct } from "./constructs/opa-role-construct";
 import { BackstageFargateServiceConstruct } from "./constructs/backstage-fargate-service-construct";
-import { CustomConstruct } from "./constructs/custom-resource-construct";
 import { GitlabHostingConstruct } from "./constructs/gitlab-hosting-construct";
 import { GitlabRunnerConstruct } from "./constructs/gitlab-runner-construct";
+import { OPARootRoleConstruct } from "./constructs/opa-role-construct";
+
 import { NagSuppressions } from "cdk-nag";
 
 function getEnvVarValue(envVar: string | undefined): string {
@@ -40,15 +41,15 @@ export class OPAPlatformStack extends cdk.Stack {
     super(scope, id, props);
 
     const sAllowedIPs = getEnvVarValue(process.env.ALLOWED_IPS);
-    const allowedIPs = !sAllowedIPs ? [] : sAllowedIPs?.split(",").map((s) => {
+    const allowedIPs = sAllowedIPs?.split(",").map((s) => {
       return s.trim();
-    });
+    }) || [];
 
     // Creating environment params
     const opaParams: OPAEnvironmentParams = {
       envName: "platform",
       awsRegion: getEnvVarValue(process.env.AWS_DEFAULT_REGION) || "us-east-1",
-      awsAccount: getEnvVarValue(process.env.AWS_ACCOUNT_ID),
+      awsAccount: getEnvVarValue(process.env.AWS_ACCOUNT_ID || this.account),
       prefix: getEnvVarValue(process.env.PREFIX) || "opa",
     };
 
@@ -81,13 +82,14 @@ export class OPAPlatformStack extends cdk.Stack {
       },
       encryptionKey: key,
     });
-
+    
     //Create Gitlab Admins Secret
+    const gitlabPassword = process.env.GITLAB_PASSWORD;
     const gitlabSecret = new secretsmanager.Secret(this, `${opaParams.prefix}-key-gitlab-admin-secrets`, {
       secretName: `${opaParams.prefix}-admin-gitlab-secrets`,
       secretObjectValue: {
         username: cdk.SecretValue.unsafePlainText("opa-admin"),
-        password: cdk.SecretValue.unsafePlainText(""),
+        password: cdk.SecretValue.unsafePlainText(gitlabPassword || ""),
         apiToken: cdk.SecretValue.unsafePlainText(""),
         runnerId: cdk.SecretValue.unsafePlainText(""),
         runnerRegistrationToken: cdk.SecretValue.unsafePlainText(""),
@@ -107,7 +109,7 @@ export class OPAPlatformStack extends cdk.Stack {
       encryption: ecr.RepositoryEncryption.KMS,
       encryptionKey: key,
       removalPolicy: cdk.RemovalPolicy.DESTROY,
-      autoDeleteImages: true,
+      emptyOnDelete: true,
     });
 
     // Save ECR Repo in an SSM Parameter
@@ -124,8 +126,8 @@ export class OPAPlatformStack extends cdk.Stack {
       cidrRange: "10.0.0.0/16",
       isIsolated: false,
       allowedIPs,
-      publicVpcNatGatewayCount: 3,
-      vpcAzCount: 3
+      publicVpcNatGatewayCount: +(getEnvVarValue(process.env.NUM_PUBLIC_NATGW) || 3),
+      vpcAzCount: +(getEnvVarValue(process.env.NUM_AZ) || 3),
     });
 
     // Create DB for backstage platform
@@ -159,7 +161,6 @@ export class OPAPlatformStack extends cdk.Stack {
     let hostedZone: HostedZoneConstruct;
     let backstageConstruct: BackstageFargateServiceConstruct;
 
-    // Generate Load balancer for secure / non secure deployments
     const hostedZoneName = getEnvVarValue(process.env.R53_HOSTED_ZONE_NAME) || "";
     if (!hostedZoneName) {
       throw new Error("R53_HOSTED_ZONE_NAME variable must be set");
@@ -170,10 +171,18 @@ export class OPAPlatformStack extends cdk.Stack {
       R53HostedZoneName: hostedZoneName,
     });
 
+
+    // Create SSM Parameter to store the desired GitLab version
+    const gitlabVersionParam = new ssm.StringParameter(this, `${opaParams.prefix}-gitlab-version`, {
+        allowedPattern: ".*",
+        description: "The desired version of GitLab",
+        parameterName: `/${opaParams.prefix}/gitlab-version`,
+        stringValue: getEnvVarValue(process.env.GITLAB_VERSION) || "latest",
+      });
+
     // Create a secured EC2 Hosted Gitlab
     gitlabHostingConstruct = new GitlabHostingConstruct(this, "GitlabHosting-Construct", {
       opaEnv: opaParams,
-      GitlabAmi: { [opaParams.awsRegion]: getEnvVarValue(process.env.GITLAB_AMI) || "ami-08a5423c2bcf8eefc" },
       network: network,
       accessLogBucket: network.logBucket,
       instanceDiskSize: 3000,
@@ -183,6 +192,8 @@ export class OPAPlatformStack extends cdk.Stack {
       gitlabSecret,
     });
     gitlabHostingConstruct.node.addDependency(gitlabSecret);
+    gitlabHostingConstruct.node.addDependency(gitlabVersionParam);
+
 
     backstageConstruct = new BackstageFargateServiceConstruct(this, `${opaParams.prefix}-fargate-service`, {
       network: network,
@@ -206,7 +217,6 @@ export class OPAPlatformStack extends cdk.Stack {
       opaEnv: opaParams,
       network,
       runnerSg: gitlabHostingConstruct.gitlabRunnerSecurityGroup,
-      GitlabAmi: { [opaParams.awsRegion]: getEnvVarValue(process.env.GITLAB_RUNNER_AMI) || "ami-0557a15b87f6559cf" },
       gitlabSecret,
       instanceDiskSize: 3000,
       instanceSize: ec2.InstanceSize.XLARGE,
@@ -215,6 +225,47 @@ export class OPAPlatformStack extends cdk.Stack {
     // wait till gitlab host is done.
     gitlabRunner.node.addDependency(gitlabHostingConstruct);
 
+   
+
+    // Attach the AdministratorAccess policy to the role if required
+    
+    const createEnvRole = getEnvVarValue(process.env.CREATE_ENV_PROVISIONING_ROLE);
+    if (createEnvRole.toLowerCase() === 'true'){
+
+      // create the environment provisioning role.
+      const envProvisioningRole = new iam.Role(this, "EnvProvisioningRole", {
+        assumedBy: new iam.CompositePrincipal(
+          new iam.ArnPrincipal(backstageRootRole.IAMRole.roleArn),
+          new iam.ArnPrincipal(gitlabRunner.gitlabEc2Role.roleArn)
+        ),
+        roleName: "opa-envprovisioning-role", // Optional: specify a role name
+      });
+      
+      //TODO: Reduce permissions before release to PROD
+      envProvisioningRole.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName("AdministratorAccess"));
+
+      NagSuppressions.addResourceSuppressions(envProvisioningRole, [
+        {
+          id: "AwsSolutions-IAM4",
+          reason:
+            "The power access policy is intentionally designed to grant full administrative access to AWS services for specific administrative roles. This use case has been reviewed and accepted by our security team.",
+        },
+      ]);
+
+      // store the provisioning role arn to ssm
+      new ssm.StringParameter(this, `${opaParams.prefix}-provisioning-role`, {
+        allowedPattern: ".*",
+        description: "This role is assumed by platform to provision environments",
+        parameterName: `/${opaParams.prefix}/provisioning-role`,
+        stringValue: envProvisioningRole.roleArn,
+      });
+
+      new cdk.CfnOutput(this, `${opaParams.prefix}-envprovisioning-role-arn`, {
+        value: envProvisioningRole.roleArn,
+        description: "Role will be assumed to provision environments",
+      });
+    }
+    
     // Create a regional WAF Web ACL for load balancers
     const wafConstruct = new Wafv2BasicConstruct(this, `${opaParams.prefix}-regional-wafAcl`, {
       wafScope: WafV2Scope.REGIONAL,
@@ -236,5 +287,7 @@ export class OPAPlatformStack extends cdk.Stack {
       value: backstageECRParam.parameterName,
       description: "ECR repository for backstage platform images",
     });
+
+    
   }
 }

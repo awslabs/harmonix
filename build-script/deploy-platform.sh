@@ -8,6 +8,8 @@ configDir=${scriptDir}/../config
 source ${scriptDir}/helpers.sh
 source ${configDir}/.env
 
+STACK_NAME=${1:-OPAStack}
+
 # if AWS_ACCOUNT_ID is not set, ask for it
 if [[ -z $AWS_ACCOUNT_ID ]]; then
   defaultAwsAccountNum=${CDK_DEPLOY_ACCOUNT:-""}
@@ -21,5 +23,5 @@ fi
 
 cd $opaPlatformDir
 confirm_aws_account
-cdk deploy --account $AWS_ACCOUNT_ID --region $AWS_DEFAULT_REGION --require-approval never --progress bar
+cdk deploy --account $AWS_ACCOUNT_ID --region $AWS_DEFAULT_REGION --require-approval never --progress bar ${STACK_NAME}
 cd -

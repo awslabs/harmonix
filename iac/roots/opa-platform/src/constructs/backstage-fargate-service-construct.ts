@@ -1,9 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { aws_ecs_patterns as ecsPatterns, SecretValue, StackProps } from "aws-cdk-lib";
+import { aws_ecs_patterns as ecsPatterns, StackProps } from "aws-cdk-lib";
 
-import { OPAEnvironmentParams, HostedZoneConstruct, NetworkConstruct } from "@aws/aws-app-development-common-constructs";
+import { HostedZoneConstruct, NetworkConstruct, OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs";
+
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elb from "aws-cdk-lib/aws-elasticloadbalancingv2";
@@ -13,8 +14,8 @@ import * as rds from "aws-cdk-lib/aws-rds";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { ISecret, Secret } from "aws-cdk-lib/aws-secretsmanager";
 import * as ssm from "aws-cdk-lib/aws-ssm";
-import { Construct } from "constructs";
 import { NagSuppressions } from "cdk-nag";
+import { Construct } from "constructs";
 
 export type EnvVar = { [key: string]: string };
 export type SecretVar = { [key: string]: ecs.Secret };

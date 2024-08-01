@@ -1,18 +1,17 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { NetworkConstruct, OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs";
 import * as cdk from "aws-cdk-lib";
-import * as ec2 from "aws-cdk-lib/aws-ec2";
-import * as iam from "aws-cdk-lib/aws-iam";
-import * as ssm from "aws-cdk-lib/aws-ssm";
-import { Construct } from "constructs";
-
-import { OPAEnvironmentParams, NetworkConstruct } from "@aws/aws-app-development-common-constructs";
 import * as autoscaling from "aws-cdk-lib/aws-autoscaling";
 import { BlockDeviceVolume } from "aws-cdk-lib/aws-autoscaling";
+import * as ec2 from "aws-cdk-lib/aws-ec2";
+import * as iam from "aws-cdk-lib/aws-iam";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
-import { readFileSync } from "fs";
+import * as ssm from "aws-cdk-lib/aws-ssm";
 import { NagSuppressions } from "cdk-nag";
+import { Construct } from "constructs";
+import { readFileSync } from "fs";
 
 export interface EipLookupInfo {
   readonly attrPublicIp: string;
@@ -24,7 +23,7 @@ export interface GitlabRunnerConstructProps extends cdk.StackProps {
   readonly opaEnv: OPAEnvironmentParams;
   readonly network: NetworkConstruct;
   readonly runnerSg: cdk.aws_ec2.ISecurityGroup;
-  readonly GitlabAmi: Record<string, string>;
+  readonly GitlabAmi?: Record<string, string>;
   readonly gitlabSecret: secretsmanager.Secret;
   readonly instanceDiskSize: number;
   readonly instanceSize: ec2.InstanceSize;
@@ -37,6 +36,7 @@ const defaultProps: Partial<GitlabRunnerConstructProps> = {};
  * Deploys the GitlabRunnerConstruct construct
  */
 export class GitlabRunnerConstruct extends Construct {
+  public gitlabEc2Role: iam.Role;
   constructor(parent: Construct, name: string, props: GitlabRunnerConstructProps) {
     super(parent, name);
 
@@ -129,7 +129,7 @@ export class GitlabRunnerConstruct extends Construct {
       ],
     });
 
-    const gitlabEc2Role = new iam.Role(this, "GitlabRunnerIamRole", {
+     this.gitlabEc2Role = new iam.Role(this, "GitlabRunnerIamRole", {
       assumedBy: new iam.ServicePrincipal("ec2.amazonaws.com"),
       description: "Iam Role assumed by the Gitlab Runner",
       managedPolicies: [
@@ -139,7 +139,7 @@ export class GitlabRunnerConstruct extends Construct {
       inlinePolicies: { GitlabIamRolePolicy: gitlabIamRolePolicy },
     });
 
-    NagSuppressions.addResourceSuppressions(gitlabEc2Role, [
+    NagSuppressions.addResourceSuppressions(this.gitlabEc2Role, [
       { id: "AwsSolutions-IAM4", reason: "Assumed roles will use AWS managed policies for demonstration purposes.  Customers will be advised/required to assess and apply custom policies based on their role requirements" },
       { id: "AwsSolutions-IAM5", reason: "Assumed roles will require permissions to perform multiple ecs, ddb, and ec2 for demonstration purposes.  Customers will be advised/required to assess and apply minimal permission based on role mappings to their idP groups" },
     ], true);
@@ -156,13 +156,37 @@ export class GitlabRunnerConstruct extends Construct {
     const userDataScript = readFileSync("./src/scripts/gitlab-runner-user-data.sh", "utf8");
     userData.addCommands(userDataScript);
 
+   // Get the latest Ubuntu machine image map
+    // Defaults will use "jammy" (22.04) on x86_64, but can be overridden with env vars
+    const UBUNTU_OWNER_ID = "099720109477"; // The official owner ID for Canonical-owned images
+    const ubuntuName = process.env.UBUNTU_NAME || "jammy";
+    // const ubuntuVersion = getEnvVarValue(process.env.UBUNTU_VERSION) || "22.04";
+    const ubuntuArch = process.env.UBUNTU_ARCH || ec2.InstanceArchitecture.X86_64;
+    const ubuntuLookupProps = {
+      // `YEAR-ARCH` are the first two stars
+      name: `ubuntu/images/hvm-ssd/ubuntu-${ubuntuName}-*-*-server-*`,
+      owners: [UBUNTU_OWNER_ID],
+      filters: {
+        architecture: [ubuntuArch],
+        "image-type": ["machine"],
+        state: ["available"],
+        "root-device-type": ["ebs"],
+        "virtualization-type": ["hvm"],
+      },
+    }
+    // short-circuit the creation of the amiMap if one was passed in via properties; otherwise lookup using the props above
+    const linuxAmiMap = props.GitlabAmi || { [props.opaEnv.awsRegion]: new ec2.LookupMachineImage(ubuntuLookupProps).getImage(this).imageId }
+    const machineImage = ec2.MachineImage.genericLinux(linuxAmiMap);
+    
+
+
     const launchTemplate = new ec2.LaunchTemplate(this, "GitLabRunnerLaunchTemplate", {
       instanceType: ec2.InstanceType.of(props.instanceClass, props.instanceSize),
       userData,
       securityGroup: instanceSecurityGroup,
       requireImdsv2: true,
-      role: gitlabEc2Role,
-      machineImage: ec2.MachineImage.genericLinux(props.GitlabAmi),
+      role: this.gitlabEc2Role,
+      machineImage,
       httpPutResponseHopLimit: 2,
       blockDevices: [blockDevice],
       httpTokens: ec2.LaunchTemplateHttpTokens.REQUIRED,
@@ -188,7 +212,7 @@ export class GitlabRunnerConstruct extends Construct {
       allowedPattern: ".*",
       description: `The OPA Platform Pipeline Role Arn`,
       parameterName: `/${props.opaEnv.prefix}/pipeline-role`,
-      stringValue: gitlabEc2Role.roleArn,
+      stringValue: this.gitlabEc2Role.roleArn,
     });
 
     new cdk.CfnOutput(this, `The OPA Platform Pipeline Role Arn Parameter`, {

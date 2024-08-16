@@ -146,6 +146,15 @@ do
         echo "FAILED to get GitLab Runner registration token"
         echo "The registration token can be retrieved manually through the GitLab admin UI"
     fi
+
+    # New PAT personal authentication token v.s. registration token https://medium.com/marionete/registering-gitlab-runners-programmatically-with-an-authentication-token-a-tutorial-eaa8aa6cbc0d
+    echo "Setting up new PAT"
+    PAT_AUTH_TOKEN=$(echo $RANDOM | shasum | head -c 30)
+    echo "PAT_AUTH_TOKEN is $PAT_AUTH_TOKEN"
+    sudo gitlab-rails runner "token = User.find_by_username('opa-admin').personal_access_tokens.create(scopes: ['create_runner'], name: 'create_runner_pat', expires_at: 10.days.from_now); token.set_token('$PAT_AUTH_TOKEN'); token.save!"
+    echo "Setting PAT into secret for later retrieval when runners are registered"
+    aws secretsmanager put-secret-value --secret-id opa-admin-gitlab-secrets --secret-string '{"apiToken":"'"$ADMIN_TOKEN"'", "password":"'"$ADMIN_GITLAB_PASSWORD"'", "username":"'"$ADMIN_USERNAME"'", "PAT":"'"$PAT_AUTH_TOKEN"'", "runnerRegistrationToken":"'"$RUNNER_TOKEN"'", "runnerId":""}'
+    echo "Finished setting up new PAT"
     break
   fi
 done

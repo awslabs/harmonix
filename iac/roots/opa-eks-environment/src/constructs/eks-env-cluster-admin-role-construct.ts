@@ -11,7 +11,7 @@ import { OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs
 export interface EKSClusterAdminRoleConstructProps extends cdk.StackProps {
   readonly opaEnv: OPAEnvironmentParams;
   readonly eksClusterName: string;
-  readonly kmsKey: kms.IKey;
+  readonly kmsKey?: kms.IKey;
   /**
    * Scope for CfnOutput
    */
@@ -102,16 +102,18 @@ export class EKSClusterAdminRoleConstruct extends Construct {
       })
     );
 
-    this.iamRole.addToPolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "kms:Decrypt",
-        ],
-        effect: iam.Effect.ALLOW,
-        resources: [props.kmsKey.keyArn],
-      })
-    );
-
+    if (props.kmsKey) {
+      this.iamRole.addToPolicy(
+        new iam.PolicyStatement({
+          actions: [
+            "kms:Decrypt",
+          ],
+          effect: iam.Effect.ALLOW,
+          resources: [props.kmsKey.keyArn],
+        })
+      );
+    }
+    
     // allow calling kubectl lambda function (needed if cluster is private or IP-restricted)
     // Function names for EKS kubectl Lambda handlers are dynamically generated and will truncate
     // a portion of the environment identifier.  Ensure that the resource identifier in the policy is no

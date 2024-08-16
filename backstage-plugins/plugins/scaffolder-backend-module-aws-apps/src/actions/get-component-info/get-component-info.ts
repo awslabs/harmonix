@@ -3,14 +3,14 @@
 
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { kebabCase } from 'lodash';
-import yaml from 'yaml';
+import { stringify } from 'yaml';
 
 const ID = 'opa:get-component-info';
 
 const examples = [
   {
     description: 'Sets useful component info for other actions to use',
-    example: yaml.stringify({
+    example: stringify({
       steps: [
         {
           action: ID,

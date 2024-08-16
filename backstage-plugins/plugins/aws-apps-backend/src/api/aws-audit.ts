@@ -1,8 +1,8 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { LoggerService } from '@backstage/backend-plugin-api';
 import { AwsAppsApi } from './AwsAppsApi';
-import { Logger } from 'winston';
 
 export interface AwsAuditRequest {
   envProviderPrefix: string;
@@ -10,7 +10,7 @@ export interface AwsAuditRequest {
   appName:string;
   apiClient: AwsAppsApi;
   roleArn: string;
-  logger: Logger;
+  logger: LoggerService;
   awsRegion: string;
   awsAccount: string;
   requester: string;

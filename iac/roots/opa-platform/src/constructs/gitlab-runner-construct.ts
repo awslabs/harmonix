@@ -24,7 +24,7 @@ export interface GitlabRunnerConstructProps extends cdk.StackProps {
   readonly network: NetworkConstruct;
   readonly runnerSg: cdk.aws_ec2.ISecurityGroup;
   readonly GitlabAmi?: Record<string, string>;
-  readonly gitlabSecret: secretsmanager.Secret;
+  readonly gitlabSecret: secretsmanager.ISecret;
   readonly instanceDiskSize: number;
   readonly instanceSize: ec2.InstanceSize;
   readonly instanceClass: ec2.InstanceClass;
@@ -62,7 +62,7 @@ export class GitlabRunnerConstruct extends Construct {
         }),
 
         new iam.PolicyStatement({
-          resources: [props.gitlabSecret.secretArn],
+          resources: [`${props.gitlabSecret.secretArn}*`],
           actions: [
             "secretsmanager:DescribeSecret",
             "secretsmanager:GetSecretValue",

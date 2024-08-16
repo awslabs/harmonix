@@ -4,7 +4,7 @@
 # This file will attempt to create a repo and if it can't it will still 
 # push backstage-reference to your gitlab repo
 ###########
-echo "Pushing the reference repository to Gitlab - $SSM_GITLAB_HOSTNAME"
+echo "Pushing the reference repository to Gitlab - $GITLAB_HOSTNAME"
 scriptDir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 appDir=$scriptDir/..
 configDir=${scriptDir}/../config
@@ -14,7 +14,7 @@ source ${configDir}/.env
 GITLAB_TOKEN=$SECRET_GITLAB_CONFIG_PROP_apiToken
 
 # Try to create a new project if one doesn't exist (will fail through)
-curl -H "Content-Type:application/json" "https://$SSM_GITLAB_HOSTNAME/api/v4/projects?private_token=$GITLAB_TOKEN" -d "{ \"name\": \"backstage-reference\" ,  \"visibility\": \"internal\" }"
+curl -H "Content-Type:application/json" "https://$GITLAB_HOSTNAME/api/v4/projects?private_token=$GITLAB_TOKEN" -d "{ \"name\": \"backstage-reference\" ,  \"visibility\": \"internal\" }"
 
 # Take backup of Git configs if they are present
 if [ -f "$appDir/git-temp/backstage-reference/.git/config" ]; then
@@ -27,8 +27,8 @@ if [ -d "$appDir/git-temp" ]; then
 fi
 # Make tmp directory to add files that will be comitted to repo
 mkdir -p $appDir/git-temp
-echo -e "\nCloning from https://$SSM_GITLAB_HOSTNAME/opa-admin/backstage-reference.git\n"
-git -C $appDir/git-temp clone -q "https://oauth2:$GITLAB_TOKEN@$SSM_GITLAB_HOSTNAME/opa-admin/backstage-reference.git"
+echo -e "\nCloning from https://$GITLAB_HOSTNAME/opa-admin/backstage-reference.git\n"
+git -C $appDir/git-temp clone -q "https://oauth2:$GITLAB_TOKEN@$GITLAB_HOSTNAME/opa-admin/backstage-reference.git"
 
 # Reinstate Git configs if available
 if [ -f "$appDir/git-config-temp" ]; then
@@ -46,10 +46,10 @@ cd $appDir/git-temp/backstage-reference;
 
 # Replace variable placeholders with env specific information
 if [[ "$OSTYPE" == "darwin"* ]]; then
-    find . -type f -name "*.yaml" -exec sed -i "" "s/{{ *gitlab_hostname *}}/$SSM_GITLAB_HOSTNAME/g" {} +; 
+    find . -type f -name "*.yaml" -exec sed -i "" "s/{{ *gitlab_hostname *}}/$GITLAB_HOSTNAME/g" {} +; 
     find . -type f -name "*.yaml" -exec sed -i "" "s/{{ *awsAccount *}}/$AWS_ACCOUNT_ID/g" {} +; 
 else
-    find . -type f -name "*.yaml" -exec sed -i "s/{{ *gitlab_hostname *}}/$SSM_GITLAB_HOSTNAME/g" {} +; 
+    find . -type f -name "*.yaml" -exec sed -i "s/{{ *gitlab_hostname *}}/$GITLAB_HOSTNAME/g" {} +; 
     find . -type f -name "*.yaml" -exec sed -i "s/{{ *awsAccount *}}/$AWS_ACCOUNT_ID/g" {} +; 
 fi
 
@@ -64,7 +64,7 @@ if [[ ! -z "$IS_DEFENDER" ]] && ! grep -q "\[defender\]" .git/config ; then
   echo -e "\nGit Defender detected. Populating git-temp/.git/config for Defender.\n"
   echo -e "" >> .git/config
   echo -e "[defender]" >> .git/config
-  echo -e "\tallowrepo = https://$SSM_GITLAB_HOSTNAME/opa-admin/backstage-reference.git" >> .git/config
+  echo -e "\tallowrepo = https://$GITLAB_HOSTNAME/opa-admin/backstage-reference.git" >> .git/config
   echo -e "\tallowemail = $(whoami)@amazon.com" >> .git/config
   echo -e "\tregistered = true" >> .git/config
   echo -e "" >> .git/config

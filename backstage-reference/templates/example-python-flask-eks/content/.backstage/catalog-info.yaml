@@ -12,6 +12,8 @@ metadata:
     - flask
     - k8s
   iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   repoSecretArn: ${{ values.awsSecretRepoArn | dump }}
 
   # Configure where k8s configurations are within the project

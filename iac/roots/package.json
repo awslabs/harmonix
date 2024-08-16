@@ -8,6 +8,7 @@
         "opa-eks-environment",
         "opa-serverless-environment",
         "opa-common-constructs",
+        "opa-gen-ai-environment",
         "opa-platform"
     ]
 }

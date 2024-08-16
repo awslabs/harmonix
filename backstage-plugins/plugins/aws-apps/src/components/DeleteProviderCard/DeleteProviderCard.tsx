@@ -13,6 +13,7 @@ import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { opaApiRef } from '../../api';
 import { sleep } from "../../helpers/util";
+import { getGitCredentailsSecret, getRepoInfo } from "@aws/plugin-aws-apps-common-for-backstage";
 
 const DeleteProviderPanel = ({
   input: { entity, catalogApi }
@@ -24,7 +25,6 @@ const DeleteProviderPanel = ({
   const navigate = useNavigate();
   const stackName = entity.metadata['stackName']?.toString() || '';
   const prefix = entity.metadata['prefix']?.toString() || '';
-  const accessRole = entity.metadata['environmentRole']?.toString() || '';
   const awsAccount = entity.metadata['awsAccount']?.toString() || '';
   const awsRegion = entity.metadata['awsRegion']?.toString() || '';
   const backendParamsOverrides = {
@@ -40,15 +40,14 @@ const DeleteProviderPanel = ({
   };
 
   const [disabled, setDisabled] = useState(false);
+  let repoInfo = getRepoInfo(entity);
+  repoInfo.gitProjectGroup = 'aws-providers';
 
   const deleteRepo = () => {
-    const gitHost = entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/instance']?.toString() : "";
-    const gitRepo = entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "";
+   
     api.deleteRepository({
-      gitHost,
-      gitProject: gitRepo.split('/')[0],
-      gitRepoName: gitRepo.split('/')[1],
-      gitAdminSecret: 'opa-admin-gitlab-secrets'
+      repoInfo,
+      gitAdminSecret: getGitCredentailsSecret(repoInfo)
     }).then(results => {
       console.log(results);
       setDeleteResultMessage("Gitlab Repository deleted.")
@@ -97,30 +96,69 @@ const isExistingComponents = () => {
       }
       else
       {
+        const iacType = entity.metadata["iacType"]?.toString() || "";
         setSpinning(true);
-        api.deleteProvider({ stackName, accessRole, backendParamsOverrides }).then(async results => {
+        if (iacType === "cloudformation" || iacType ==="cdk")
+        {
+          api.deleteStack({ componentName: entity.metadata.name, stackName, backendParamsOverrides }).then(async results => {
 
-          console.log(results)
-          setIsDeleteSuccessful(true);
-          setDeleteResultMessage("Cloud Formation stack delete initiated.")
-          await sleep(2000);
-          // Delete the repo now.
-          deleteRepo();
-          await sleep(2000);
-          deleteFromCatalog()
-          setSpinning(false);
-          await sleep(2000);
-          setDeleteResultMessage("Redirect to home ....")
-          navigate('/')
-        }).catch(error => {
-          console.log(error)
-          setSpinning(false)
-          setIsDeleteSuccessful(false)
-          setDeleteResultMessage(error.toString())
-        })
+            console.log(results)
+            setIsDeleteSuccessful(true);
+            setDeleteResultMessage("Cloud Formation stack delete initiated.")
+            await sleep(2000);
+            // Delete the repo now.
+            deleteRepo();
+            await sleep(2000);
+            deleteFromCatalog()
+            setSpinning(false);
+            await sleep(2000);
+            setDeleteResultMessage("Redirect to home ....")
+            setDisabled(false)
+            navigate('/')
+          }).catch(error => {
+            console.log(error)
+            setSpinning(false)
+            setIsDeleteSuccessful(false)
+            setDeleteResultMessage(error.toString())
+            setDisabled(false)
+          })
+        }
+        else if (iacType === "terraform")
+        {
+          const repoInfo = getRepoInfo(entity);
+          const params = {
+            backendParamsOverrides,
+            repoInfo,
+            gitAdminSecret: getGitCredentailsSecret(repoInfo),
+            envName: ""   // no env - provider needs to be detached.
+          }
+          api.deleteTFProvider(params).then(async results => {
+            console.log(results)
+            setIsDeleteSuccessful(true);
+            setDeleteResultMessage("Cloud Formation stack delete initiated.")
+            await sleep(2000);
+            //deleteRepo();
+            deleteFromCatalog()
+            setSpinning(false);
+            await sleep(2000);
+            setDeleteResultMessage("Redirect to home ....")
+            setDisabled(false)
+          }).catch(error => {
+            console.log(error)
+            setSpinning(false)
+            setIsDeleteSuccessful(false)
+            setDeleteResultMessage(error.toString())
+            setDisabled(false)
+          });
+          
+        } else 
+        {
+          throw new Error("Can't delete Unknown IAC type");
+        }
       }
-      setDisabled(false)
+    
     } else {
+      //Are you sure you want to delete this provider? == no
       // Do nothing!
     }
   };

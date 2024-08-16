@@ -290,6 +290,13 @@ export class NetworkConstruct extends Construct {
         }
       }
     }
+
+    // Add the NAT Gateway IPs to the list of allowed ingress IPs.
+    for (const ip of this.publicEIPref) {
+      allowedIpsSg.addIngressRule(ec2.Peer.ipv4(ip + "/32"), ec2.Port.tcp(80), "Allow Access From NAT Gateway");
+      allowedIpsSg.addIngressRule(ec2.Peer.ipv4(ip + "/32"), ec2.Port.tcp(443), "Allow Access From NAT Gateway");
+    }
+
     this.allowedIpsSg = allowedIpsSg;
     this.vpc = vpc;
     this.vpcParam = vpcParam;

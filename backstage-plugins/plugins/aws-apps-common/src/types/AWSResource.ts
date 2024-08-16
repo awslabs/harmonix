@@ -50,15 +50,9 @@ export interface AssociatedResources {
 
 
 export interface BindResourceParams {
-  gitHost: string;
-  gitProjectGroup: string;
-  gitRepoName:string;
-  gitJobID:string;
   envName: string;
   providerName: string;
   resourceName:string;
-  resourceArn:string;
-  appRoleArn:string;
   resourceEntityRef:string;
   policies: ResourcePolicy[];
   appName: string;

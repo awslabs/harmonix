@@ -1,0 +1,35 @@
+apiVersion: aws.backstage.io/v1alpha
+kind: AWSEnvironmentProvider
+metadata:
+  annotations:
+    github.com/project-slug: ${{ values.projectSlug | dump }}
+    harness.io/pipelines: >
+          ${{ values.repoName }}:
+          https://app.harness.io/ng/account/Rm1BaHdlRTOFKwuhwvoswg/ci/orgs/${{ values.orgIdentifier }}/projects/${{ values.projectIdentifier }}/pipelines/${{ values.pipelineID }}/pipeline-studio/
+  name: ${{values.name | dump }}
+  title: ${{ values.title | dump }}
+  prefix: ${{values.prefix | dump}}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - aws-environment-provider
+    - ecs
+  envType: ${{values.envType}}
+  awsAccount: "${{values.awsAccount}}"
+  awsRegion: ${{values.awsRegion}}
+  environmentRole: "${{values.environmentRole}}"
+  vpc: ""
+  clusterName: ""
+  operationRole: ""
+  provisioningRole: ""
+  auditTable: ""
+  stackName: ""
+  componentState: terraform-cloud
+  gitProvider: github
+  iacType: terraform
+spec:
+  type: environment-provider
+  lifecycle: experimental
+  owner: ${{values.owner | dump}}

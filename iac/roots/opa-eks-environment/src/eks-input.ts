@@ -23,7 +23,8 @@ export enum EKS_OPTIONAL_ENV_VARS {
   KUBECTL_LAMBDA_ARN = "KUBECTL_LAMBDA_ARN",
   KUBECTL_ON_EVENT_LAMBDA_ARN = "KUBECTL_ON_EVENT_LAMBDA_ARN",
   EXISTING_KUBECTL_LAMBDA_EXECUTION_ROLE_ARN = "EXISTING_KUBECTL_LAMBDA_EXECUTION_ROLE_ARN",
-  CREATE_K8S_OPA_RESOURCES = "CREATE_K8S_OPA_RESOURCES"
+  CREATE_K8S_OPA_RESOURCES = "CREATE_K8S_OPA_RESOURCES",
+  INSTALL_AWS_LOAD_BALANCER_CONTROLLER = "INSTALL_AWS_LOAD_BALANCER_CONTROLLER",
 }
 
 export enum NODE_TYPE {
@@ -97,6 +98,15 @@ export function getNodeGroupDiskSize(): number {
     return parseInt(strSize);
   }
   return 0;
+}
+
+export function isInstallAwsLoadBalancerController(): boolean {
+
+  const strInstall = process.env[EKS_OPTIONAL_ENV_VARS.INSTALL_AWS_LOAD_BALANCER_CONTROLLER] as string || "true";
+  if ("true" === strInstall.toLowerCase()) {
+    return true;
+  }
+  return false;
 }
 
 export function getVpcCIDR(): string {

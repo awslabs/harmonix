@@ -13,6 +13,7 @@ import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { OPAApi, opaApiRef } from '../../api';
 import { sleep } from "../../helpers/util";
+import { getGitCredentailsSecret, getRepoInfo } from "@aws/plugin-aws-apps-common-for-backstage";
 
 const DeleteEnvironmentPanel = ({
   input: { entity, catalogApi, api }
@@ -28,15 +29,13 @@ const DeleteEnvironmentPanel = ({
   };
 
   const [disabled, setDisabled] = useState(false);
-
+  let repoInfo = getRepoInfo(entity);
+  repoInfo.gitProjectGroup = 'aws-environments';
+  
   const deleteRepo = () => {
-    const gitHost = entity.metadata['repoUrl'] ? entity.metadata['repoUrl'].toString().split("?")[0] : "";
-    const gitRepoName = entity.metadata.repoUrl?.toString().split('repo=')[1].toLowerCase() || "";
     api.deleteRepository({
-      gitHost,
-      gitProject: 'aws-environments',
-      gitRepoName,
-      gitAdminSecret: 'opa-admin-gitlab-secrets'
+      repoInfo,
+      gitAdminSecret: getGitCredentailsSecret(repoInfo)
     }).then(results => {
       console.log(results);
       setDeleteResultMessage("Gitlab Repository deleted.")

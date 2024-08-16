@@ -97,8 +97,9 @@ Our goal is to provide a simple, safe, easy-to-use solution, that reduces the ov
     <img width="40%" src="img/the-platformers.webp"/>        
     </td>
      <td align="left">
-        OPA on AWS is a proud member of The Platformers community. 
-        https://www.platformers.community/       
+        OPA on AWS is a proud member of *The Platformers Community*. 
+        https://www.platformers.community/
+        https://www.platformers.community/opa-on-aws        
     </td>
 </tr>
 </table>

@@ -15,6 +15,9 @@ metadata:
   awsAccount: "${{values.awsAccount}}"
   awsRegion: ${{values.awsRegion}}
   environmentRole: "${{values.environmentRole}}"
+  iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   vpc: ""
 spec:
   type: environment-provider

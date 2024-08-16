@@ -26,7 +26,9 @@ metadata:
   clusterAdminRole: ""
   kubectlLambdaArn: ""
   kubectlLambdaAssumeRoleArn: ""
-
+  iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
 spec:
   type: environment-provider
   lifecycle: experimental

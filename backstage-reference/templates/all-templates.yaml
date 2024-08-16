@@ -27,10 +27,12 @@ spec:
         - ./aws-eks-environment-existing-cluster-provider/template.yaml
         - ./aws-serverless-environment-provider/template.yaml
         - ./aws-gen-ai-environment-provider/template.yaml
+        - ./aws-tf-ecs-environment-provider/template.yaml
         # - ./aws-basic-environment-provider/template.yaml
         # AWS Resources
         - ./aws-rds-resource/template.yaml
         - ./aws-s3-resource/template.yaml
+        - ./aws-secretsmanager-resource/template.yaml
     rules:
         - allow: [Template]
 

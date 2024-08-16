@@ -9,7 +9,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { opaApiRef } from '../../api';
 import { Alert, AlertTitle, Typography } from '@mui/material';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
-import { AWSComponent, AssociatedResources, BindResourceParams, ResourceBinding, ResourcePolicy } from '@aws/plugin-aws-apps-common-for-backstage';
+import { AWSComponent, AssociatedResources, BindResourceParams, ResourceBinding, ResourcePolicy, getGitCredentailsSecret } from '@aws/plugin-aws-apps-common-for-backstage';
 import { CompoundEntityRef, Entity, EntityRelation, parseEntityRef } from '@backstage/catalog-model';
 import { CatalogApi, EntityRefLink, catalogApiRef, useEntity } from '@backstage/plugin-catalog-react';
 import { ResourceSelectorDialog } from './ResourceSelectorDialog';
@@ -49,7 +49,7 @@ const ResourceBindingCard = ({
   const [isBindSuccessful, setIsBindSuccessful] = useState(false);
   const [bindResourceMessage, setBindResourceMessage] = useState("");
   const [bindResourceRequest, setBindResourceRequest] = useState<ResourceBinding>();
-
+  const repoInfo = awsComponent.getRepoInfo();
   useEffect(() => {
     getBindingDetails()
 
@@ -67,6 +67,7 @@ const ResourceBindingCard = ({
 
     //select view for only current environment
     const currentEnvironment = awsComponent.currentEnvironment.environment.name;
+    
     const matchedResources = resourcesEntities.filter(entity => {
       const appData = entity!.metadata["appData"] as any;
       return appData && appData[currentEnvironment]
@@ -159,10 +160,6 @@ const ResourceBindingCard = ({
 
 
     const params: BindResourceParams = {
-      gitHost: awsComponent.gitHost,
-      gitJobID: '',
-      gitProjectGroup: 'aws-app',
-      gitRepoName: awsComponent.gitRepo.split('/')[1],
       providerName: item.provider,
       envName: awsComponent.currentEnvironment.environment.name,
       appName: entity.metadata.name,
@@ -171,7 +168,7 @@ const ResourceBindingCard = ({
       policies
     };
 
-    return api.bindResource({ params, gitAdminSecret: 'opa-admin-gitlab-secrets' })
+    return api.bindResource({repoInfo, params, gitAdminSecret: getGitCredentailsSecret(repoInfo)} )
   }
 
   async function removeResource(item: ResourceBinding): Promise<any> {
@@ -203,10 +200,7 @@ const ResourceBindingCard = ({
     }
 
     const params: BindResourceParams = {
-      gitHost: awsComponent.gitHost,
-      gitJobID: '',
-      gitProjectGroup: 'aws-app',
-      gitRepoName: awsComponent.gitRepo.split('/')[1],
+
       providerName: item.provider,
       envName: awsComponent.currentEnvironment.environment.name,
       appName: entity.metadata.name,
@@ -215,7 +209,7 @@ const ResourceBindingCard = ({
       policies
     };
 
-    return api.unBindResource({ params, gitAdminSecret: 'opa-admin-gitlab-secrets' })
+    return api.unBindResource({repoInfo,params, gitAdminSecret: getGitCredentailsSecret(repoInfo) })
   }
 
 

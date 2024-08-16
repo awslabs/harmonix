@@ -67,13 +67,13 @@ export class GitlabHostingConstruct extends Construct {
     });
     cdk.Tags.of(gitlabRunnerSecurityGroup).add("Name", glRunnerSgName);
     this.gitlabRunnerSecurityGroup = gitlabRunnerSecurityGroup;
+   
 
     const gitlabIamRolePolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
           resources: [
-            `${props.gitlabSecret.secretFullArn}`,
-            `${props.gitlabSecret.encryptionKey?.keyArn}`,
+            `${props.gitlabSecret.secretArn}*`
           ],
           actions: [
             "secretsmanager:DescribeSecret",
@@ -238,31 +238,31 @@ export class GitlabHostingConstruct extends Construct {
     });
     httpsListener.connections.addSecurityGroup(props.network.allowedIpsSg);
 
-    lbDNSParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-gitlab-hostname`, {
-      allowedPattern: ".*",
-      description: `The Gitlab Hostname for OPA Platform`,
-      parameterName: `/${props.opaEnv.prefix}/gitlab-hostname`,
-      stringValue: aRecord.domainName,
-    });
+    // lbDNSParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-gitlab-hostname`, {
+    //   allowedPattern: ".*",
+    //   description: `The Gitlab Hostname for OPA Platform`,
+    //   parameterName: `/${props.opaEnv.prefix}/gitlab-hostname`,
+    //   stringValue: aRecord.domainName,
+    // });
 
-    lbUrlParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-gitlab-url`, {
-      allowedPattern: ".*",
-      description: `The Gitlab URL for OPA Platform`,
-      parameterName: `/${props.opaEnv.prefix}/gitlab-url`,
-      stringValue: "https://" + aRecord.domainName,
-    });
+    // lbUrlParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-gitlab-url`, {
+    //   allowedPattern: ".*",
+    //   description: `The Gitlab URL for OPA Platform`,
+    //   parameterName: `/${props.opaEnv.prefix}/gitlab-url`,
+    //   stringValue: "https://" + aRecord.domainName,
+    // });
 
     this.gitlabHostName = aRecord.domainName;
 
     // allow traffic to the ALB from the restricted IP security group
     gitlabAlb.connections.addSecurityGroup(props.network.allowedIpsSg);
 
-    new cdk.CfnOutput(this, `GitLab loadBalancer Domain Name Param`, {
-      value: lbDNSParam.parameterName,
-    });
-    new cdk.CfnOutput(this, `GitLab loadBalancer URL Param`, {
-      value: lbUrlParam.parameterName,
-    });
+    // new cdk.CfnOutput(this, `GitLab loadBalancer Domain Name Param`, {
+    //   value: lbDNSParam.parameterName,
+    // });
+    // new cdk.CfnOutput(this, `GitLab loadBalancer URL Param`, {
+    //   value: lbUrlParam.parameterName,
+    // });
     this.alb = gitlabAlb;
   }
 }

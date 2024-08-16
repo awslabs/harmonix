@@ -3,7 +3,7 @@
 
 import { InvokeCommandOutput } from '@aws-sdk/client-lambda';
 import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
-import { AWSComponent, AWSEKSAppDeploymentEnvironment, AppState, AppStateType, KeyValue } from '@aws/plugin-aws-apps-common-for-backstage';
+import { AWSComponent, AWSEKSAppDeploymentEnvironment, AppState, AppStateType, KeyValue, getGitCredentailsSecret } from '@aws/plugin-aws-apps-common-for-backstage';
 import { Entity } from '@backstage/catalog-model';
 import { EmptyState, InfoCard } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
@@ -148,7 +148,8 @@ const OpaAppStateOverview = ({
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
   const { cancellablePromise } = useCancellablePromise({ rejectOnCancel: true });
   const timerRef = useRef<any>(null);
-
+  const repoInfo = awsComponent.getRepoInfo();
+  
   // Namespace-bound application admin role (not cluster admin role)
   const appAdminRoleArn = env.app.appAdminRoleArn;
 
@@ -426,14 +427,10 @@ const OpaAppStateOverview = ({
           cluster: clusterNameState,
           kubectlLambda: env.entities.envProviderEntity?.metadata["kubectlLambdaArn"]?.toString() || "",
           lambdaRoleArn: appAdminRoleArn,
-          gitAdminSecret: 'opa-admin-gitlab-secrets',
+          gitAdminSecret: getGitCredentailsSecret(repoInfo),
           updateKey: 'spec.replicas',
           updateValue: appState.desiredCount || 1,
-          platformSCMConfig: {
-            host: awsComponent.gitHost,
-            projectGroup: 'aws-app',
-            repoName: awsComponent.gitRepo.split('/')[1]
-          }
+          repoInfo,
         })
       );
       // console.log(`DONE setting replicas to > 0`);
@@ -516,14 +513,10 @@ const OpaAppStateOverview = ({
           cluster: clusterNameState,
           kubectlLambda: env.entities.envProviderEntity?.metadata["kubectlLambdaArn"]?.toString() || "",
           lambdaRoleArn: appAdminRoleArn,
-          gitAdminSecret: 'opa-admin-gitlab-secrets',
+          gitAdminSecret: getGitCredentailsSecret(repoInfo),
           updateKey: 'spec.replicas',
           updateValue: 0,
-          platformSCMConfig: {
-            host: awsComponent.gitHost,
-            projectGroup: 'aws-app',
-            repoName: awsComponent.gitRepo.split('/')[1]
-          }
+          repoInfo,
         })
       );
       // console.log(`DONE setting replicas to 0`);

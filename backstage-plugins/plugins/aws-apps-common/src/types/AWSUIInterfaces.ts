@@ -1,8 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AWSEnvironmentEntityV1, AWSEnvironmentProviderEntityV1 } from "@aws/plugin-aws-apps-backend-for-backstage";
+import { AWSEnvironmentEntityV1,  } from "../entities/AWSEnvironmentEntityV1";
+import { AWSEnvironmentProviderEntityV1 } from "../entities/AWSEnvironmentProviderEntityV1"
 import { DeployStackStatus } from "@aws/plugin-aws-apps-for-backstage/src/helpers/constants";
+import { IRepositoryInfo } from "./SCMBackendAPI";
 
 /** 
  * A type for interacting with OPA Backend environments
@@ -15,6 +17,7 @@ export type BackendParams = {
   providerName: string;
   appName: string;
 };
+
 
 // Create providers definition for the different providers types: eks, ecs, and serverless
 export type GenericAWSEnvironment = AWSDeploymentEnvironment | AWSECSAppDeploymentEnvironment | AWSEKSAppDeploymentEnvironment
@@ -51,6 +54,10 @@ export type AWSDeploymentEnvironment = {
     operationRoleSsmKey: string;
     provisioningRoleSsmKey: string;
     cloudFormationStackName: string;
+    terraformWorkspace: string;
+    terraformStateBucket: string;
+    terraformStateTable: string;
+
   };
   environment: {
     name: string;
@@ -163,10 +170,20 @@ export type AWSResourceDeploymentEnvironment = AWSDeploymentEnvironment & {
   }
 }
 
+
+export enum ComponentStateType {
+  CLOUDFORMATION = "cloudformation",
+  TERRAFORM_CLOUD = "terraform-cloud",
+  TERRAFORM_AWS = "terraform-aws"
+}
+
+
 export enum AWSComponentType {
   AWSApp = "aws-app",
   AWSResource = "aws-resource",
   AWSOrganization = "aws-organization",
+  AWSProvider = "aws-provider",
+  AWSEnvironment = "aws-environment",
   Default = "aws-default"
 }
 
@@ -179,14 +196,14 @@ export type AWSComponent = {
   componentName: string;
   componentType: AWSComponentType;
   componentSubType: string;
-  gitRepo: string;
-  gitHost: string;
   iacType: string;
+  componentState: ComponentStateType;
   repoSecretArn: string;
   platformRegion: string;
   environments: AwsDeploymentEnvironments;     // map of all the deployed environment
   currentEnvironment: GenericAWSEnvironment;   // selected current environment provider 
   setCurrentProvider: (envName: string, providerName: string) => void;
+  getRepoInfo: () => IRepositoryInfo;
 }
 
 

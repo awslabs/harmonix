@@ -22,6 +22,7 @@ import { BackstageFargateServiceConstruct } from "./constructs/backstage-fargate
 import { GitlabHostingConstruct } from "./constructs/gitlab-hosting-construct";
 import { GitlabRunnerConstruct } from "./constructs/gitlab-runner-construct";
 import { OPARootRoleConstruct } from "./constructs/opa-role-construct";
+import { ScmAndPipelineInfoConstruct } from "./constructs/scm-and-pipeline-info-construct";
 
 import { NagSuppressions } from "cdk-nag";
 
@@ -68,40 +69,20 @@ export class OPAPlatformStack extends cdk.Stack {
       parameterName: `/${opaParams.prefix}/kms-key`,
       stringValue: key.keyArn,
     });
+    
+    // Lookup secret created by build-script/secure-secrets-creation.sh
+    const oktaSecret = secretsmanager.Secret.fromSecretNameV2(this, `${opaParams.prefix}-key-okta-secrets`, process.env.OKTA_SECRET_NAME as string);
+    const gitlabSecret = secretsmanager.Secret.fromSecretNameV2(this, `${opaParams.prefix}-key-gitlab-admin-secrets`, process.env.GITLAB_SECRET_NAME as string);
 
-    // Create a secret to store Okta authentication details
-    const oktaSecret = new secretsmanager.Secret(this, `${opaParams.prefix}-key-okta-secrets`, {
-      secretName: `${opaParams.prefix}-okta-secrets`,
-      secretObjectValue: {
-        clientId: cdk.SecretValue.unsafePlainText(getEnvVarValue(process.env.OKTA_CLIENT_ID)),
-        clientSecret: cdk.SecretValue.unsafePlainText(getEnvVarValue(process.env.OKTA_CLIENT_SECRET)),
-        audience: cdk.SecretValue.unsafePlainText(getEnvVarValue(process.env.OKTA_AUDIENCE)),
-        authServerId: cdk.SecretValue.unsafePlainText(getEnvVarValue(process.env.OKTA_AUTH_SERVER_ID)),
-        idp: cdk.SecretValue.unsafePlainText(getEnvVarValue(process.env.OKTA_IDP)),
-        apiToken: cdk.SecretValue.unsafePlainText(getEnvVarValue(process.env.OKTA_API_TOKEN)),
-      },
-      encryptionKey: key,
+    const scmAndPipelineInfoConstruct = new ScmAndPipelineInfoConstruct(this, `${opaParams.prefix}-git-info`, {
+      opaEnv: opaParams,
+      key,
+      gitlabHostName: getEnvVarValue(process.env.GITLAB_HOSTNAME),
+      gitlabUrl:`https://${getEnvVarValue(process.env.GITLAB_HOSTNAME)}`,
+      githubHostName: getEnvVarValue(process.env.GITHUB_HOSTNAME),
+      githubUrl: `https://${getEnvVarValue(process.env.GITHUB_HOSTNAME)}`
     });
     
-    //Create Gitlab Admins Secret
-    const gitlabPassword = process.env.GITLAB_PASSWORD;
-    const gitlabSecret = new secretsmanager.Secret(this, `${opaParams.prefix}-key-gitlab-admin-secrets`, {
-      secretName: `${opaParams.prefix}-admin-gitlab-secrets`,
-      secretObjectValue: {
-        username: cdk.SecretValue.unsafePlainText("opa-admin"),
-        password: cdk.SecretValue.unsafePlainText(gitlabPassword || ""),
-        apiToken: cdk.SecretValue.unsafePlainText(""),
-        runnerId: cdk.SecretValue.unsafePlainText(""),
-        runnerRegistrationToken: cdk.SecretValue.unsafePlainText(""),
-      },
-      encryptionKey: key,
-    });
-
-    NagSuppressions.addResourceSuppressions(
-      [oktaSecret, gitlabSecret],
-      [{ id: "AwsSolutions-SMG4", reason: "Secrets for 3rd party service and should not be automatically rotated" }]
-    );
-
     // Create an ECR repository to contain backstage container images
     const ecrRepository = new ecr.Repository(this, `${opaParams.prefix}-ecr-repository`, {
       repositoryName: `${opaParams.prefix}-backstage`,
@@ -194,6 +175,26 @@ export class OPAPlatformStack extends cdk.Stack {
     gitlabHostingConstruct.node.addDependency(gitlabSecret);
     gitlabHostingConstruct.node.addDependency(gitlabVersionParam);
 
+    const shouldCreateAutomationSecret: boolean = getEnvVarValue(process.env.CREATE_AUTOMATION_SECRET).toLocaleLowerCase() === "true";
+    let automationSecret: secretsmanager.Secret | undefined;
+    if (shouldCreateAutomationSecret) {
+      automationSecret = new secretsmanager.Secret(this, `${opaParams.prefix}-automation-secret`, {
+        generateSecretString: { passwordLength: 32, excludePunctuation:true },
+        removalPolicy: cdk.RemovalPolicy.DESTROY,
+        secretName: `${opaParams.prefix}-${opaParams.envName}-automation-secret`,
+        encryptionKey: key,
+      });
+
+      NagSuppressions.addResourceSuppressions(automationSecret, [
+        {
+          id: "AwsSolutions-SMG4",
+          reason:
+            "Rotation is not nessacry .",
+        },
+      ]);
+    }
+
+    
 
     backstageConstruct = new BackstageFargateServiceConstruct(this, `${opaParams.prefix}-fargate-service`, {
       network: network,
@@ -203,13 +204,16 @@ export class OPAPlatformStack extends cdk.Stack {
       accessLogBucket: network.logBucket,
       dbCluster: rdsConstruct.cluster,
       oktaSecret,
-      gitlabAdminSecret: gitlabSecret,
+      gitlabAdminSecret: scmAndPipelineInfoConstruct.gitlabSecret,
+      githubAdminSecret: scmAndPipelineInfoConstruct.githubSecret,
       taskRole: backstageRootRole.IAMRole,
-      gitlabHostname: gitlabHostingConstruct.gitlabHostName,
+      gitlabHostname: scmAndPipelineInfoConstruct.gitlabHostNameParam?.stringValue || "",
+      githubHostname: scmAndPipelineInfoConstruct.githubHostNameParam?.stringValue || "",
       hostedZone,
       customerName,
       customerLogo,
       customerLogoIcon,
+      automationSecret,
     });
 
     // Create EC2 Gitlab Runner

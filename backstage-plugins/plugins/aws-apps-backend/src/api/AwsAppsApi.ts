@@ -109,7 +109,7 @@ import {
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { parse as parseArn } from '@aws-sdk/util-arn-parser';
 import { AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
-import { Logger } from 'winston';
+import { LoggerService } from '@backstage/backend-plugin-api';
 
 export type DynamoDBTableData = {
   tableName: string
@@ -132,7 +132,7 @@ export type DynamoDBTableData = {
 
 export class AwsAppsApi {
   public constructor(
-    private readonly logger: Logger,
+    private readonly logger: LoggerService,
     private readonly awsCredentials: AwsCredentialIdentity,
     private readonly awsRegion: string,
     private readonly awsAccount: string,

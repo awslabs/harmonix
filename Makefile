@@ -17,6 +17,8 @@ install: verify-env
 	@$(MAKE) backstage-install 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nBootstrapping CDK\n====================" 2>&1 | tee -a $(LOGFILE)
 	@$(MAKE) cdk-bootstrap 2>&1 | tee -a $(LOGFILE)
+	@echo -e "\nSetting Secrets\n====================" 2>&1 | tee -a $(LOGFILE)
+	@$(MAKE) set-secrets 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nDeploying the OPA platform\n====================" 2>&1 | tee -a $(LOGFILE)
 	@$(MAKE) deploy-platform 2>&1 | tee -a $(LOGFILE)
 	@echo -e "\nUpdating configuration with platform values\n====================" 2>&1 | tee -a $(LOGFILE)
@@ -43,6 +45,12 @@ ifndef AWS_DEFAULT_REGION
 	$(error AWS_DEFAULT_REGION is undefined.  Please ensure this is set in the config/.env file)
 endif
 
+set-secrets:
+	./build-script/secure-secrets-creation.sh
+
+delete-secrets:
+	./build-script/secure-secrets-creation.sh "delete"
+	
 set-gitlab-token-env-var:
 	./build-script/set-gitlab-token.sh
 

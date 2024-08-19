@@ -116,7 +116,7 @@ catalog:
     okta:
       - orgUrl: ${OKTA_ORG_URL}
         token: ${OKTA_API_TOKEN}
-        frequency: { minutes: 1 }
+        frequency: { minutes: 30 }
         timeout: { minutes: 3 }
         # userFilter: profile.department eq "engineering"
         # groupFilter: profile.name eq "Everyone"

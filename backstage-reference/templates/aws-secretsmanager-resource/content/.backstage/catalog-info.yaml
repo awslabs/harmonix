@@ -13,6 +13,8 @@ metadata:
     - secretsmanager
   annotations:
   iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   resourceType: "aws-secretsmanager"
   secretName: ${{ values.secretName | dump }}
   awsArn: ""

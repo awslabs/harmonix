@@ -5,6 +5,7 @@ import { Construct } from "constructs";
 import * as fs from 'fs';
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as kms from "aws-cdk-lib/aws-kms";
+import * as rg from "aws-cdk-lib/aws-resourcegroups";
 
 interface AppBindingList {
   [key: string]: string
@@ -68,7 +69,26 @@ export class CdkSecretsManagerStack extends cdk.Stack {
       })
     }: {description: props.secretDescription, secretName: `${props.secretId}`}
 
-    
+    const tagKey = `aws-resources:${props.secretId}`;
+    Tags.of(this).add(tagKey, props.secretId);
+
+    const rscGroup = new rg.CfnGroup(this, `${props.secretId}-resource-group`, {
+      name: `${props.secretId}-rg`,
+      description: `Resource related to ${props.secretId}`,
+      resourceQuery: {
+        type: "TAG_FILTERS_1_0",
+        query: {
+          resourceTypeFilters: ["AWS::AllSupported"],
+          tagFilters: [
+            {
+              key: tagKey,
+            },
+          ],
+        },
+      },
+    });
+
+
     const appBindingPath = `./binding/`
     const fileStatements = GetResourceBindingInfo(appBindingPath);
     
@@ -137,6 +157,11 @@ export class CdkSecretsManagerStack extends cdk.Stack {
     new cdk.CfnOutput(this, "SecretArn", {
       description: "Arn for the newly created secret",
       value: secretArn!,
+    });
+
+    new cdk.CfnOutput(this, "ResourceGroup", {
+      description: `The tag-based resource group to identify resources related to ${props.secretId}`,
+      value: `${rscGroup.attrArn}`,
     });
 
     // Output the full secret name for downstream consumers

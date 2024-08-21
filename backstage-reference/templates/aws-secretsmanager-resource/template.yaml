@@ -95,7 +95,7 @@ spec:
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts:
-              - git.reinforce24.bffranze.people.aws.dev
+              - {{ gitlab_hostname }}
             allowedOwners:
               - aws-resources
   steps:
@@ -121,34 +121,20 @@ spec:
         #### FOR CONTENT PARAMETER BELOW, HOSTED ROTATION AND CROSS ACCOUNT ROLE ACCESS ####
         content: >
           SECRET_HOSTED_ROTATION=${{ parameters.hosted_rotation }}
-
           SECRET_CROSS_ACCOUNT_ROLES=${{ parameters.cross_account_roles }}
-
           SECRET_KMS_CMK=${{ parameters.kms_cmk_arn }}
-          
           APP_SHORT_NAME=${{ parameters.component_id | lower }}
-
           TARGET_VPCID=${{ each.value.vpcId }}
-
           TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
-
           TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
-
           TARGET_SECRET_NAME=${{ parameters.component_id }}
-
           SECRET_DESCRIPTION=${{ parameters.description }}
-
           ACCOUNT=${{ each.value.accountId }}
-
           REGION=${{ each.value.region }}
-
           PREFIX=${{ each.value.envProviderPrefix }}
-
           ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
-
           OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName
           }}-${{ each.value.envProviderName }}
-
           OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if
           steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{%
           else %}false{% endif %}
@@ -156,7 +142,7 @@ spec:
       name: Fetch Secrets Manager Infrastructure as Code
       action: fetch:template
       input:
-        url: https://git.reinforce24.bffranze.people.aws.dev/opa-admin/backstage-reference/-/tree/main/common/aws_secretsmanager
+        url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_secretsmanager
         targetPath: ./.iac
         values:
           component_id: ${{ parameters.component_id | lower}}

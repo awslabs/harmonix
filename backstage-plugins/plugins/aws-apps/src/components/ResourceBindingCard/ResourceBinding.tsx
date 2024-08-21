@@ -149,6 +149,14 @@ const ResourceBindingCard = ({
         policyContent: secretPolicy,
         policyResource: item.resourceType
       });
+    }
+    else if (item.resourceType === "aws-secretsmanager") {
+          const secretPolicy = SECRET_POLICY.replace("@@@PLACEHOLDER@@@", item.resourceArn);
+          policies.push({
+            policyFileName: `statement-secrets-${awsComponent.currentEnvironment.environment.name}-${item.provider}-${item.resourceName}`,
+            policyContent: secretPolicy,
+            policyResource: item.resourceType
+          });
     }  else if (item.resourceType === "aws-s3") {
       const s3Policy = S3_POLICY.replace("@@@PLACEHOLDER@@@",`"${item.resourceArn}","${item.resourceArn}/*"`);
       policies.push({

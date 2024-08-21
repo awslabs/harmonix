@@ -5,7 +5,7 @@ sidebar_position: 2
 # Git
 
 ### Introduction
-This article will describe how OPA on AWS integrates with various git providers including Gitlab and Github. In addition, We provide deeper dive and customization examples to add your own git provider.
+This article will describe how OPA on AWS integrates with various git providers including Gitlab and Github. In addition, we provide a deeper dive and customization examples to add your own git provider.
 
 
 ## Architecture
@@ -18,14 +18,14 @@ graph TD;
     OPA-Backend-Plugin-->GitProviderInterface
 ```
 
-## Git Provider interface
+## Git provider interface
 
 Currently, OPA on AWS offers two git implementations:
 1. GitLabs
 2. GitGub
 
-However, you can implement additional git providers and customize the backend plugin: @aws/plugin-aws-apps-backend-for-backstage
-The Git provider interface *ISCMBackendAPI* expose five methods that are required to implement to enable a new git providers.
+However, you can implement additional git providers and customize the backend plugin: @aws/plugin-aws-apps-backend-for-backstage .
+The Git provider interface *ISCMBackendAPI* exposes five methods that are required to be implemented to enable a new git provider.
 
 SCMBackendAPI.ts ->
 ```typescript
@@ -43,11 +43,6 @@ A new git provider will need to implement the above methods. You can review the 
 │   └── src
       ├── api
       │   ├── AwsAppsApi.ts
-      │   ├── aws-audit.ts
-      │   ├── aws-auth.ts
-      │   ├── aws-platform.ts
-      │   ├── git-api.ts
-      │   ├── git-unset.ts
       │   ├── **github-api.ts**
       │   ├── **gitlab-api.ts**
       │   └── index.ts
@@ -56,7 +51,7 @@ A new git provider will need to implement the above methods. You can review the 
 
 ## Attaching a new git provider
 
-### Adding new git provider type
+### Adding a new git provider type
 In the common plugin @aws/plugin-aws-apps-common-for-backstage , edit the file /src/types/*git-providers.ts*
 example: adding BitBucket:
 
@@ -69,12 +64,20 @@ export enum GitProviders {
   }
 ```
 
-### Registering new git provider
+### Registering a new git provider
 In the backend plugin @aws/plugin-aws-apps-backend-for-backstage, edit the file /src/api/*git-api.ts*
-Add your new git provider and load your implementation.
+Add your new git provider and register your implementation.
 example: Adding BitBucket
 
 ```typescript
+import { GitProviders, ISCMBackendAPI } from '@aws/plugin-aws-apps-common-for-backstage';
+import { GitLabAPI } from './gitlab-api';
+import { GitHubAPI } from './github-api';
+// Add your impl here
+import { GitBitBucketAPI } from './gitbit-bucket-api';
+import { LoggerService } from '@backstage/backend-plugin-api';
+
+
 public constructor(
         readonly logger: LoggerService,
         readonly gitProvider: GitProviders
@@ -102,5 +105,10 @@ public constructor(
 ```
 
 :::info
-Adding git providers will allow OPA on AWS to preform the same actions based on your implementation, However you will still need to to implement corresponding pipelines to complete the event execution. Please see the [GitLabs pipelines examples](https://github.com/awslabs/app-development-for-backstage-io-on-aws/tree/main/backstage-reference/common/cicd) we provide as a reference for your desired pipeline tool.
+Adding a git provider will allow OPA on AWS to preform the same actions based on your implementation, However you will still need to to implement the corresponding pipelines to complete the event execution. Please see the [GitLabs pipelines examples](https://github.com/awslabs/app-development-for-backstage-io-on-aws/tree/main/backstage-reference/common/cicd) we provide as a reference for your desired pipeline tool.
+:::
+
+:::tip
+Don't forget to add your new git provider to backstage *app_config.yaml* under /catalog/provider/bitbucket. [backstage documentation](https://backstage.io/docs/integrations/bitbucketCloud/discovery#configuration)
+
 :::

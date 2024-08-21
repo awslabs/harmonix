@@ -2,7 +2,19 @@
      alt="OPA on AWS"
      style="margin-right: 10px;max-height: 400px; " />
 
-:star: **OPA on AWS v0.3 now available!** :star:
+:star: **OPA on AWS v0.3.4 now available!** :star:
+* Upgraded OPA on AWS to the latest Backstage version and new backend system. 1.29.0
+* New custom entity processor plugin - compatible with the new backend backstage system. details here
+* Updated Gitlab version 17.2.2
+* Support for Github and Multi-Git provider
+* New template examples - including Terraform ECS cluster
+* New SecretsManager shared resource template
+* New entity Schema updates - gitProvider, componentState, component spec subType details here
+* General package version updates
+* Bug fixes
+
+
+:star: **OPA on AWS v0.3.3** :star:
 * S3 Bucket as a shared resource
 * Reuse existing VPC when creating providers
 * Amazon ECS provider with EC2 clusters for tailored workloads

@@ -6,6 +6,8 @@ metadata:
   {%- if values.description %}
   description: ${{values.description | dump}}
   {%- endif %}
+  componentState: cloudformation
+  gitProvider: gitlab
   tags:
     - aws
     - nodejs

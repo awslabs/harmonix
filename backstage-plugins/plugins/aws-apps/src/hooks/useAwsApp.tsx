@@ -9,8 +9,9 @@ import {
 } from '@backstage/plugin-catalog-react';
 import useAsyncRetry from 'react-use/lib/useAsyncRetry';
 import { Entity, EntityRelation, parseEntityRef } from '@backstage/catalog-model';
-import { AWSEnvironmentEntityV1, AWSEnvironmentProviderEntityV1 } from '@aws/plugin-aws-apps-backend-for-backstage';
-import { AWSComponent, AWSComponentType, AWSDeploymentEnvironment, AWSECSAppDeploymentEnvironment, AWSEKSAppDeploymentEnvironment, AWSResourceDeploymentEnvironment, AWSServerlessAppDeploymentEnvironment, AwsDeploymentEnvironments, CloudFormationStack, GenericAWSEnvironment } from '@aws/plugin-aws-apps-common-for-backstage';
+// TODO: consider moving AWSEnvironmentEntityV1 AWSEnvironmentProviderEntityV1 to common plugin
+import { AWSEnvironmentEntityV1, AWSEnvironmentProviderEntityV1 } from '@aws/plugin-aws-apps-common-for-backstage';
+import { AWSComponent, AWSComponentType, AWSDeploymentEnvironment, AWSECSAppDeploymentEnvironment, AWSEKSAppDeploymentEnvironment, AWSResourceDeploymentEnvironment, AWSServerlessAppDeploymentEnvironment, AwsDeploymentEnvironments, CloudFormationStack, ComponentStateType, GenericAWSEnvironment, IRepositoryInfo, getRepoInfo } from '@aws/plugin-aws-apps-common-for-backstage';
 import { ProviderType, ExtraStackDeployStatus, DeployStackStatus } from '../helpers/constants';
 import { opaApiRef } from '../api';
 import { formatWithTime } from '../helpers/date-utils';
@@ -297,7 +298,8 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
 
     const envEntities = _envEntities!;
     const envProviderEntityMap = _envProviderEntityMap!;
-    const componentType = getComponentType(entity.spec?.type?.toString() || "");
+
+    const componentType = getComponentType(entity);
     // Construct environment and components data types from environment/provider entities
     const deployEnvs: AwsDeploymentEnvironments = envEntities.reduce((acc, envEntity) => {
       const envProviders = envProviderEntityMap[envEntity.envName];
@@ -338,7 +340,10 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
           provisioningRoleSsmKey: envProvider.metadata['provisioningRole']?.toString() || "",
           providerType: envProvider.metadata['envType']?.toString().toLowerCase() || "",
           vpcSsmKey: envProvider.metadata['vpc']?.toString() || "",
-          cloudFormationStackName: envProvider.metadata['stackName']?.toString() || ""
+          cloudFormationStackName: envProvider.metadata['StackName']?.toString() || "",
+          terraformWorkspace: envProvider.metadata['TerraformWorkspace']?.toString() || "",
+          terraformStateBucket: envProvider.metadata['TerraformStateBucket']?.toString() || "",
+          terraformStateTable: envProvider.metadata['TerraformStateTable']?.toString() || "",
         },
         entities: {
           envEntity: envEntity.entity as AWSEnvironmentEntityV1,
@@ -378,7 +383,13 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
     }, {});
 
     // now build an AWS component matching the app and the deployed environment
-    function getComponentType(componentType: string): AWSComponentType {
+    function getComponentType(entity: Entity): AWSComponentType {
+      if (entity.kind==="AWSEnvironment") {
+        return AWSComponentType.AWSEnvironment
+      } else if (entity.kind==="AWSEnvironmentProvider") {
+        return AWSComponentType.AWSProvider
+      }
+      let componentType: string = entity.spec?.type?.toString() || ""
       if (componentType === 'aws-resource') {
         return AWSComponentType.AWSResource
       } else if (componentType === 'aws-app') {
@@ -398,15 +409,37 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
       })
       return lowest;
     }
+    const getRepoInfoImpl = () : IRepositoryInfo => {
+      return getRepoInfo(entity);
+    }
+    
+    const getComponentStateType = () : ComponentStateType => {
+      if (entity.metadata['componentState'] ===undefined)
+      {
+        throw Error ("Error: Entity of type Component must have componentState in metadata.")
+      }
+      const componentState = entity.metadata['componentState']?.toString() || "";
+      switch (componentState)
+      {
+       case "cloudformation":
+        return ComponentStateType.CLOUDFORMATION
+       case "terraform-cloud":
+        return ComponentStateType.TERRAFORM_CLOUD
+       case "terraform-aws":
+          return ComponentStateType.TERRAFORM_AWS;
+       default:
+        throw Error (`Unsupported component state  ${componentState}`);
+      }
+    }
 
     const awsComponent: AWSComponent = {
       componentName: entity.metadata['name'],
       componentType,
+      componentState: getComponentStateType(),
       componentSubType: entity.spec? entity.spec['subType']!.toString(): "",
       iacType: entity.metadata['iacType']?.toString() || "",
       repoSecretArn: entity.metadata['repoSecretArn']?.toString() || "",
-      gitHost: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/instance']?.toString() : "",
-      gitRepo: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "",
+      getRepoInfo:getRepoInfoImpl,
       platformRegion: config.getString('backend.platformRegion'),
       environments: deployEnvs,
       currentEnvironment: !!_change_to_env_name ? deployEnvs[_change_to_env_name.toLowerCase()] : getLowerEnvironment(deployEnvs),

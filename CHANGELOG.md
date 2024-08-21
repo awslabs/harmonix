@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.4 - 2024-08-23
+* Upgraded OPA on AWS to the latest Backstage version and new backend system. 1.29.0
+* New custom entity processor plugin - compatible with the new backend backstage system. <a href="docs/techdocs/plugins"> details here </a>
+* Updated Gitlab version 17.2.2
+* Support for Github and Multi-Git provider
+* New template examples - including Terraform ECS cluster 
+* New SecretsManager shared resource template
+* New entity Schema updates - gitProvider, componentState, component spec subType  <a href="docs/techdocs/plugins"> details here </a>
+* General package version updates
+* Bug fix
+
 ## 0.3.3 - 2024-02-26
 
 ### New Features

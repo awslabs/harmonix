@@ -13,6 +13,8 @@ metadata:
     - database
   annotations:
   iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   resourceType: "aws-rds"
   dbName: ${{ values.dbName | dump }}
   dbObjectName: ${{ values.dbObjectName | dump }}

@@ -14,14 +14,13 @@ import { Service, Task, TaskDefinition } from '@aws-sdk/client-ecs';
 import { HeadObjectCommandOutput } from '@aws-sdk/client-s3';
 import { DeleteSecretCommandOutput, GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
-import { AWSEnvironmentProviderRecord, AWSProviderParams, AWSServiceResources, BackendParams, BindResourceParams } from '@aws/plugin-aws-apps-common-for-backstage';
+import { AWSEnvironmentProviderRecord, AWSProviderParams, AWSServiceResources, BackendParams, BindResourceParams, IRepositoryInfo } from '@aws/plugin-aws-apps-common-for-backstage';
 import { ConfigApi, FetchApi } from '@backstage/core-plugin-api';
 import { ResponseError } from '@backstage/errors';
 import { OPAApi } from '.';
 import { HTTP } from '../helpers/constants';
 import { ContainerDetailsType } from '../types';
 import { InvokeCommandOutput } from "@aws-sdk/client-lambda";
-import { PlatformSCMParams } from "@aws/plugin-aws-apps-common-for-backstage/src/types/PlatformTypes";
 
 
 export class OPAApiClient implements OPAApi {
@@ -211,9 +210,11 @@ export class OPAApiClient implements OPAApi {
   }
 
   async bindResource({
+    repoInfo,
     params,
     gitAdminSecret,
   }: {
+    repoInfo: IRepositoryInfo;
     params: BindResourceParams;
     gitAdminSecret: string;
     backendParamsOverrides?: BackendParams
@@ -223,9 +224,7 @@ export class OPAApiClient implements OPAApi {
     const postBody = {
       ...this.backendParams,
       providerName: params.providerName,
-      gitHost: params.gitHost,
-      gitProjectGroup: params.gitProjectGroup,
-      gitRepoName: params.gitRepoName,
+      repoInfo,
       gitAdminSecret,
       envName: params.envName,
       policies: params.policies,
@@ -239,10 +238,12 @@ export class OPAApiClient implements OPAApi {
   }
 
   async unBindResource({
+    repoInfo,
     params,
     gitAdminSecret,
     backendParamsOverrides,
   }: {
+    repoInfo: IRepositoryInfo;
     params: BindResourceParams;
     gitAdminSecret: string;
     backendParamsOverrides?: BackendParams;
@@ -253,9 +254,7 @@ export class OPAApiClient implements OPAApi {
       awsAccount: this.backendParams.awsAccount,
       appName: beParams.appName,
       providerName: params.providerName,
-      gitHost: params.gitHost,
-      gitProjectGroup: params.gitProjectGroup,
-      gitRepoName: params.gitRepoName,
+      repoInfo,
       gitAdminSecret,
       envName: params.envName,
       policies: params.policies,
@@ -269,19 +268,15 @@ export class OPAApiClient implements OPAApi {
   }
 
   async updateProviderToEnvironment({
-    gitHost,
-    gitRepoName,
+    repoInfo,
     provider,
-    gitProjectGroup,
     gitAdminSecret,
     envName,
     action,
     backendParamsOverrides,
   }: {
-    gitHost: string;
-    gitRepoName: string;
+    repoInfo: IRepositoryInfo;
     provider: AWSEnvironmentProviderRecord
-    gitProjectGroup: string;
     gitAdminSecret: string;
     envName: string;
     action: string;
@@ -291,9 +286,7 @@ export class OPAApiClient implements OPAApi {
     const postBody = {
       ...beParams,
       provider,
-      gitHost,
-      gitProjectGroup,
-      gitRepoName,
+      repoInfo,
       gitAdminSecret,
       envName,
       action
@@ -303,48 +296,21 @@ export class OPAApiClient implements OPAApi {
     return addProviderResponse
   }
 
-  async deleteProvider({
-    stackName,
-    accessRole,
-    backendParamsOverrides,
-  }: {
-    stackName: string;
-    accessRole: string;
-    backendParamsOverrides: BackendParams;
-  }): Promise<DeleteStackCommandOutput> {
-    const beParams = this.getAppliedBackendParams(backendParamsOverrides);
-    const postBody = {
-      ...beParams,
-      stackName,
-      accessRole
-    }
-
-    const deleteResponse = this.fetch<DeleteStackCommandOutput>('/platform/delete-stack', HTTP.POST, postBody);
-
-    return deleteResponse;
-  }
-
   deleteTFProvider({
     backendParamsOverrides,
-    gitHost,
-    gitRepoName,
-    gitProjectGroup,
+    repoInfo,
     gitAdminSecret,
     envName,
   }: {
     backendParamsOverrides: BackendParams;
-    gitHost: string;
-    gitRepoName: string;
-    gitProjectGroup: string;
+    repoInfo: IRepositoryInfo
     gitAdminSecret: string;
     envName: string;
   }): Promise<any> {
     const beParams = this.getAppliedBackendParams(backendParamsOverrides);
     const postBody = {
       ...beParams,
-      gitHost,
-      gitRepoName,
-      gitProjectGroup,
+      repoInfo,
       gitAdminSecret,
       envName
     }
@@ -375,24 +341,18 @@ export class OPAApiClient implements OPAApi {
   };
 
   async deleteRepository({
-    gitHost,
-    gitProject,
-    gitRepoName,
+    repoInfo,
     gitAdminSecret,
     backendParamsOverrides,
   }: {
-    gitHost: string;
-    gitProject: string;
-    gitRepoName: string;
+    repoInfo: IRepositoryInfo;
     gitAdminSecret: string;
     backendParamsOverrides?: BackendParams;
   }): Promise<any> {
     const beParams = this.getAppliedBackendParams(backendParamsOverrides);
     const postBody = {
       ...beParams,
-      gitHost,
-      gitProject,
-      gitRepoName,
+      repoInfo,
       gitAdminSecret
     }
     const deleteResponse = this.fetch<any>('/platform/delete-repository', HTTP.POST, postBody);
@@ -437,9 +397,7 @@ export class OPAApiClient implements OPAApi {
     s3BucketName,
     cfFileName,
     environmentName,
-    gitHost,
-    gitProjectGroup,
-    gitRepoName,
+    repoInfo,
     gitAdminSecret,
     backendParamsOverrides,
   }: {
@@ -448,9 +406,7 @@ export class OPAApiClient implements OPAApi {
     s3BucketName: string;
     cfFileName: string;
     environmentName?: string;
-    gitHost?: string;
-    gitProjectGroup?: string;
-    gitRepoName?: string;
+    repoInfo: IRepositoryInfo;
     gitAdminSecret?: string;
     backendParamsOverrides?: BackendParams;
   }): Promise<UpdateStackCommandOutput> {
@@ -463,9 +419,7 @@ export class OPAApiClient implements OPAApi {
       stackName,
       s3BucketName,
       cfFileName,
-      gitHost,
-      gitProjectGroup,
-      gitRepoName,
+      repoInfo,
       gitAdminSecret,
       environmentName,
     });
@@ -479,9 +433,7 @@ export class OPAApiClient implements OPAApi {
     s3BucketName,
     cfFileName,
     environmentName,
-    gitHost,
-    gitProjectGroup,
-    gitRepoName,
+    repoInfo,
     gitAdminSecret,
     backendParamsOverrides,
   }: {
@@ -490,9 +442,7 @@ export class OPAApiClient implements OPAApi {
     s3BucketName: string;
     cfFileName: string;
     environmentName?: string;
-    gitHost?: string;
-    gitProjectGroup?: string;
-    gitRepoName?: string;
+    repoInfo: IRepositoryInfo;
     gitAdminSecret?: string;
     backendParamsOverrides?: BackendParams;
   }): Promise<CreateStackCommandOutput> {
@@ -505,9 +455,7 @@ export class OPAApiClient implements OPAApi {
       stackName,
       s3BucketName,
       cfFileName,
-      gitHost,
-      gitProjectGroup,
-      gitRepoName,
+      repoInfo,
       gitAdminSecret,
       environmentName,
     });
@@ -631,19 +579,13 @@ export class OPAApiClient implements OPAApi {
   async promoteApp({
     envName,
     envRequiresManualApproval,
-    gitHost,
-    gitJobID,
-    gitProjectGroup,
-    gitRepoName,
+    repoInfo,
     gitAdminSecret,
     providersData,
   }: {
     envName: string;
     envRequiresManualApproval: boolean;
-    gitHost: string;
-    gitJobID: string;
-    gitProjectGroup: string;
-    gitRepoName: string;
+    repoInfo: IRepositoryInfo;
     gitAdminSecret: string;
     providersData: AWSProviderParams[];
   }): Promise<any> {
@@ -653,10 +595,7 @@ export class OPAApiClient implements OPAApi {
       appName: this.backendParams.appName,
       envName,
       envRequiresManualApproval,
-      gitHost,
-      gitJobID,
-      gitProjectGroup,
-      gitRepoName,
+      repoInfo,
       gitAdminSecret,
       providers: providersData
     }
@@ -690,12 +629,12 @@ export class OPAApiClient implements OPAApi {
   async getEKSAppManifests({
     envName,
     gitAdminSecret,
-    platformSCMConfig,
+    repoInfo,
     backendParamsOverrides
   }: {
     envName: string;
     gitAdminSecret: string;
-    platformSCMConfig: PlatformSCMParams;
+    repoInfo: IRepositoryInfo;
     backendParamsOverrides?: BackendParams;
   }): Promise<any> {
     const beParams = this.getAppliedBackendParams(backendParamsOverrides);
@@ -704,7 +643,7 @@ export class OPAApiClient implements OPAApi {
       ...beParams,
       envName,
       gitAdminSecret,
-      platformSCMConfig
+      repoInfo
     };
 
     // console.log(postBody)
@@ -723,7 +662,7 @@ export class OPAApiClient implements OPAApi {
     kubectlLambda,
     lambdaRoleArn,
     gitAdminSecret,
-    platformSCMConfig,
+    repoInfo,
     backendParamsOverrides
   }: {
     actionDescription: string;
@@ -734,13 +673,13 @@ export class OPAApiClient implements OPAApi {
     kubectlLambda: string;
     lambdaRoleArn: string;
     gitAdminSecret: string;
-    platformSCMConfig: PlatformSCMParams;
+    repoInfo: IRepositoryInfo;
     backendParamsOverrides?: BackendParams;
   }): Promise<any> {
     let configResult = await this.getEKSAppManifests({
       envName,
       gitAdminSecret,
-      platformSCMConfig,
+      repoInfo,
       backendParamsOverrides
     });
 

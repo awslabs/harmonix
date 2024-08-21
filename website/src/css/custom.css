@@ -85,6 +85,7 @@
 }
 .aboutTable table tr {
   border: none;
+  background-color: var(--ifm-table-background);
 }
 .aboutTable table td
 {

@@ -18,7 +18,7 @@ import { AWSProviderParams, AWSServiceResources, BackendParams, BindResourcePara
 import { createApiRef } from '@backstage/core-plugin-api';
 import { ContainerDetailsType } from '../types';
 import { InvokeCommandOutput } from "@aws-sdk/client-lambda";
-import { PlatformSCMParams } from "@aws/plugin-aws-apps-common-for-backstage/src/types/PlatformTypes";
+import { IRepositoryInfo } from "@aws/plugin-aws-apps-common-for-backstage";
 
 export const opaApiRef = createApiRef<OPAApi>({
   id: 'plugin.opa.app',
@@ -78,67 +78,53 @@ export interface OPAApi {
   }): Promise<GetParameterCommandOutput>;
 
   bindResource({
+    repoInfo,
     params,
     gitAdminSecret,
     backendParamsOverrides,
   }: {
+    repoInfo: IRepositoryInfo;
     params: BindResourceParams;
     gitAdminSecret: string;
     backendParamsOverrides?: BackendParams;
   }): Promise<any>;
 
   unBindResource({
+    repoInfo,
     params,
     gitAdminSecret,
     backendParamsOverrides,
   }: {
+    repoInfo: IRepositoryInfo;
     params: BindResourceParams;
     gitAdminSecret: string;
     backendParamsOverrides?: BackendParams;
   }): Promise<any>;
 
   updateProviderToEnvironment({
-    gitHost,
-    gitRepoName,
+    repoInfo,
     provider,
-    gitProjectGroup,
     gitAdminSecret,
     envName,
     action,
     backendParamsOverrides,
   }: {
-    gitHost: string;
-    gitRepoName: string;
+    repoInfo: IRepositoryInfo;
     provider: AWSEnvironmentProviderRecord;
-    gitProjectGroup: string;
     gitAdminSecret: string;
     envName: string;
     action: string;
     backendParamsOverrides: BackendParams;
   }): Promise<any>;
 
-  deleteProvider({
-    stackName,
-    accessRole,
-    backendParamsOverrides,
-  }: {
-    stackName: string;
-    accessRole: string;
-    backendParamsOverrides: BackendParams;
-  }): Promise<DeleteStackCommandOutput>;
-
   deleteTFProvider({
     backendParamsOverrides,
-    gitHost,
-    gitRepoName,
-    gitProjectGroup,
+    repoInfo,
     gitAdminSecret,
     envName,
   }: {
     backendParamsOverrides: BackendParams;
-    gitHost: string;
-    gitRepoName: string;
-    gitProjectGroup: string;
+    repoInfo: IRepositoryInfo;
     gitAdminSecret: string;
     envName: string;
   }): Promise<any>;
@@ -150,15 +136,11 @@ export interface OPAApi {
   }): Promise<DeleteSecretCommandOutput>;
 
   deleteRepository({
-    gitHost,
-    gitProject,
-    gitRepoName,
+    repoInfo,
     gitAdminSecret,
     backendParamsOverrides,
   }: {
-    gitHost: string;
-    gitProject: string;
-    gitRepoName: string;
+    repoInfo: IRepositoryInfo;
     gitAdminSecret: string;
     backendParamsOverrides?: BackendParams;
   }): Promise<any>;
@@ -219,9 +201,7 @@ export interface OPAApi {
     s3BucketName,
     cfFileName,
     environmentName,
-    gitHost,
-    gitProjectGroup,
-    gitRepoName,
+    repoInfo,
     gitAdminSecret,
     backendParamsOverrides,
   }: {
@@ -230,9 +210,7 @@ export interface OPAApi {
     s3BucketName: string;
     cfFileName: string;
     environmentName?: string;
-    gitHost?: string;
-    gitProjectGroup?: string;
-    gitRepoName?: string;
+    repoInfo: IRepositoryInfo;
     gitAdminSecret?: string;
     backendParamsOverrides?: BackendParams;
   }): Promise<UpdateStackCommandOutput>;
@@ -243,9 +221,7 @@ export interface OPAApi {
     s3BucketName,
     cfFileName,
     environmentName,
-    gitHost,
-    gitProjectGroup,
-    gitRepoName,
+    repoInfo,
     gitAdminSecret,
     backendParamsOverrides,
   }: {
@@ -254,9 +230,7 @@ export interface OPAApi {
     s3BucketName: string;
     cfFileName: string;
     environmentName?: string;
-    gitHost?: string;
-    gitProjectGroup?: string;
-    gitRepoName?: string;
+    repoInfo: IRepositoryInfo;
     gitAdminSecret?: string;
     backendParamsOverrides?: BackendParams;
   }): Promise<CreateStackCommandOutput>;
@@ -302,19 +276,13 @@ export interface OPAApi {
   promoteApp({
     envName,
     envRequiresManualApproval,
-    gitHost,
-    gitJobID,
-    gitProjectGroup,
-    gitRepoName,
+    repoInfo,
     gitAdminSecret,
     providersData,
   }: {
     envName: string;
     envRequiresManualApproval: boolean;
-    gitHost: string;
-    gitJobID: string;
-    gitProjectGroup: string;
-    gitRepoName: string;
+    repoInfo: IRepositoryInfo;
     gitAdminSecret: string;
     providersData: AWSProviderParams[];
   }): Promise<any>;
@@ -334,12 +302,12 @@ export interface OPAApi {
   getEKSAppManifests({
     envName,
     gitAdminSecret,
-    platformSCMConfig,
+    repoInfo,
     backendParamsOverrides
   }: {
     envName: string;
     gitAdminSecret: string;
-    platformSCMConfig: PlatformSCMParams;
+    repoInfo: IRepositoryInfo;
     backendParamsOverrides?: BackendParams;
   }): Promise<any>
 
@@ -352,7 +320,7 @@ export interface OPAApi {
     kubectlLambda,
     lambdaRoleArn,
     gitAdminSecret,
-    platformSCMConfig,
+    repoInfo,
     backendParamsOverrides
   }: {
     actionDescription: string;
@@ -363,7 +331,7 @@ export interface OPAApi {
     kubectlLambda: string;
     lambdaRoleArn: string;
     gitAdminSecret: string;
-    platformSCMConfig: PlatformSCMParams;
+    repoInfo: IRepositoryInfo;
     backendParamsOverrides?: BackendParams;
   }): Promise<any>;
 }

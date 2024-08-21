@@ -1,9 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { aws_ecs_patterns as ecsPatterns, SecretValue, StackProps } from "aws-cdk-lib";
+import { aws_ecs_patterns as ecsPatterns, StackProps } from "aws-cdk-lib";
 
-import { OPAEnvironmentParams, HostedZoneConstruct, NetworkConstruct } from "@aws/aws-app-development-common-constructs";
+import { HostedZoneConstruct, NetworkConstruct, OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs";
+
 import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as ecs from "aws-cdk-lib/aws-ecs";
 import * as elb from "aws-cdk-lib/aws-elasticloadbalancingv2";
@@ -13,8 +14,8 @@ import * as rds from "aws-cdk-lib/aws-rds";
 import * as s3 from "aws-cdk-lib/aws-s3";
 import { ISecret, Secret } from "aws-cdk-lib/aws-secretsmanager";
 import * as ssm from "aws-cdk-lib/aws-ssm";
-import { Construct } from "constructs";
 import { NagSuppressions } from "cdk-nag";
+import { Construct } from "constructs";
 
 export type EnvVar = { [key: string]: string };
 export type SecretVar = { [key: string]: ecs.Secret };
@@ -53,16 +54,20 @@ export interface BackstageFargateServiceConstructProps extends StackProps {
   /**
    * A reference to the Secrets Manager secret where Gitlab Admin secrets are held
    */
-  gitlabAdminSecret: ISecret;
+  gitlabAdminSecret?: ISecret;
   /**
    * An IAM role used for the service's tasks to have proper permission to
    * required AWS resources
    */
+  githubAdminSecret?: ISecret;
+  /**
+  * A reference to the Secrets Manager secret where Harness.io secrets are held
+  */
   readonly taskRole: iam.Role;
   /**
    * A set of key:value pairs to be used as environment variables in the
-   * container task.  Do NOT add sensetive information in environment variables.
-   * Sensetive information should be stored in SecretsManager and included
+   * container task.  Do NOT add sensitive information in environment variables.
+   * Sensitive information should be stored in SecretsManager and included
    * in the `secrets` parameter.
    */
   readonly envVars?: EnvVar;
@@ -72,6 +77,7 @@ export interface BackstageFargateServiceConstructProps extends StackProps {
    */
   readonly secretVars?: SecretVar;
   readonly gitlabHostname: string;
+  readonly githubHostname: string;
   readonly hostedZone?: HostedZoneConstruct;
 
   /**
@@ -88,6 +94,10 @@ export interface BackstageFargateServiceConstructProps extends StackProps {
    * URL to the icon of the Backstage hosting organization logo
    */
   readonly customerLogoIcon: string;
+    /**
+   * A reference to the Secrets Manager secret where the automation key is stored
+   */
+    readonly automationSecret?: ISecret;
 }
 
 const defaultProps: Partial<BackstageFargateServiceConstructProps> = {
@@ -136,6 +146,49 @@ export class BackstageFargateServiceConstruct extends Construct {
       stringValue: "https://" + props.hostedZone?.rootDnsName,
     });
 
+    // Create an object of the plain text environment variables
+    const envVars = {
+      POSTGRES_HOST: props.dbCluster.clusterEndpoint.hostname,
+      POSTGRES_PORT: `${props.dbCluster.clusterEndpoint.port}`,
+      BACKSTAGE_TITLE: "OPA",
+      BACKSTAGE_ORGNAME: "OPA",
+      PROTOCOL: "https",
+      BACKSTAGE_HOSTNAME: `${props.hostedZone?.rootDnsName}`,
+      GITLAB_HOSTNAME: `${props.gitlabHostname}`,
+      GITHUB_HOSTNAME: `${props.githubHostname}`,
+      BACKSTAGE_PORT: "443",
+      NODE_ENV: "production",
+      CUSTOMER_NAME: `${props.customerName}`,
+      CUSTOMER_LOGO: `${props.customerLogo}`,
+      CUSTOMER_LOGO_ICON: `${props.customerLogoIcon}`,
+      AWS_REGION: `${props.opaEnv.awsRegion}`,
+      AWS_ACCOUNT_ID: `${props.opaEnv.awsAccount}`,
+    }
+
+    // Create an object of the secret environment variables
+    let secretVars: { [key: string]: ecs.Secret } = {
+      POSTGRES_USER: ecs.Secret.fromSecretsManager(props.dbCluster.secret!, "username"),
+      POSTGRES_PASSWORD: ecs.Secret.fromSecretsManager(props.dbCluster.secret!, "password"),
+      OKTA_ORG_URL: ecs.Secret.fromSecretsManager(props.oktaSecret, "audience"),
+      OKTA_CLIENT_ID: ecs.Secret.fromSecretsManager(props.oktaSecret, "clientId"),
+      OKTA_CLIENT_SECRET: ecs.Secret.fromSecretsManager(props.oktaSecret, "clientSecret"),
+      OKTA_API_TOKEN: ecs.Secret.fromSecretsManager(props.oktaSecret, "apiToken"),
+      BACKSTAGE_SECRET: ecs.Secret.fromSecretsManager(backstageSecret),
+    }
+
+    if (props.gitlabAdminSecret) {
+      secretVars.GITLAB_ADMIN_TOKEN = ecs.Secret.fromSecretsManager(props.gitlabAdminSecret, "apiToken");
+    }
+
+    if (props.githubAdminSecret) {
+      secretVars.GITHUB_ADMIN_TOKEN = ecs.Secret.fromSecretsManager(props.githubAdminSecret, "apiToken");
+    }
+
+    // Add the automation secret if it exists.
+    if (props.automationSecret) {
+      secretVars.AUTOMATION_KEY = ecs.Secret.fromSecretsManager(props.automationSecret);
+    }
+
     albFargateService = new ecsPatterns.ApplicationLoadBalancedFargateService(
       this,
       `${props.opaEnv.prefix}-backstage`,
@@ -146,30 +199,8 @@ export class BackstageFargateServiceConstruct extends Construct {
         protocol: elb.ApplicationProtocol.HTTPS,
         taskImageOptions: {
           image: ecs.ContainerImage.fromEcrRepository(props.ecrRepository),
-          environment: {
-            POSTGRES_HOST: props.dbCluster.clusterEndpoint.hostname,
-            POSTGRES_PORT: `${props.dbCluster.clusterEndpoint.port}`,
-            BACKSTAGE_TITLE: "OPA",
-            BACKSTAGE_ORGNAME: "OPA",
-            PROTOCOL: "https",
-            BACKSTAGE_HOSTNAME: `${props.hostedZone?.rootDnsName}`,
-            SSM_GITLAB_HOSTNAME: `${props.gitlabHostname}`,
-            BACKSTAGE_PORT: "443",
-            NODE_ENV: "production",
-            CUSTOMER_NAME: `${props.customerName}`,
-            CUSTOMER_LOGO: `${props.customerLogo}`,
-            CUSTOMER_LOGO_ICON: `${props.customerLogoIcon}`,
-          },
-          secrets: {
-            POSTGRES_USER: ecs.Secret.fromSecretsManager(props.dbCluster.secret!, "username"),
-            POSTGRES_PASSWORD: ecs.Secret.fromSecretsManager(props.dbCluster.secret!, "password"),
-            OKTA_ORG_URL: ecs.Secret.fromSecretsManager(props.oktaSecret, "audience"),
-            OKTA_CLIENT_ID: ecs.Secret.fromSecretsManager(props.oktaSecret, "clientId"),
-            OKTA_CLIENT_SECRET: ecs.Secret.fromSecretsManager(props.oktaSecret, "clientSecret"),
-            OKTA_API_TOKEN: ecs.Secret.fromSecretsManager(props.oktaSecret, "apiToken"),
-            BACKSTAGE_SECRET: ecs.Secret.fromSecretsManager(backstageSecret),
-            GITLAB_ADMIN_TOKEN: ecs.Secret.fromSecretsManager(props.gitlabAdminSecret, "apiToken"),
-          },
+          environment: envVars,
+          secrets: secretVars,
           containerPort: 8080,
           taskRole: props.taskRole,
         },
@@ -184,6 +215,17 @@ export class BackstageFargateServiceConstruct extends Construct {
     const cfnEcsService = albFargateService.service.node.defaultChild as ecs.CfnService;
     cfnEcsService.desiredCount = 0;
     
+    // Store the backstage service name as an SSM Parameter
+    const serviceNameParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-backstage-service-name`, {
+      stringValue: albFargateService.service.serviceName,
+      parameterName: `/${props.opaEnv.prefix}/backstage-service-name`,
+    });
+    // Store the backstage ALB arn as an SSM Parameter
+    const albArnParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-backstage-alb-arn`, {
+      stringValue: albFargateService.loadBalancer.loadBalancerArn,
+      parameterName: `/${props.opaEnv.prefix}/backstage-alb-arn`,
+    });
+
     NagSuppressions.addResourceSuppressions(albFargateService.taskDefinition, [
       { id: "AwsSolutions-ECS2", reason: "Task environment variables are not sensitive.  When changed, a new task def will be required for a new container" },
       { id: "AwsSolutions-IAM5", reason: "Task def exec role restricts access to the repository via additional policies, but requires multiple resources access to GetAuthorizationToken.", appliesTo: ['Resource::*'] },

@@ -2,8 +2,8 @@
 
 # The Create App version has a direct correlation with the version of Backstage
 # that is installed. 
-# 0.5.7 will install Backstage 1.20.3
-BACKSTAGE_CREATE_APP_VERSION="0.5.8"
+# 0.5.17 will install Backstage 1.29.0
+BACKSTAGE_CREATE_APP_VERSION="0.5.17"
 
 # The OPA Backstage plugins can be installed in 1 of 2 ways. Firstly, the latest
 # published NPM packages can be used. Alternatively, the plugins can be installed
@@ -48,11 +48,13 @@ if [[ "$installMode" == "from-source" ]]; then
     AWS_APPS_BACKEND_VERSION=$(cat $backstageDir/plugins/aws-apps-backend/package.json | jq -r '.version')
     AWS_APPS_DEMO_VERSION=$(cat $backstageDir/plugins/aws-apps-demo/package.json | jq -r '.version')
     AWS_APPS_SCAFFOLDER_VERSION=$(cat $backstageDir/plugins/scaffolder-backend-module-aws-apps/package.json | jq -r '.version')
+    AWS_APPS_CATALOG_PROCESS_VERSION=$(cat $backstageDir/plugins/catalog-backend-module-aws-apps-entities-processor/package.json | jq -r '.version')
 else
     AWS_APPS_VERSION=^$(cat $opaHomeDir/backstage-plugins/plugins/aws-apps/package.json | jq -r '.version')
     AWS_APPS_BACKEND_VERSION=^$(cat $opaHomeDir/backstage-plugins/plugins/aws-apps-backend/package.json | jq -r '.version')
     AWS_APPS_DEMO_VERSION=^$(cat $opaHomeDir/backstage-plugins/plugins/aws-apps-demo/package.json | jq -r '.version')
     AWS_APPS_SCAFFOLDER_VERSION=^$(cat $opaHomeDir/backstage-plugins/plugins/scaffolder-backend-module-aws-apps/package.json | jq -r '.version')
+    AWS_APPS_CATALOG_PROCESS_VERSION=$(cat $opaHomeDir/backstage-plugins/plugins/catalog-backend-module-aws-apps-entities-processor/package.json | jq -r '.version')
 fi
 
 cd $backstageDir
@@ -65,29 +67,25 @@ cp $opaHomeDir/config/app-config.aws-production.yaml $backstageDir
 echo "" #intentional blank line
 echo "Installing backend dependencies"
 yarn --cwd packages/backend add \
-    "@backstage/plugin-catalog-backend-module-gitlab@^0.3.5" \
-    "@backstage/plugin-permission-backend@^0.5.31" \
-    "@roadiehq/catalog-backend-module-okta@^0.9.3" \
-    "@roadiehq/scaffolder-backend-module-utils@^1.11.0" \
-    "@immobiliarelabs/backstage-plugin-gitlab-backend@^6.4.0" \
+    "@backstage/plugin-catalog-backend-module-github@^0.6.5" \
+    "@backstage/plugin-catalog-backend-module-gitlab@^0.3.21" \
+    "@backstage/plugin-permission-backend@^0.5.46" \
+    "@roadiehq/catalog-backend-module-okta@^0.10.0" \
+    "@roadiehq/scaffolder-backend-module-utils@^1.17.1" \
+    "@immobiliarelabs/backstage-plugin-gitlab-backend@^6.6.0" \
     "@aws/plugin-aws-apps-backend-for-backstage@${AWS_APPS_BACKEND_VERSION}" \
-    "@aws/plugin-scaffolder-backend-aws-apps-for-backstage@${AWS_APPS_SCAFFOLDER_VERSION}"
+    "@aws/plugin-scaffolder-backend-aws-apps-for-backstage@${AWS_APPS_SCAFFOLDER_VERSION}" \
+    "@aws/backstage-plugin-catalog-backend-module-aws-apps-entities-processor@${AWS_APPS_CATALOG_PROCESS_VERSION}"
 
 # Install frontend dependencies
 echo "" #intentional blank line
 echo "Installing frontend dependencies"
 yarn --cwd packages/app add \
-    "@immobiliarelabs/backstage-plugin-gitlab@^6.4.0" \
+    "@immobiliarelabs/backstage-plugin-gitlab@^6.6.0" \
+    "@backstage/plugin-github-actions@^0.6.11" \
     "@aws/plugin-aws-apps-for-backstage@${AWS_APPS_VERSION}" \
     "@backstage/plugin-home" \
     "@aws/plugin-aws-apps-demo-for-backstage@${AWS_APPS_DEMO_VERSION}"
-
-# ### PATCH BEGIN
-# TODO: remove this patch when the issue is resolved in a future Backstage release
-# provide patch to pin the version of swagger-ui-react.  See https://github.com/backstage/backstage/issues/22142
-jq '.resolutions += {"swagger-ui-react": "5.10.5"} ' package.json > package.json.tmp
-mv package.json.tmp package.json
-# ### PATCH END
 
 cd -
 # Copy/overwrite modified backstage files.

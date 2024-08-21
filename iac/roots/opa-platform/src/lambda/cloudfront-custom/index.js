@@ -1,9 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-const AWS = require('aws-sdk');
+// import { CloudFrontClient, GetDistributionCommand, UpdateDistributionCommand } from "@aws-sdk/client-cloudfront"; // ES Modules import
+const { CloudFrontClient, UpdateDistributionCommand } = require("@aws-sdk/client-cloudfront"); // CommonJS import
 
-exports.handler =  async function(event, context) {
+exports.handler = async function (event, context) {
   console.log(process.env.DISTRIBUTION_ID);
   console.log(process.env.DOMAIN_NAME);
 
@@ -11,7 +12,7 @@ exports.handler =  async function(event, context) {
     case 'Update':
       await updateCDN();
       break;
-    case 'Create': 
+    case 'Create':
       await updateCDN();
       break;
     case 'Delete': {
@@ -24,44 +25,45 @@ exports.handler =  async function(event, context) {
 };
 
 async function updateCDN() {
-  const cloudfront = new AWS.CloudFront();
+  var cloudfront = new CloudFrontClient({ region: process.env.AWS_REGION });
+
   console.log(cloudfront);
-  //cloudfront.getDistribution().promise()
-  try
-  {
+
+  try {
     console.log("HELLLO")
-    const response = await cloudfront.getDistribution({ Id: process.env.DISTRIBUTION_ID || "N/A" }).promise();
+    const command = new GetDistributionCommand({ Id: process.env.DISTRIBUTION_ID || "N/A" });
+    const response = await client.send(command);
+
+
     console.log("HELLLO22")
-    if (response.Distribution) 
-    {
+    if (response.Distribution) {
       console.log("Found distribution!")
       const params = {
-          Id: process.env.DISTRIBUTION_ID || "N/A",
-          DistributionConfig: response.Distribution.DistributionConfig,
-          IfMatch: response.ETag
+        Id: process.env.DISTRIBUTION_ID || "N/A",
+        DistributionConfig: response.Distribution.DistributionConfig,
+        IfMatch: response.ETag
       }
       console.log(response.Distribution.DistributionConfig);
-      if (params.DistributionConfig.Origins.Quantity == 1)
-      {
+      if (params.DistributionConfig.Origins.Quantity == 1) {
         console.log("modify default origin")
         params.DistributionConfig.Origins.Items[0].OriginPath = "/git";
-        params.DistributionConfig.Origins.Items[0].DomainName=process.env.DOMAIN_NAME || "N/A"
+        params.DistributionConfig.Origins.Items[0].DomainName = process.env.DOMAIN_NAME || "N/A"
       }
-      else
-      {
+      else {
         console.log("append default origin")
 
       }
       console.log("Before update")
-      const cfResponse = await cloudfront.updateDistribution(params).promise();
+
+      const updateDistCommand = new UpdateDistributionCommand(params);
+      const cfResponse = await client.send(updateDistCommand);
       console.log(cfResponse);
     }
-    else
-    {
+    else {
       console.err("Error fetching distribution")
     }
   }
-  catch(e){
+  catch (e) {
     console.log(e);
   }
 

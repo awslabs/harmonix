@@ -8,7 +8,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { useApi } from '@backstage/core-plugin-api';
 import { opaApiRef } from '../../api';
 import { Alert, AlertTitle, Typography } from '@mui/material';
-import { AWSEnvironmentProviderRecord } from '@aws/plugin-aws-apps-common-for-backstage';
+import { AWSEnvironmentProviderRecord, getGitCredentailsSecret, getRepoInfo } from '@aws/plugin-aws-apps-common-for-backstage';
 import { CompoundEntityRef, Entity, EntityRelation, parseEntityRef } from '@backstage/catalog-model';
 
 import { CatalogApi, EntityRefLink, catalogApiRef, useEntity } from '@backstage/plugin-catalog-react';
@@ -32,6 +32,8 @@ const AwsEnvironmentProviderCard = ({
   const [addProviderMessage, setAddProviderMessage] = useState("");
   const [providerRequest, setProviderRequest] = useState<AWSEnvironmentProviderRecord>();
   const [availableProviders, setAvailableProviders] = useState<AWSEnvironmentProviderRecord[]>([]);
+
+
 
   useEffect(() => {
     getProviderDetails()
@@ -114,12 +116,13 @@ const AwsEnvironmentProviderCard = ({
       providerName: item.name.toLowerCase()
     };
 
+    let repoInfo = getRepoInfo(entity);
+    repoInfo.gitProjectGroup = 'aws-environments'
+
     const params = {
-      gitHost: entity.metadata['repoUrl'] ? entity.metadata['repoUrl'].toString().split('?')[0] : "",
-      gitRepoName: entity.metadata.repoUrl?.toString().split('repo=')[1].toLowerCase() || "",
+      repoInfo,
       provider: item,
-      gitProjectGroup: 'aws-environments',
-      gitAdminSecret: 'opa-admin-gitlab-secrets',
+      gitAdminSecret: getGitCredentailsSecret(repoInfo),
       envName: entity.metadata.name.toLowerCase(),
       action,
       backendParamsOverrides

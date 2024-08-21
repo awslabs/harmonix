@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AWSComponent, AWSComponentType, AWSEKSAppDeploymentEnvironment, AWSResourceDeploymentEnvironment, GenericAWSEnvironment } from "@aws/plugin-aws-apps-common-for-backstage";
+import { AWSComponent, AWSComponentType, AWSEKSAppDeploymentEnvironment, AWSResourceDeploymentEnvironment, ComponentStateType, GenericAWSEnvironment, IRepositoryInfo, getGitCredentailsSecret } from "@aws/plugin-aws-apps-common-for-backstage";
 import { Entity } from "@backstage/catalog-model";
 import { EmptyState, InfoCard } from "@backstage/core-components";
 import { useApi } from "@backstage/core-plugin-api";
@@ -30,17 +30,16 @@ const DeleteAppPanel = ({
   const appIACType = entity.metadata["iacType"]?.toString();
   const appSubtype = entity.spec?.["subType"]?.toString() || 'undefinedSubtype';
   // console.log(appIACType);
+  const repoInfo = awsComponent.getRepoInfo();
 
   const handleCloseAlert = () => {
     setDeleteResultMessage("");
   };
 
-  const deleteRepo = (gitHost: string, gitRepo: string) => {
+  const deleteRepo = (repoInfo:IRepositoryInfo) => {
     api.deleteRepository({
-      gitHost,
-      gitProject: gitRepo.split('/')[0],
-      gitRepoName: gitRepo.split('/')[1],
-      gitAdminSecret: 'opa-admin-gitlab-secrets'
+      repoInfo,
+      gitAdminSecret: getGitCredentailsSecret(repoInfo)
     }).then(_results => {
       // console.log(_results);
       setDeleteResultMessage("Gitlab Repository deleted.")
@@ -94,15 +93,10 @@ const DeleteAppPanel = ({
   };
 
   const deleteK8sApp = async (env: AWSEKSAppDeploymentEnvironment) => {
-
     let k8sManifests = await api.getEKSAppManifests({
       envName: env.environment.name,
-      gitAdminSecret: 'opa-admin-gitlab-secrets',
-      platformSCMConfig: {
-        host: awsComponent.gitHost,
-        projectGroup: 'aws-app',
-        repoName: awsComponent.gitRepo.split('/')[1]
-      }
+      gitAdminSecret: getGitCredentailsSecret(repoInfo),
+      repoInfo
     });
 
     // Removing objects without a namespace set since the app admin role
@@ -153,8 +147,8 @@ const DeleteAppPanel = ({
       providerName: env.providerData.name
     };
 
-    const accessRole = `arn:aws:iam::${env.providerData.accountNumber}:role/${env.providerData.prefix}-${env.providerData.name}-operations-role`
-    if (appIACType === "cdk") {
+    if (awsComponent.componentState===ComponentStateType.CLOUDFORMATION)
+    {
       let stackName = ""
       if (awsComponent.componentType === AWSComponentType.AWSResource) {
         const resourceEnv = env as AWSResourceDeploymentEnvironment
@@ -169,33 +163,48 @@ const DeleteAppPanel = ({
         await deleteK8sApp(awsComponent.currentEnvironment as AWSEKSAppDeploymentEnvironment);
       }
 
-      const results = api.deleteProvider({ stackName, accessRole, backendParamsOverrides });
+      const results = api.deleteStack({componentName:awsComponent.componentName, stackName, backendParamsOverrides });
       return results;
+    }
+    else if (awsComponent.componentState === ComponentStateType.TERRAFORM_CLOUD)
+    {
+      // Use the workspace directy to invoke delete if provisioning happens in TF Cloud 
+      // awsComponent.currentEnvironment.providerData.terraformWorkspace
 
-    } else if (appIACType === "terraform") {
-
-      // For EKS apps, we need to delete the application from the Kubernetes cluster
-      if (APP_SUBTYPE.EKS === appSubtype) {
-        await deleteK8sApp(awsComponent.currentEnvironment as AWSEKSAppDeploymentEnvironment);
-      }
-
-      const gitHost = entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/instance']?.toString() : "";
-      const gitRepo = entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "";
+      const repoInfo = awsComponent.getRepoInfo();
       const params = {
         backendParamsOverrides,
-        gitHost,
-        gitRepoName: gitRepo.split('/')[1],
-        gitProjectGroup: gitRepo.split('/')[0],
-        gitAdminSecret: 'opa-admin-gitlab-secrets',
+        repoInfo,
+        gitAdminSecret: getGitCredentailsSecret(repoInfo),
         envName: env.environment.name
       }
       const results = api.deleteTFProvider(params);
       return results;
-    }
-    else {
-      throw new Error(`deleteAppFromSingleProvider Not Yet implemented for ${appIACType}`)
-    }
 
+    } else if (awsComponent.componentState === ComponentStateType.TERRAFORM_AWS)
+    {
+        // rely on pipeline to remove the terraform IAC based on bucket and table - can be resloved from the repo. 
+       // awsComponent.currentEnvironment.providerData.terraformStateBucket
+       // awsComponent.currentEnvironment.providerData.terraformStateTable
+
+        // For EKS apps, we need to delete the application from the Kubernetes cluster
+        if (APP_SUBTYPE.EKS === appSubtype) {
+          await deleteK8sApp(awsComponent.currentEnvironment as AWSEKSAppDeploymentEnvironment);
+        }
+  
+        const repoInfo = awsComponent.getRepoInfo();
+        const params = {
+          backendParamsOverrides,
+          repoInfo,
+          gitAdminSecret: getGitCredentailsSecret(repoInfo),
+          envName: env.environment.name
+        }
+        const results = api.deleteTFProvider(params);
+        return results;
+    } else
+    {
+      throw Error("Error: Can't delete component, Unsupported State.")
+    }
   }
 
   const deleteSecret = (secretName: string) => {
@@ -210,15 +219,13 @@ const DeleteAppPanel = ({
 
   }
 
-  const handleDeleteRepo = async () => {
-    // Delete the repo now.
-    const gitHost = entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/instance']?.toString() : "";
-    const gitRepo = entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "";
-    deleteRepo(gitHost, gitRepo)
-    setDeleteResultMessage("Redirect to home ....")
-    await sleep(4000);
-    navigate('/')
-  }
+  // const handleDeleteRepo = async () => {
+  //   // Delete the repo now.
+  //   deleteRepo(repoInfo)
+  //   setDeleteResultMessage("Redirect to home ....")
+  //   await sleep(4000);
+  //   navigate('/')
+  // }
 
   const handleClickDelete = async () => {
     if (confirm('Are you sure you want to delete this app?')) {
@@ -249,6 +256,7 @@ const DeleteAppPanel = ({
 
   const handleClickDeleteAll = async () => {
     if (confirm('Are you sure you want to delete this app?')) {
+
       const deployedEnvironments = Object.keys(awsComponent.environments);
       deployedEnvironments.forEach(env => {
         const environmentToRemove: GenericAWSEnvironment = awsComponent.environments[env];
@@ -268,10 +276,9 @@ const DeleteAppPanel = ({
         })
       })
       if (appIACType === "cdk") {
+        await sleep(2000);
         // Delete the repo now.
-        const gitHost = entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/instance']?.toString() : "";
-        const gitRepo = entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "";
-        deleteRepo(gitHost, gitRepo);
+        deleteRepo(repoInfo);
         await sleep(2000);
         if (awsComponent.componentType === AWSComponentType.AWSApp) {
           deleteSecret(entity.metadata['repoSecretArn']?.toString() || "");
@@ -321,22 +328,6 @@ const DeleteAppPanel = ({
               </Typography>
             </Grid>
           </Grid>
-          {
-            (appIACType === "terraform") ?
-              (
-                <Grid container spacing={2}>
-                  <Grid item zeroMinWidth xs={12}>
-                    <Typography sx={{ fontWeight: 'bold' }}>Delete Repository</Typography>
-                  </Grid>
-                  <Grid item zeroMinWidth xs={12}>
-                    <Typography noWrap>
-                      <Button variant="contained" style={{ backgroundColor: 'red' }} onClick={handleDeleteRepo} disabled={disabled}>Delete Repository</Button>
-                      <br /><i>*Delete the repo after terraform IAC delete pipeline is completed.</i>
-                    </Typography>
-                  </Grid>
-                </Grid>
-              ) : <div></div>
-          }
           <Grid item zeroMinWidth xs={12}>
             {isDeleteSuccessful && deleteResultMessage && (
               <Alert id="alertGood" sx={{ mt: 2, mb: 2 }} severity="success" onClose={handleCloseAlert}>

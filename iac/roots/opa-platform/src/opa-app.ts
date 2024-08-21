@@ -22,7 +22,7 @@ async function main() {
 
   const platformStack = new OPAPlatformStack(app, "OPAStack", {
     stackName: `opa-platform`,
-    description: "App Development for Backstage on AWS (uksb-1tupbocl5)",
+    description: "OPA on AWS Backstage IDP for AWS (uksb-1tupbocl5)",
     env,
   });
 

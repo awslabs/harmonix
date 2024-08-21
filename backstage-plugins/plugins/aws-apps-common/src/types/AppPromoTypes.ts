@@ -1,14 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-export type GitRepoParams = {
-  gitHost: string;
-  gitProjectGroup: string;
-  gitRepoName: string;  
-}
-
-export type AppPromoParams = GitRepoParams & {
-  gitJobID: string;
+export type AppPromoParams = {
   envName: string;
   envRequiresManualApproval: boolean;
   appName: string;

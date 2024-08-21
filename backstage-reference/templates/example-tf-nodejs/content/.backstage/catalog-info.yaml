@@ -13,6 +13,8 @@ metadata:
   #   - title: Example Title
   #     url: http://www.example.com
   iacType: terraform
+  componentState: terraform-aws
+  gitProvider: gitlab
   repoSecretArn: ${{ values.awsSecretRepoArn | dump }}
 spec:
   type: aws-app

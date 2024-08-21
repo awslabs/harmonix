@@ -125,7 +125,7 @@ export class EksResourcesStack extends Stack {
       encryption: ecr.RepositoryEncryption.KMS,
       encryptionKey: kmsKey,
       removalPolicy: RemovalPolicy.DESTROY,
-      autoDeleteImages: true
+      emptyOnDelete: true
     });
 
     // Create a new app admin IAM role if an existing IAM role was not provided by the user

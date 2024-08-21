@@ -11,6 +11,8 @@ metadata:
     - python
     - flask
   iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   repoSecretArn: ${{ values.awsSecretRepoArn | dump }}
 spec:
   type: aws-app

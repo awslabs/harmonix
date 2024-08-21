@@ -18,6 +18,9 @@ metadata:
   apiAccess: "${{values.apiAccess}}"
   apiAccessCidrs: "${{values.apiAccessCidrs}}"
   nodeType: "${{values.nodeType}}"
+  iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   vpc: ""
   clusterName: ""
   operationRole: ""

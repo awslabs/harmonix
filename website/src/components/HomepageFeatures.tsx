@@ -11,22 +11,82 @@ type FeatureGroup = {
 
 const opaMainVideoContent = (
   <div className=''>
-    <h4>OPA on AWS at BackstageCon 2024</h4>
-    <iframe width="600" height="300" src="https://www.youtube.com/embed/40B6YmmhOvI/2.jpg?start=670" title="Let’s Go Backstage: End to End IDP Tips &amp; Tricks for Platform Engineers - Oshrat Nir &amp; Guy Menahem" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
-    <br/><br/>
-    <h5><i>Upcoming OPA on AWS conference sessions: <a href="https://platformcon.com/">PlatformCon 2024</a></i></h5>
-  </div>
+  <h4>The Platformers - OPA on AWS</h4>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/h9HwnkkmQPA/1.jpg?" title="What is OPA on AWS + Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div> 
 )
 
+const opaSecondVideoContent = (
+  <div className=''>
+  <h4>OPA on AWS at PlatformCon 2024</h4>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/cjovvIWdgRU/1.jpg" title="Unlocking Platform Engineer Efficiency: Automation Strategies with Backstage" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+)
+
+const opaThirdVideoContent = (
+  <div className=''>
+    <h4>Containers from the couch</h4>
+    <iframe width="400" height="225" src="https://www.youtube.com/embed/EN6mlTX71Ts/1.jpg?" title="OPA on AWS" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  </div>
+)
+const opaForthVideoContent = (
+  <div className=''>
+  <h4>OPA on AWS at BackstageCon 2024</h4>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/40B6YmmhOvI/2.jpg?start=670" title="Let’s Go Backstage: End to End IDP Tips &amp; Tricks for Platform Engineers - Oshrat Nir &amp; Guy Menahem" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+)
+
+const opaFifthVideoContent = (
+  <div className=''>
+  <h4>OPA on AWS Tech Playlist</h4>
+  {/* <iframe width="400" height="250" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> */}
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div>
+)
+const opaSixthVideoContent = (
+  <div className=''>
+  {/* <h4>Hamburg Containers days 2024</h4> */}
+  
+  <div  style={{ width: '400px', height:'225px', }}></div>
+</div>
+)
 
 const carouselContent = (
   <div className='carouselTitle'>
   <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='' >
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
+      <h4>🚀 NEW RELEASE 0.3.4 🚀</h4>
+      <p><b>V0.3.4</b></p>
+      <p>Checkout the new release notes <a href="/docs/CHANGELOG" >--> here</a> </p>
+    </Carousel.Caption>
+  </Carousel.Item>
+  <Carousel.Item>
+    <Carousel.Caption style={{minHeight:'120px'}}>
+      <h4>🚀 NEW 🚀</h4>
+      <p><b>GitHub Source Control Integration</b></p>
+      <p>OPA on AWS is now integrated with both GitHub & Gitlab Source control <br/>You can even extend it to more git providers. Read more <a href="/docs/integration/git" >-->here</a></p>
+    </Carousel.Caption>
+  </Carousel.Item>
+  <Carousel.Item>
+    <Carousel.Caption style={{minHeight:'120px'}}>
+      <h4>🚀 NEW 🚀</h4>
+      <p><b>Terraform ECS Provider Template</b></p>
+      <p>A New Terraform template to provision AWS ECS Clusters</p>
+    </Carousel.Caption>
+  </Carousel.Item>
+  <Carousel.Item>
+    <Carousel.Caption style={{minHeight:'120px'}}>
       <h4>🚀 NEW 🚀</h4>
       <p><b>GenAI provider and RAG app</b></p>
-      <p>New GenAI Provider for development of GenAI Applications and a new RAG demo app to get you started quickly with experimenting with GenAI applications. <a href="/docs/category/generative-ai">Click here for more details</a></p>
+      <p>New GenAI Provider for development of GenAI Applications <br/> And a new RAG demo app to get you started quickly with experimenting with GenAI applications <a href="/docs/category/generative-ai">Click here for more details</a></p>
+    </Carousel.Caption>
+  </Carousel.Item>
+  <Carousel.Item>
+    <Carousel.Caption style={{minHeight:'120px'}}>
+      <h4>🚀 NEW 🚀</h4>
+      <p><b>AWS SecretsManager shared resource</b></p>
+      <p>You can now create shared secrets on AWS and easily bind them to applications</p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
@@ -37,20 +97,8 @@ const carouselContent = (
     </Carousel.Caption>
   </Carousel.Item>
   
-  <Carousel.Item>
-    <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🔜 Coming Soon 🔜</h4>
-      <p><b>Terraform ECS Cluster Template</b></p>
-      <p>A New Terraform template to provision AWS ECS Clusters</p>
-    </Carousel.Caption>
-  </Carousel.Item>
-  <Carousel.Item>
-    <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🔜 Coming Soon 🔜</h4>
-      <p><b>GitHub Source Control Integration</b></p>
-      <p>Integrating OPA on AWS with GitHub Source control</p>
-    </Carousel.Caption>
-  </Carousel.Item>
+
+
 </Carousel>
 </div>
 )
@@ -106,14 +154,74 @@ const opaDescription : FeatureItem[] = [
 
 const opaMainVideo : FeatureItem[] = [
   {
-    title: 'video',
+    title: 'video1',
     Svg: require('@site/static/img/regulations.svg').default,
     noSVG:true,
     minHeight:'300px',
-    customTextStyle:{fontSize:'24px', maxWidth:'70%', margin:'auto',minHeight:'170px'},
+    // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
     description: (
       <>
        {opaMainVideoContent}
+      </>
+    ),
+  },
+  {
+    title: 'video2',
+    Svg: require('@site/static/img/regulations.svg').default,
+    noSVG:true,
+    minHeight:'300px',
+    // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
+    description: (
+      <>
+       {opaSecondVideoContent}
+      </>
+    ),
+  },
+  {
+    title: 'video3',
+    Svg: require('@site/static/img/regulations.svg').default,
+    noSVG:true,
+    minHeight:'300px',
+    // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
+    description: (
+      <>
+       {opaThirdVideoContent}
+      </>
+    ),
+  },
+  {
+    title: 'video4',
+    Svg: require('@site/static/img/regulations.svg').default,
+    noSVG:true,
+    minHeight:'300px',
+    // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
+    description: (
+      <>
+       {opaForthVideoContent}
+      </>
+    ),
+  },
+  {
+    title: 'video5',
+    Svg: require('@site/static/img/regulations.svg').default,
+    noSVG:true,
+    minHeight:'300px',
+    // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
+    description: (
+      <>
+       {opaFifthVideoContent}
+      </>
+    ),
+  },
+  {
+    title: 'video6',
+    Svg: require('@site/static/img/regulations.svg').default,
+    noSVG:true,
+    minHeight:'300px',
+    // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
+    description: (
+      <>
+       {opaSixthVideoContent}
       </>
     ),
   },

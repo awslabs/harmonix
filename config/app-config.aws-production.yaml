@@ -9,6 +9,11 @@ organization:
   name: ${CUSTOMER_NAME}
 
 backend:
+  externalAccess:
+    - type: static
+      options:
+        token: ${AUTOMATION_KEY}
+        subject: automation-system
   platformRegion: ${AWS_REGION}
   # Note that the baseUrl should be the URL that the browser and other clients
   # should use when communicating with the backend, i.e. it needs to be
@@ -49,7 +54,7 @@ backend:
       #     $file: <file-path>/ca/server.crt
   reading:
     allow:
-      - host: ${SSM_GITLAB_HOSTNAME}
+      - host: ${GITLAB_HOSTNAME}
 auth:
   # see https://backstage.io/docs/auth/ to learn about auth providers
   session:
@@ -67,9 +72,9 @@ auth:
 
 integrations:
   gitlab:
-    - host: ${SSM_GITLAB_HOSTNAME}
-      apiBaseUrl: https://${SSM_GITLAB_HOSTNAME}/api/v4
-      baseUrl: https://${SSM_GITLAB_HOSTNAME}
+    - host: ${GITLAB_HOSTNAME}
+      apiBaseUrl: https://${GITLAB_HOSTNAME}/api/v4
+      baseUrl: https://${GITLAB_HOSTNAME}
       token: ${GITLAB_ADMIN_TOKEN}
 
 scaffolder:
@@ -104,18 +109,20 @@ catalog:
   locations:
     # AWS templates
     - type: url
-      target: https://${SSM_GITLAB_HOSTNAME}/opa-admin/backstage-reference/-/blob/main/templates/all-templates.yaml
+      target: https://${GITLAB_HOSTNAME}/opa-admin/backstage-reference/-/blob/main/templates/all-templates.yaml
       rules:
         - allow: [Location, Template]
   providers:
     okta:
       - orgUrl: ${OKTA_ORG_URL}
         token: ${OKTA_API_TOKEN}
+        frequency: { minutes: 30 }
+        timeout: { minutes: 3 }
         # userFilter: profile.department eq "engineering"
         # groupFilter: profile.name eq "Everyone"
     gitlab:
       opa:
-        host: ${SSM_GITLAB_HOSTNAME}
+        host: ${GITLAB_HOSTNAME}
         branch: main
         fallbackBranch: main
         skipForkedRepos: false

@@ -53,7 +53,8 @@ sidebar_position: 8
     <td width="20%" align="center">
           <img src="/img/features/aws-s3.png"/>
     </td>
-    <td align="center">
+    <td width="20%" align="center">
+          <img src="/img/features/aws-secretsmanager.png"/>
     </td>
      <td align="center">
     </td>

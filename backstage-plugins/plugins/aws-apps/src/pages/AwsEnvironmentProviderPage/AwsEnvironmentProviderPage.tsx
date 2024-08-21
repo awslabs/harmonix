@@ -39,7 +39,7 @@ export function AwsEnvironmentProviderPage(/* {children}: AwsEnvironmentProvider
         <AwsServerlessEnvironmentProviderPage />
       </EntitySwitch.Case>
       <EntitySwitch.Case>
-        <h1>Environment Provider Type "{entity.metadata["envType"]}" Is Not Supported At This Time</h1>
+        <h1>Environment Provider Type "{entity.metadata["envType"]?.toString()}" Is Not Supported At This Time</h1>
       </EntitySwitch.Case>
     </EntitySwitch>
   );

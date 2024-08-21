@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AWSComponent, AWSProviderParams, AwsDeploymentEnvironments } from '@aws/plugin-aws-apps-common-for-backstage';
+import { AWSComponent, AWSProviderParams, AwsDeploymentEnvironments, getGitCredentailsSecret } from '@aws/plugin-aws-apps-common-for-backstage';
 import { CompoundEntityRef, Entity, EntityRelation, parseEntityRef } from '@backstage/catalog-model';
 import { EmptyState, InfoCard, } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
@@ -231,16 +231,15 @@ const AppPromoCard = ({
     setPromotedEnvName("");
 
     // Build a list of environment variables required to invoke a job to promote the app
+    let repoInfo = awsComponent.getRepoInfo();
+    repoInfo.gitJobID = 'create-subsequent-environment-ci-config';
     getEnvProviders().then(envProviders => {
-
+    
       const promoBody = {
         envName: selectedItem,
         envRequiresManualApproval: envProviders.providers[0].envRequiresManualApproval,
-        gitHost: awsComponent.gitHost,
-        gitJobID: 'create-subsequent-environment-ci-config',
-        gitProjectGroup: 'aws-app',
-        gitAdminSecret: 'opa-admin-gitlab-secrets',
-        gitRepoName: awsComponent.gitRepo.split('/')[1],
+        repoInfo,
+        gitAdminSecret:getGitCredentailsSecret(repoInfo),
         providersData: envProviders.providers
       };
 

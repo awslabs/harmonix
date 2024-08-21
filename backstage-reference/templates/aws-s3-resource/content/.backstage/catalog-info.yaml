@@ -13,6 +13,8 @@ metadata:
     - s3
   annotations:
   iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   resourceType: "aws-s3"
   bucketName: ${{ values.bucketName | dump }}
   awsArn: ""

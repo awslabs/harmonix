@@ -14,6 +14,8 @@ metadata:
   #     url: http://www.example.com
   iacType: cdk
   repoSecretArn: ${{ values.awsSecretRepoArn | dump }}
+  componentState: cloudformation
+  gitProvider: gitlab
 spec:
   type: aws-app
   subType: aws-ecs

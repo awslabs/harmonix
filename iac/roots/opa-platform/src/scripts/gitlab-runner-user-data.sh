@@ -67,7 +67,8 @@ echo "DONE Installing Docker"
 echo ""
 echo "Downloading GitLab Runner"
 # Freeze the GitLab Runner version to 16.5.0
-sudo curl -L --output /usr/local/bin/gitlab-runner "https://gitlab-runner-downloads.s3.amazonaws.com/v16.5.0/binaries/gitlab-runner-linux-386"
+# sudo curl -L --output /usr/local/bin/gitlab-runner "https://gitlab-runner-downloads.s3.amazonaws.com/v16.5.0/binaries/gitlab-runner-linux-386"
+sudo curl -L --output /usr/local/bin/gitlab-runner "https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-386"
 sudo chmod +x /usr/local/bin/gitlab-runner
 echo ""
 echo "DONE Downloading GitLab Runner"
@@ -95,39 +96,66 @@ do
   GITLAB_SECRET_TOKEN=$(echo $GITLAB_SECRET | jq -r .apiToken)
   RUNNER_ID=$(echo $GITLAB_SECRET | jq -r .runnerId)
   RUNNER_TOKEN=$(echo $GITLAB_SECRET | jq -r .runnerRegistrationToken)
+  PAT=$(echo $GITLAB_SECRET | jq -r .PAT)
   RUNNER_URL="${GITLAB_URL}/"
 
+  echo $GITLAB_SECRET
   echo "RUNNER_URL is $RUNNER_URL"
-
-  if [[ -z "$RUNNER_TOKEN" ]]; then
-    echo "Runner registration token was not yet found in the secret."
+  echo "PAT is $PAT"
+  
+  # if [[ -z "$RUNNER_TOKEN" ]]; then
+  #   echo "Runner registration token was not yet found in the secret."
+  #   echo "Cannot register GitLab Runner YET."
+  #   echo "Sleeping for 20 seconds"
+  #   sleep 20
+  if [[ -z "$PAT" ]] || [[ "$PAT" == "null" ]]; then
+    echo "Runner PAT was not yet found in the secret."
     echo "Cannot register GitLab Runner YET."
     echo "Sleeping for 20 seconds"
     sleep 20
-
   else
 
-    if [[ -z "$RUNNER_ID" ]]; then
-      echo "No prior runner ID has been set."
-    else
-      echo "Attempting to deregister prior GitLab Runner $RUNNER_ID"
-      curl --request DELETE --header "PRIVATE-TOKEN: $GITLAB_SECRET_TOKEN" "${GITLAB_URL}/api/v4/runners/${RUNNER_ID}"
-    fi
+    # if [[ -z "$RUNNER_ID" ]]; then
+    #   echo "No prior runner ID has been set."
+    # else
+    #   echo "Attempting to deregister prior GitLab Runner $RUNNER_ID"
+    #   curl --request DELETE --header "PRIVATE-TOKEN: $GITLAB_SECRET_TOKEN" "${GITLAB_URL}/api/v4/runners/${RUNNER_ID}"
+    # fi
+
+    # ******Registring the runner using PAT******
+    echo "Registering GitLab Runner PAT"
+    echo "Using PAT: $PAT"
+    # echo "Sleeping 1 min"
+    # sleep 60
+    echo "Getting auth token to regiser runner..."
+    AUTH_TOKEN_RESP=$(curl --request POST --header "PRIVATE-TOKEN: $PAT" --data "runner_type=instance_type" "${GITLAB_URL}/api/v4/user/runners")
+    echo $AUTH_TOKEN_RESP
+    AUTH_TOKEN=$(echo $AUTH_TOKEN_RESP | jq -r .token)
+    echo $AUTH_TOKEN
+
+    sudo gitlab-runner register \
+    --non-interactive \
+    --url $RUNNER_URL  \
+    --token $AUTH_TOKEN \
+    --executor "docker" \
+    --docker-image docker:20.10.16 \
+    --description "EC2 Gitlab Runner with Docker Executor"
+    # ****** End of Registring the runner using PAT******
 
     echo ""
     echo "Registering GitLab Runner"
-    sudo gitlab-runner register \
-    --non-interactive \
-    --url $RUNNER_URL \
-    --registration-token $RUNNER_TOKEN \
-    --description "EC2 Gitlab Runner with Docker Executor" \
-    --run-untagged=true \
-    --executor docker \
-    --docker-tlsverify=false \
-    --docker-image docker:20.10.16 \
-    --docker-privileged=true \
-    --docker-disable-cache=false \
-    --docker-volumes "/certs/client"
+    # sudo gitlab-runner register \
+    # --non-interactive \
+    # --url $RUNNER_URL \
+    # --registration-token $RUNNER_TOKEN \
+    # --description "EC2 Gitlab Runner with Docker Executor" \
+    # --run-untagged=true \
+    # --executor docker \
+    # --docker-tlsverify=false \
+    # --docker-image docker:20.10.16 \
+    # --docker-privileged=true \
+    # --docker-disable-cache=false \
+    # --docker-volumes "/certs/client"
 
     # Set the runner ID into the secret
     prefix="id = "

@@ -112,7 +112,7 @@ const config: Config = {
     },
     announcementBar: {
       content:
-      'OPA on AWS 0.3 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/app-development-for-backstage-io-on-aws">GitHub</a>! ⭐️.  View changes <a target="_blank" rel="noopener noreferrer" href="https://opaonaws.io/docs/CHANGELOG">here</a>.',
+      'OPA on AWS 0.3.4 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/app-development-for-backstage-io-on-aws">GitHub</a>! ⭐️.  View changes <a target="_blank" rel="noopener noreferrer" href="https://opaonaws.io/docs/CHANGELOG">here</a>.',
       backgroundColor: '#ffffff',
       textColor: '#000000',
       isCloseable: true,

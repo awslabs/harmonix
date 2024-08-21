@@ -11,7 +11,7 @@ import { opaApiRef } from '../../api';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { formatWithTime } from '../../helpers/date-utils';
 import { useCancellablePromise } from '../../hooks/useCancellablePromise';
-import { AWSComponent, AWSServerlessAppDeploymentEnvironment, CloudFormationStack } from '@aws/plugin-aws-apps-common-for-backstage';
+import { AWSComponent, AWSServerlessAppDeploymentEnvironment, CloudFormationStack, getGitCredentailsSecret } from '@aws/plugin-aws-apps-common-for-backstage';
 
 type stackEvent = {
   action: string | undefined;
@@ -32,6 +32,7 @@ const OpaAppStateOverview = ({
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
   const timerRef = useRef<any>(null);
   const { cancellablePromise } = useCancellablePromise({ rejectOnCancel: true });
+  const repoInfo = awsComponent.getRepoInfo();
 
   useEffect(() => {
 
@@ -153,10 +154,8 @@ const OpaAppStateOverview = ({
         s3BucketName,
         cfFileName: "packaged.yaml",
         environmentName: awsComponent.currentEnvironment.environment.name,
-        gitHost: awsComponent.gitHost,
-        gitProjectGroup: 'aws-app',
-        gitAdminSecret: 'opa-admin-gitlab-secrets',
-        gitRepoName: awsComponent.gitRepo.split('/')[1],
+        repoInfo,
+        gitAdminSecret: getGitCredentailsSecret(repoInfo),
       }));
 
       getStackEvents();
@@ -181,10 +180,8 @@ const OpaAppStateOverview = ({
         s3BucketName,
         cfFileName: "packaged.yaml",
         environmentName: awsComponent.currentEnvironment.environment.name,
-        gitHost: awsComponent.gitHost,
-        gitProjectGroup: 'aws-app',
-        gitAdminSecret: 'opa-admin-gitlab-secrets',
-        gitRepoName: awsComponent.gitRepo.split('/')[1],
+        repoInfo,
+        gitAdminSecret: getGitCredentailsSecret(repoInfo),
       }));
 
       getStackEvents();

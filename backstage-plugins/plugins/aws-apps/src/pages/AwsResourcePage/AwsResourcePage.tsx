@@ -11,6 +11,7 @@ import { CICDContent } from '../../components/CICDContent/CICDContent';
 import { EntityDeleteAppCard } from '../../plugin';
 import { AwsRDSResourcePage } from '../AwsRDSResourcePage/AwsRDSResourcePage';
 import {AwsS3ResourcePage} from '../AwsS3ResourcePage/AwsS3ResourcePage'
+import {AwsSecretsManagerResourcePage} from '../AwsSecretsManagerResourcePage/AwsSecretsManagerResourcePage'
 
 interface AwsResourcePageProps {
   children: ReactNode;
@@ -72,10 +73,28 @@ export function AwsResourcePage(_props: AwsResourcePageProps) {
     </>
   );
 
+  const AwsSecretsResourceEntityPage = (
+    <>
+      {_props.children}
+      <EntityLayout>
+        <EntityLayout.Route path="/" title="Overview">
+          <AwsSecretsManagerResourcePage/>
+        </EntityLayout.Route>
+        <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
+          <CICDContent />
+        </EntityLayout.Route>
+        <EntityLayout.Route path="/management" title="Management">
+          {managementContent}
+        </EntityLayout.Route>
+      </EntityLayout>
+    </>
+  );
+
   return (
     <EntitySwitch>
       <EntitySwitch.Case if={isResourceType('aws-rds')}>{AwsRDSResourceEntityPage}</EntitySwitch.Case>
       <EntitySwitch.Case if={isResourceType('aws-s3')}>{AwsS3ResourceEntityPage}</EntitySwitch.Case>
+      <EntitySwitch.Case if={isResourceType('aws-secretsmanager')}>{AwsSecretsResourceEntityPage}</EntitySwitch.Case>
       {/*
       <EntitySwitch.Case if={isResourceType('aws-sqs')}>
         {AwsSQSEntityPage}

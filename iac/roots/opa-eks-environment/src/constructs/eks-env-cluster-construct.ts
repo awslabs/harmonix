@@ -8,7 +8,7 @@ import * as eks from "aws-cdk-lib/aws-eks";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { KubectlV28Layer } from '@aws-cdk/lambda-layer-kubectl-v28';
+import { KubectlV29Layer } from '@aws-cdk/lambda-layer-kubectl-v29';
 import { OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs";
 import {
   getCreateK8sOpaResources,
@@ -39,7 +39,7 @@ export interface OPAEKSClusterConstructProps extends cdk.StackProps {
    * This role is Highly privileged and can only be accesed in cloudtrail through the CreateCluster api
    * upon cluster creation
    */
-  clusterMasterRole: iam.Role
+  clusterMasterRole?: iam.IRole
   /**
    * Role that provides permissions for the Kubernetes control 
    * plane to make calls to AWS API operations on your behalf.
@@ -57,6 +57,10 @@ export interface OPAEKSClusterConstructProps extends cdk.StackProps {
    * IAM role to assign as pod execution role in the Fargate Profile
    */
   podExecutionRole: iam.IRole | undefined
+  /**
+   * Only use for cluster with Managed nodes (NODE_TYPE === 'MANAGED'). IAM role assigned to cluster nodes
+   */
+  nodeGroupRole?: iam.IRole | undefined
 
   /**
    * IAM role to assign as the kubectl lambda's execution role
@@ -97,9 +101,9 @@ export class OPAEKSClusterConstruct extends Construct {
       eks.ClusterLoggingTypes.AUTHENTICATOR,
       eks.ClusterLoggingTypes.SCHEDULER,
     ];
-    const kubectlLayer = new KubectlV28Layer(this, 'kubectl');
+    const kubectlLayer = new KubectlV29Layer(this, 'kubectl');
     const albControllerVersion = eks.AlbControllerVersion.V2_6_2;
-    const kubernetesVersion = eks.KubernetesVersion.V1_28;
+    const kubernetesVersion = eks.KubernetesVersion.V1_29;
 
     const clusterAdminK8sUsername = props.clusterAdminRole.roleArn;
 
@@ -144,6 +148,7 @@ export class OPAEKSClusterConstruct extends Construct {
           albControllerVersion,
           clusterKmsKey,
           lambdaExecutionRole: props.lambdaExecutionRole,
+          nodeGroupRole: props.nodeGroupRole
         });
       } else {
         clusterConstruct = new OPAEKSFargateClusterConstruct(this, `${envIdentifier}-app-runtime`, {

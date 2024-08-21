@@ -1,0 +1,26 @@
+apiVersion: backstage.io/v1alpha1
+kind: Resource
+metadata:
+  name: ${{ values.component_id | dump }}
+  title: ${{ values.title | dump }}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  tags:
+    - aws
+    - secret
+    - aws-resource
+    - secretsmanager
+  annotations:
+  iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
+  resourceType: "aws-secretsmanager"
+  secretName: ${{ values.secretName | dump }}
+  awsArn: ""
+spec:
+  type: aws-resource
+  subType: "arn:aws:secretsmanager"
+  owner: ${{ values.owner | dump }}
+  lifecycle: experimental
+  dependsOn: []

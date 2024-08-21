@@ -231,7 +231,7 @@ const awsEcsAppViewContent = (
     <EntityAboutCard variant="gridItem" />
   </Grid>
   <Grid item md={6} xs={12}>
-    <EntityCatalogGraphCard variant="gridItem" height={400} />
+    <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
   </Grid>
   <Grid item md={6} xs={12}>
     <EntityLinksCard />
@@ -258,7 +258,7 @@ const awsServerlessRestApiAppViewContent = (
     <EntityAboutCard variant="gridItem" />
   </Grid>
   <Grid item md={6} xs={12}>
-    <EntityCatalogGraphCard variant="gridItem" height={400} />
+    <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
   </Grid>
   <Grid item md={6} xs={12}>
     <EntityLinksCard />

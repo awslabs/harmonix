@@ -4,8 +4,8 @@
 import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
 import { getRootLogger } from '@backstage/backend-common';
+import { BackstageUserInfo } from '@backstage/backend-plugin-api';
 import { parseEntityRef, UserEntity } from '@backstage/catalog-model';
-import { BackstageUserIdentity } from '@backstage/plugin-auth-node';
 export interface AwsAuthResponse {
   credentials: AwsCredentialIdentity;
   requester: string;
@@ -32,7 +32,7 @@ function getMemberGroupFromUserEntity(user: UserEntity | undefined) {
   }, new Array<string>());
   return memberGroups;
 }
-function getMemberGroupFromUserIdentity(user: BackstageUserIdentity | undefined) {
+function getMemberGroupFromUserIdentity(user: BackstageUserInfo | undefined) {
   if (user?.ownershipEntityRefs === undefined) {
     // if the user has no relations and isn't a member of any groups, then bail early
     throw new Error('User is not a member of any groups and cannot get mapped AWS credentials');
@@ -129,7 +129,7 @@ export async function getAWScreds(
   prefix: string,
   providerName: string,
   user?: UserEntity,
-  userIdentity?: BackstageUserIdentity,
+  userIdentity?: BackstageUserInfo,
 ): Promise<AwsAuthResponse> {
   const logger = getRootLogger();
   let memberGroups: string[];

@@ -40,7 +40,7 @@ export class CdkS3ModuleStack extends Stack {
     }
 
     const rscGroup = new rg.CfnGroup(this, `${appShortName}-resource-group`, {
-      name: `${appShortName}-${envProviderName}-rg`,
+      name: `${bucketName}-rg`,
       description: `Resource related to ${appShortName}`,
       resourceQuery: {
         type: "TAG_FILTERS_1_0",

@@ -22,7 +22,7 @@ export function AwsServerlessAppPage(_props: AwsServerlessAppPageProps) {
         <EntityAboutCard variant="gridItem" />
       </Grid>
       <Grid item md={6} xs={12}>
-        <EntityCatalogGraphCard variant="gridItem" height={400} />
+        <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
       </Grid>
       <Grid item md={6} xs={12}>
         <EntityAppLinksCard />

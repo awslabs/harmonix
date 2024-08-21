@@ -16,6 +16,7 @@ import {
   getNodeGroupDiskSize,
   getNodeGroupMaxSize,
   getNodeGroupMinSize,
+  isInstallAwsLoadBalancerController,
 } from "../eks-input";
 
 // This class creates an EKS Cluster with a Managed Node Group
@@ -28,7 +29,7 @@ export interface OPAEKSManagedNodeClusterConstructProps extends cdk.StackProps {
    * This role is Highly privileged and can only be accesed in cloudtrail through the CreateCluster api
    * upon cluster creation
    */
-  clusterMasterRole: iam.Role
+  clusterMasterRole?: iam.IRole
   /**
    * Role that provides permissions for the Kubernetes control 
    * plane to make calls to AWS API operations on your behalf.
@@ -55,6 +56,11 @@ export interface OPAEKSManagedNodeClusterConstructProps extends cdk.StackProps {
   albControllerVersion: eks.AlbControllerVersion
 
   clusterLogging: cdk.aws_eks.ClusterLoggingTypes[] | undefined
+
+  /**
+   * Optional - IAM role assigned to cluster nodes. Will be generated if not supplied
+   */
+  nodeGroupRole?: iam.IRole | undefined
 
   /**
   * IAM role to assign as the kubectl lambda's execution role
@@ -90,19 +96,44 @@ export class OPAEKSManagedNodeClusterConstruct extends Construct {
       // See https://github.com/cdklabs/awscdk-asset-kubectl#readme
       kubectlLayer: props.kubectlLayer,
       kubectlLambdaRole: props.lambdaExecutionRole,
-      albController: {
+      albController: isInstallAwsLoadBalancerController() ? {
         version: props.albControllerVersion,
-      },
+      } : undefined,
     });
     this.cluster = cluster;
 
+    const launchTemplate = new ec2.CfnLaunchTemplate(this, `${envIdentifier}-launch-template`, {
+      launchTemplateData: {
+        instanceType: getInstanceType(),
+        blockDeviceMappings: [
+          {
+            deviceName: '/dev/xvda',
+            ebs: {
+              encrypted: true,
+              volumeType: 'gp3',
+              volumeSize: getNodeGroupDiskSize()
+            },
+          },
+        ],
+        metadataOptions: {
+          httpTokens: 'required', // IMDSv2 is required
+          // As per https://docs.aws.amazon.com/eks/latest/userguide/launch-templates.html#launch-template-basics,
+          // If any containers that you deploy to the node group use the Instance Metadata Service Version 2, make sure to set the Metadata response hop limit to 2
+          httpPutResponseHopLimit: 2,
+        },
+      },
+    });
+
     cluster.addNodegroupCapacity('custom-node-group', {
-      instanceTypes: [new ec2.InstanceType(getInstanceType())],
       minSize: getNodeGroupMinSize(),
       desiredSize: getNodeGroupDesiredSize(),
       maxSize: getNodeGroupMaxSize(),
-      diskSize: getNodeGroupDiskSize(),
       amiType: eks.NodegroupAmiType[getAmiType() as keyof typeof eks.NodegroupAmiType],
+      nodeRole: props.nodeGroupRole,
+      launchTemplateSpec: {
+        id: launchTemplate.ref,
+        version: launchTemplate.attrLatestVersionNumber,
+      },
     });
 
     new OPAEKSManagedNodeClusterFluentBitConstruct(this, `${envIdentifier}-fluent-bit-config`, {

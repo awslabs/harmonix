@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { OPAEnvironmentParams, HostedZoneConstruct, NetworkConstruct } from "@aws/aws-app-development-common-constructs";
 import * as cdk from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as elb from "aws-cdk-lib/aws-elasticloadbalancingv2";
@@ -15,12 +14,13 @@ import * as ssm from "aws-cdk-lib/aws-ssm";
 import { NagSuppressions } from "cdk-nag";
 import { Construct } from "constructs";
 import { readFileSync } from "fs";
+import { HostedZoneConstruct, NetworkConstruct, OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs";
 
 /* eslint-disable @typescript-eslint/no-empty-interface */
 export interface GitlabHostingConstructProps extends cdk.StackProps {
   readonly opaEnv: OPAEnvironmentParams;
   readonly network: NetworkConstruct;
-  readonly GitlabAmi: Record<string, string>;
+  readonly GitlabAmi?: Record<string, string>;
   readonly accessLogBucket: s3.IBucket;
   readonly instanceDiskSize: number;
   readonly instanceSize: ec2.InstanceSize;
@@ -67,13 +67,13 @@ export class GitlabHostingConstruct extends Construct {
     });
     cdk.Tags.of(gitlabRunnerSecurityGroup).add("Name", glRunnerSgName);
     this.gitlabRunnerSecurityGroup = gitlabRunnerSecurityGroup;
+   
 
     const gitlabIamRolePolicy = new iam.PolicyDocument({
       statements: [
         new iam.PolicyStatement({
           resources: [
-            `${props.gitlabSecret.secretFullArn}`,
-            `${props.gitlabSecret.encryptionKey?.keyArn}`,
+            `${props.gitlabSecret.secretArn}*`
           ],
           actions: [
             "secretsmanager:DescribeSecret",
@@ -107,19 +107,41 @@ export class GitlabHostingConstruct extends Construct {
       }),
     };
 
+    // Get the latest Ubuntu machine image map
+    // Defaults will use "jammy" (22.04) on x86_64, but can be overridden with env vars
+    const UBUNTU_OWNER_ID = "099720109477"; // The official owner ID for Canonical-owned images
+    const ubuntuName = process.env.UBUNTU_NAME || "jammy";
+    // const ubuntuVersion = getEnvVarValue(process.env.UBUNTU_VERSION) || "22.04";
+    const ubuntuArch = process.env.UBUNTU_ARCH || ec2.InstanceArchitecture.X86_64;
+    const ubuntuLookupProps = {
+      // `YEAR-ARCH` are the first two stars
+      name: `ubuntu/images/hvm-ssd/ubuntu-${ubuntuName}-*-*-server-*`,
+      owners: [UBUNTU_OWNER_ID],
+      filters: {
+        architecture: [ubuntuArch],
+        "image-type": ["machine"],
+        state: ["available"],
+        "root-device-type": ["ebs"],
+        "virtualization-type": ["hvm"],
+      },
+    }
+    // short-circuit the creation of the amiMap if one was passed in via properties; otherwise lookup using the props above
+    const linuxAmiMap = props.GitlabAmi || { [props.opaEnv.awsRegion]: new ec2.LookupMachineImage(ubuntuLookupProps).getImage(this).imageId }
+    const machineImage = ec2.MachineImage.genericLinux(linuxAmiMap);
+
     const gitlabHost = new ec2.Instance(this, "GitlabHost", {
       instanceName: `${props.opaEnv.prefix}-GitlabHost`,
       instanceType: ec2.InstanceType.of(props.instanceClass, props.instanceSize),
       vpcSubnets: { subnetType: ec2.SubnetType.PUBLIC },
       vpc: props.network.vpc,
       securityGroup: instanceSecurityGroup,
-      machineImage: ec2.MachineImage.genericLinux(props.GitlabAmi),
+      machineImage,
       role: gitlabEc2Role,
       blockDevices: [rootVolume],
-      // requireImdsv2: true,  // !FIXME: Use IMDSv2 during initial creation when support is available.  See https://gitlab.com/gitlab-org/gitlab/-/issues/334160
+      requireImdsv2: true,
     });
     new cdk.CfnOutput(this, "GitlabAmiOutput", {
-      value: JSON.stringify(props.GitlabAmi),
+      value: JSON.stringify(linuxAmiMap),
       description: "The AMI ID used for the GitLab instance",
     });
     
@@ -216,31 +238,31 @@ export class GitlabHostingConstruct extends Construct {
     });
     httpsListener.connections.addSecurityGroup(props.network.allowedIpsSg);
 
-    lbDNSParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-gitlab-hostname`, {
-      allowedPattern: ".*",
-      description: `The Gitlab Hostname for OPA Platform`,
-      parameterName: `/${props.opaEnv.prefix}/gitlab-hostname`,
-      stringValue: aRecord.domainName,
-    });
+    // lbDNSParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-gitlab-hostname`, {
+    //   allowedPattern: ".*",
+    //   description: `The Gitlab Hostname for OPA Platform`,
+    //   parameterName: `/${props.opaEnv.prefix}/gitlab-hostname`,
+    //   stringValue: aRecord.domainName,
+    // });
 
-    lbUrlParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-gitlab-url`, {
-      allowedPattern: ".*",
-      description: `The Gitlab URL for OPA Platform`,
-      parameterName: `/${props.opaEnv.prefix}/gitlab-url`,
-      stringValue: "https://" + aRecord.domainName,
-    });
+    // lbUrlParam = new ssm.StringParameter(this, `${props.opaEnv.prefix}-gitlab-url`, {
+    //   allowedPattern: ".*",
+    //   description: `The Gitlab URL for OPA Platform`,
+    //   parameterName: `/${props.opaEnv.prefix}/gitlab-url`,
+    //   stringValue: "https://" + aRecord.domainName,
+    // });
 
     this.gitlabHostName = aRecord.domainName;
 
     // allow traffic to the ALB from the restricted IP security group
     gitlabAlb.connections.addSecurityGroup(props.network.allowedIpsSg);
 
-    new cdk.CfnOutput(this, `GitLab loadBalancer Domain Name Param`, {
-      value: lbDNSParam.parameterName,
-    });
-    new cdk.CfnOutput(this, `GitLab loadBalancer URL Param`, {
-      value: lbUrlParam.parameterName,
-    });
+    // new cdk.CfnOutput(this, `GitLab loadBalancer Domain Name Param`, {
+    //   value: lbDNSParam.parameterName,
+    // });
+    // new cdk.CfnOutput(this, `GitLab loadBalancer URL Param`, {
+    //   value: lbUrlParam.parameterName,
+    // });
     this.alb = gitlabAlb;
   }
 }

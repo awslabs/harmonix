@@ -9,6 +9,9 @@ import * as iam from "aws-cdk-lib/aws-iam";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import { OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs";
 import { OPAEKSFargateClusterFluentBitConstruct } from "./eks-env-fargate-fluent-bit-config-construct";
+import {
+  isInstallAwsLoadBalancerController,
+} from "../eks-input";
 
 // This class creates an EKS Cluster that uses Fargate
 
@@ -20,7 +23,7 @@ export interface OPAEKSFargateClusterConstructProps extends cdk.StackProps {
    * This role is Highly privileged and can only be accesed in cloudtrail through the CreateCluster api
    * upon cluster creation
    */
-  clusterMasterRole: iam.Role
+  clusterMasterRole?: iam.IRole
   /**
    * Role that provides permissions for the Kubernetes control 
    * plane to make calls to AWS API operations on your behalf.
@@ -88,9 +91,9 @@ export class OPAEKSFargateClusterConstruct extends Construct {
       // See https://github.com/cdklabs/awscdk-asset-kubectl#readme
       kubectlLayer: props.kubectlLayer,
       kubectlLambdaRole: props.lambdaExecutionRole,
-      albController: {
+      albController: isInstallAwsLoadBalancerController() ? {
         version: props.albControllerVersion,
-      },
+      } : undefined,
 
       defaultProfile: {
         selectors: [

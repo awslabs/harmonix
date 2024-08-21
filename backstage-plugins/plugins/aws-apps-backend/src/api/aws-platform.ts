@@ -1,7 +1,6 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CloudFormationClient, DeleteStackCommand, DeleteStackCommandOutput } from '@aws-sdk/client-cloudformation';
 import {
   DeleteSecretCommand,
   DeleteSecretCommandInput,
@@ -17,15 +16,18 @@ import {
   GetParameterCommandOutput,
   SSMClient,
 } from '@aws-sdk/client-ssm';
-import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
 import {
   AWSEnvironmentProviderRecord,
   AppPromoParams,
   BindResourceParams,
-  GitRepoParams,
+  GitProviders, 
+  ICommitChange, 
+  IGitAPIResult, 
+  IRepositoryInfo
 } from '@aws/plugin-aws-apps-common-for-backstage';
-import { Logger } from 'winston';
 import YAML from 'yaml';
+import { GitAPI } from './git-api';
+import { LoggerService } from '@backstage/backend-plugin-api';
 
 export type GitLabDownloadFileResponse = {
   file_name: string;
@@ -42,16 +44,21 @@ export type GitLabDownloadFileResponse = {
 };
 
 export class AwsAppsPlatformApi {
+  public git: GitAPI;
+   
   public constructor(
-    private readonly logger: Logger,
+    private readonly logger: LoggerService,
     private readonly platformRegion: string,
     private readonly awsRegion: string,
     private readonly awsAccount: string,
+    private readonly gitProvider: GitProviders
   ) {
     this.logger.info('Instantiating AWS Apps Platform API with:');
     this.logger.info(`platformRegion: ${this.platformRegion}`);
     this.logger.info(`awsAccount: ${this.awsAccount}`);
     this.logger.info(`awsRegion: ${this.awsRegion}`);
+    this.logger.info(`gitProvider: ${this.gitProvider}`);
+    this.git = new GitAPI(logger, gitProvider);
   }
 
   /**
@@ -118,84 +125,48 @@ export class AwsAppsPlatformApi {
     return resp;
   }
 
-  public async deleteCFStack(stackName: string, accessRole: string): Promise<DeleteStackCommandOutput> {
-    this.logger.info('Calling deleteProvider');
-    const stsClient = new STSClient({ region: this.awsRegion });
-    //console.log(`deleting ${stackName}`)
-    const stsResult = await stsClient.send(
-      new AssumeRoleCommand({
-        RoleArn: accessRole,
-        RoleSessionName: `cf-stack-deletion-backstage-session`,
-        DurationSeconds: 3600, // max is 1 hour for chained assumed roles
-      }),
-    );
-    if (stsResult.Credentials) {
-      //console.log(stsResult.Credentials)
-      const client = new CloudFormationClient({
-        region: this.awsRegion,
-        credentials: {
-          accessKeyId: stsResult.Credentials.AccessKeyId!,
-          secretAccessKey: stsResult.Credentials.SecretAccessKey!,
-          sessionToken: stsResult.Credentials.SessionToken,
-        },
-      });
-
-      const input = {
-        StackName: stackName,
-      };
-      const command = new DeleteStackCommand(input);
-      const response = client.send(command);
-      return response;
-    } else {
-      throw new Error("can't fetch credentials to remove requested provider");
-    }
-  }
 
   public async deleteTFProvider(
     envName: string,
     providerName: string,
-    gitHost: string,
-    gitProjectGroup: string,
-    gitRepoName: string,
+    repo: IRepositoryInfo,
     gitSecretName: string,
   ): Promise<{ status: string; message?: string }> {
     const gitToken = await this.getGitToken(gitSecretName);
 
-    let gitProjectId: string;
-    gitProjectId = await this.getGitProjectId(gitHost, gitProjectGroup, gitRepoName, gitToken);
-    console.log(`Got GitLab project ID: ${gitProjectId} for ${gitProjectGroup}/${gitRepoName}`);
-    let actions = [];
     const tfDeleteContent = `PROVIDER_FILE_TO_DELETE=${envName}-${providerName}.properties\nENV_ENTITY_REF="awsenvironment:default/${envName}"\nTARGET_ENV_NAME=${envName}\nTARGET_ENV_PROVIDER_NAME=${providerName}`;
-    const tfDeleteFile = `.awsdeployment/env-destroy-params-temp.properties`;
-    actions.push({
-      action: 'create',
-      file_path: tfDeleteFile,
-      content: tfDeleteContent,
-    });
-    const commit = {
+    let tfDeleteFile;
+
+    if (envName==="")
+    {
+      tfDeleteFile = `env-destroy-params-temp.properties`;
+    }
+    else
+    {
+     tfDeleteFile = `.awsdeployment/env-destroy-params-temp.properties`;
+    }
+
+    const change:ICommitChange = {
+      commitMessage: `Destroy TF Infrastructure`,
       branch: 'main',
-      commit_message: `Destroy TF Infrastructure`,
-      actions: actions,
-    };
+      actions: [
+        {
+          action: 'create',
+          file_path: tfDeleteFile,
+          content: tfDeleteContent,
+        }
+      ]
+    }
 
-    const url = `https://${gitHost}/api/v4/projects/${gitProjectId}/repository/commits`;
-    const result = await fetch(new URL(url), {
-      method: 'POST',
-      body: JSON.stringify(commit),
-      headers: {
-        'PRIVATE-TOKEN': gitToken,
-        'Content-Type': 'application/json',
-      },
-    });
+    const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
 
-    const resultBody = await result.json();
-    if (result.status > 299) {
-      console.error(`ERROR: Failed to Destroy ${envName}. Response code: ${result.status} - ${resultBody}`);
+    if (!result.isSuccuess) {
+      console.error(`ERROR: Failed to Destroy ${envName}. Response: ${result}`);
       let message = '';
-      if (resultBody.message?.includes('A file with this name already exists')) {
+      if (result.value?.includes('A file with this name already exists')) {
         message = `${envName} has already been scheduled for destruction. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`;
       } else {
-        message = resultBody.message || '';
+        message = result.value || '';
       }
       return { status: 'FAILURE', message };
     } else {
@@ -207,32 +178,14 @@ export class AwsAppsPlatformApi {
   }
 
   public async deleteRepository(
-    gitHost: string,
-    gitProjectGroup: string,
-    gitRepoName: string,
+    repo: IRepositoryInfo,
     gitSecretName: string,
-  ): Promise<{ status: string; message?: string }> {
+  ): Promise<IGitAPIResult> {
     const gitToken = await this.getGitToken(gitSecretName);
+    const result = await this.git.getGitProvider().deleteRepository(repo, gitToken);
 
-    let gitProjectId: string;
-    gitProjectId = await this.getGitProjectId(gitHost, gitProjectGroup, gitRepoName, gitToken);
-    console.log(`Got GitLab project ID: ${gitProjectId} for ${gitProjectGroup}/${gitRepoName}`);
-
-    // now delete the repo
-    const url = `https://${gitHost}/api/v4/projects/${gitProjectId}`;
-    console.log(url);
-    const deleteRepoResults = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'PRIVATE-TOKEN': gitToken,
-      },
-    });
-    console.log(deleteRepoResults);
-    if (deleteRepoResults.status > 299) {
-      return { status: 'FAILURE', message: `Repository failed to delete` };
-    } else {
-      return { status: 'SUCCESS', message: `Repository deleted successfully` };
-    }
+    console.log(result);
+    return result;
   }
 
   private async getGitToken(gitSecretName: string): Promise<string> {
@@ -241,61 +194,21 @@ export class AwsAppsPlatformApi {
     return gitAdminSecretObj['apiToken'];
   }
 
-  private async getGitProjectId(
-    gitHost: string,
-    gitProjectGroup: string,
-    gitRepoName: string,
-    gitToken: string,
-  ): Promise<string> {
-    const gitProjects = await fetch(`https://${gitHost}/api/v4/projects?search=${gitRepoName}`, {
-      method: 'GET',
-      headers: {
-        'PRIVATE-TOKEN': gitToken,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const gitProjectsJson: { path_with_namespace: string; id: string }[] = await gitProjects.json();
-    let project = null;
-    if (gitProjectsJson) {
-      project = gitProjectsJson.filter(
-        project => project.path_with_namespace === `${gitProjectGroup}/${gitRepoName}`,
-      )[0];
-    }
-
-    if (project && project.id) {
-      return project.id;
-    } else {
-      throw new Error(`Failed to get git project ID for group '${gitProjectGroup}' and repo '${gitRepoName}'`);
-    }
-  }
-
   public async getFileContentsFromGit(
-    repo: GitRepoParams,
+    repo: IRepositoryInfo,
     filePath: string,
     gitSecretName: string,
-  ): Promise<GitLabDownloadFileResponse> {
+  ): Promise<string> {
     const gitToken = await this.getGitToken(gitSecretName);
 
-    let gitProjectId: string;
-    gitProjectId = await this.getGitProjectId(repo.gitHost, repo.gitProjectGroup, repo.gitRepoName, gitToken);
-    console.log(`Got GitLab project ID: ${gitProjectId} for ${repo.gitProjectGroup}/${repo.gitRepoName}`);
-
-    const url = `https://${repo.gitHost}/api/v4/projects/${gitProjectId}/repository/files/${filePath}?ref=main`;
-    const result = await fetch(new URL(url), {
-      method: 'GET',
-      headers: {
-        'PRIVATE-TOKEN': gitToken,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const resultBody = await result.json();
-    if (result.status > 299) {
+    const result = await this.git.getGitProvider().getFileContent(filePath,repo,gitToken);
+  
+    const resultBody = await result.value;
+    if (!result.isSuccuess) {
       console.error(
-        `ERROR: Failed to retrieve ${filePath} for ${repo.gitRepoName}. Response code: ${result.status} - ${resultBody}`,
+        `ERROR: Failed to retrieve ${filePath} for ${repo.gitRepoName}. Response: ${result}`,
       );
-      throw new Error(`Failed to retrieve ${filePath} for ${repo.gitRepoName}. Response code: ${result.status}`);
+      throw new Error(`Failed to retrieve ${filePath} for ${repo.gitRepoName}. Response: ${result}`);
     } else {
       return resultBody;
     }
@@ -303,24 +216,12 @@ export class AwsAppsPlatformApi {
 
   public async promoteAppToGit(
     input: AppPromoParams,
+    repo: IRepositoryInfo,
     gitSecretName: string,
   ): Promise<{ status: string; message?: string }> {
     const gitToken = await this.getGitToken(gitSecretName);
 
-    // Hardcoded responses for developer testing
-    // return {status: "SUCCESS", message: `Promotion will not be complete until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`};
-    // return {status: "FAILURE", message: "Some error description"};
-
-    let gitProjectId: string;
-    try {
-      gitProjectId = await this.getGitProjectId(input.gitHost, input.gitProjectGroup, input.gitRepoName, gitToken);
-      console.log(`Got GitLab project ID: ${gitProjectId} for ${input.gitProjectGroup}/${input.gitRepoName}`);
-    } catch (err: any) {
-      console.error(`ERROR: ${err.toString()}`);
-      return { status: 'FAILURE', message: `Failed to retrieve Git project ID for ${input.gitRepoName}` };
-    }
-
-    // Now build a new commit that will trigger the pipeline
+    // build a new commit that will trigger the pipeline
     const actions = await Promise.all(
       input.providers.map(async provider => {
         const propsFile = `.awsdeployment/providers/${input.envName}-${provider.providerName}.properties`;
@@ -344,26 +245,20 @@ export class AwsAppsPlatformApi {
       }),
     );
 
-    const commit = {
+
+    const change:ICommitChange = {
+      commitMessage: `generate CICD stages`,
       branch: 'main',
-      commit_message: 'generate CICD stages',
-      actions: actions,
-    };
+      actions
+    }
 
-    const url = `https://${input.gitHost}/api/v4/projects/${gitProjectId}/repository/commits`;
-    const result = await fetch(new URL(url), {
-      method: 'POST',
-      body: JSON.stringify(commit),
-      headers: {
-        'PRIVATE-TOKEN': gitToken,
-        'Content-Type': 'application/json',
-      },
-    });
+    const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
 
-    const resultBody = await result.json();
-    if (result.status > 299) {
+
+    const resultBody = result.value;
+    if (!result.isSuccuess) {
       console.error(
-        `ERROR: Failed to schedule deployment for ${input.envName}. Response code: ${result.status} - ${resultBody}`,
+        `ERROR: Failed to schedule deployment for ${input.envName}. Response: ${result}`,
       );
       let message = '';
       if (resultBody.message?.includes('A file with this name already exists')) {
@@ -381,14 +276,11 @@ export class AwsAppsPlatformApi {
   }
 
   public async bindResource(
+    repo: IRepositoryInfo,
     input: BindResourceParams,
     gitSecretName: string,
   ): Promise<{ status: string; message?: string }> {
     const gitToken = await this.getGitToken(gitSecretName);
-
-    let gitProjectId: string;
-    gitProjectId = await this.getGitProjectId(input.gitHost, input.gitProjectGroup, input.gitRepoName, gitToken);
-    console.log(`Got GitLab project ID: ${gitProjectId} for ${input.gitProjectGroup}/${input.gitRepoName}`);
 
     const actions = input.policies.map(p => {
       const policyFile = `.iac/permissions/${input.envName}/${input.providerName}/${p.policyFileName}.json`;
@@ -409,25 +301,16 @@ export class AwsAppsPlatformApi {
       content: resourceBindContent,
     });
 
-    const commit = {
+    const change:ICommitChange = {
+      commitMessage: `Bind Resource`,
       branch: 'main',
-      commit_message: `Bind Resource`,
-      actions: actions,
-    };
+      actions
+    }
 
-    const url = `https://${input.gitHost}/api/v4/projects/${gitProjectId}/repository/commits`;
-    const result = await fetch(new URL(url), {
-      method: 'POST',
-      body: JSON.stringify(commit),
-      headers: {
-        'PRIVATE-TOKEN': gitToken,
-        'Content-Type': 'application/json',
-      },
-    });
-
-    const resultBody = await result.json();
-    if (result.status > 299) {
-      console.error(`ERROR: Failed to bind ${input.envName}. Response code: ${result.status} - ${resultBody}`);
+    const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
+    const resultBody = result.value;
+    if (!result.isSuccuess) {
+      console.error(`ERROR: Failed to bind ${input.envName}. Response: ${result}`);
       let message = '';
       if (resultBody.message?.includes('A file with this name already exists')) {
         message = `${input.envName} has already been scheduled for binding. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`;
@@ -444,14 +327,11 @@ export class AwsAppsPlatformApi {
   }
 
   public async unBindResource(
+    repo: IRepositoryInfo,
     input: BindResourceParams,
     gitSecretName: string,
   ): Promise<{ status: string; message?: string }> {
     const gitToken = await this.getGitToken(gitSecretName);
-
-    let gitProjectId: string;
-    gitProjectId = await this.getGitProjectId(input.gitHost, input.gitProjectGroup, input.gitRepoName, gitToken);
-    console.log(`Got GitLab project ID: ${gitProjectId} for ${input.gitProjectGroup}/${input.gitRepoName}`);
 
     const actions = input.policies.map(p => {
       const policyFile = `.iac/permissions/${input.envName}/${input.providerName}/${p.policyFileName}.json`;
@@ -472,25 +352,17 @@ export class AwsAppsPlatformApi {
       content: resourceBindContent,
     });
 
-    const commit = {
+    const change:ICommitChange = {
+      commitMessage: `UnBind Resource`,
       branch: 'main',
-      commit_message: `UnBind Resource`,
-      actions: actions,
-    };
+      actions
+    }
 
-    const url = `https://${input.gitHost}/api/v4/projects/${gitProjectId}/repository/commits`;
-    const result = await fetch(new URL(url), {
-      method: 'POST',
-      body: JSON.stringify(commit),
-      headers: {
-        'PRIVATE-TOKEN': gitToken,
-        'Content-Type': 'application/json',
-      },
-    });
+    const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
 
-    const resultBody = await result.json();
-    if (result.status > 299) {
-      console.error(`ERROR: Failed to unbind ${input.envName}. Response code: ${result.status} - ${resultBody}`);
+    const resultBody = await result.value.json();
+    if (!result.isSuccuess) {
+      console.error(`ERROR: Failed to unbind ${input.envName}. Response: ${result}`);
       let message = '';
       if (resultBody.message?.includes('A file with this name already exists')) {
         message = `${input.envName} has already been scheduled for unbinding. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`;
@@ -509,26 +381,13 @@ export class AwsAppsPlatformApi {
   public async updateProvider(
     envName: string,
     provider: AWSEnvironmentProviderRecord,
-    gitHost: string,
-    gitProjectGroup: string,
-    gitRepoName: string,
+    repo: IRepositoryInfo,
     entityCatalog: any,
     action: string,
     gitSecretName: string,
   ): Promise<{ status: string; message?: string }> {
-    const gitAdminSecret = await this.getPlatformSecretValue(gitSecretName);
-    const gitAdminSecretObj = JSON.parse(gitAdminSecret.SecretString || '');
-    const gitToken = gitAdminSecretObj['apiToken'];
+    const gitToken = await this.getGitToken(gitSecretName);
 
-    // fetch project ID
-    let gitProjectId: string;
-    try {
-      gitProjectId = await this.getGitProjectId(gitHost, gitProjectGroup, gitRepoName, gitToken);
-      console.log(`Got GitLab project ID: ${gitProjectId} for ${gitProjectGroup}/${gitRepoName}`);
-    } catch (err: any) {
-      console.error(`ERROR: ${err.toString()}`);
-      return { status: 'FAILURE', message: `Failed to retrieve Git project ID for ${gitRepoName}` };
-    }
     let actions = [];
     if (action === 'add') {
       console.log(entityCatalog);
@@ -566,26 +425,30 @@ export class AwsAppsPlatformApi {
       throw new Error('Not yet implemented');
     }
 
-    const commit = {
+    const change:ICommitChange = {
+      commitMessage: `Update Environment Provider`,
       branch: 'main',
-      commit_message: `Update Environment Provider`,
-      actions: actions,
-    };
+      actions
+    }
 
-    const url = `https://${gitHost}/api/v4/projects/${gitProjectId}/repository/commits`;
-    const result = await fetch(new URL(url), {
-      method: 'POST',
-      body: JSON.stringify(commit),
-      headers: {
-        'PRIVATE-TOKEN': gitToken,
-        'Content-Type': 'application/json',
-      },
-    });
+    const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
+    console.log(result)
+    let resultBody;
 
-    const resultBody = await result.json();
-    if (result.status > 299) {
+    if (this.gitProvider===GitProviders.GITLAB)
+      {
+        resultBody = await result.value.json();
+      }
+      else if (this.gitProvider===GitProviders.GITHUB) 
+      {
+        resultBody = result.message
+      }
+    
+
+    
+    if (!result.isSuccuess) {
       console.error(
-        `ERROR: Failed to Update provider ${provider.name}. Response code: ${result.status} - ${resultBody}`,
+        `ERROR: Failed to Update provider ${provider.name}. Response: ${result}`,
       );
       let message = '';
       if (resultBody.message?.includes('A file with this name already exists')) {

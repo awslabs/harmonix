@@ -1,0 +1,354 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: aws-tf-ecs-environment-provider
+  title: AWS ECS Fargate Environment Provider (Terraform)
+  description: Configure an AWS ECS environment provider using Terraform
+  tags:
+    - aws
+    - environment-provider
+    - ecs
+    - terraform
+spec:
+  owner: group:admins
+  type: aws-environment-provider
+  parameters:
+    - title: Fill in the environment provider details
+      required:
+        - name
+        - prefix
+        - env_description
+        - owner
+        - awsAccountID
+        - awsRegion
+        - environmentRole
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Unique name for the environment provider
+          ui:autofocus: true
+        prefix:
+          title: Prefix
+          type: string
+          description: Prefix for environment - examples - payments, engineering, infra
+          default: opa
+        env_description:
+          title: Description
+          type: string
+          description: A description of the environment
+        albName:
+          title: ALB Name
+          type: string
+          description: A name to use for the ALB
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+        awsAccountID:
+          title: AWS Account number
+          type: string
+          description: Enter an AWS account number
+          minLength: 12
+        awsRegion:
+          title: AWS Region
+          type: string
+          description: Select AWS region
+          default: us-east-1
+          enum:
+            - us-east-1
+            - us-east-2
+            - us-west-1
+            - us-west-2
+            - af-south-1
+            - ap-east-1
+            - ap-south-2
+            - ap-southeast-3
+            - ap-southeast-4
+            - ap-south-1
+            - ap-northeast-3
+            - ap-northeast-2
+            - ap-southeast-1
+            - ap-southeast-2
+            - ap-northeast-1
+            - ca-central-1
+            - eu-central-1
+            - eu-west-1
+            - eu-west-2
+            - eu-south-1
+            - eu-west-3
+            - eu-south-2
+            - eu-north-1
+            - eu-central-2
+            - me-south-1
+            - me-central-1
+            - sa-east-1
+          enumNames:
+            - 'US East (N. Virginia)'
+            - 'US East (Ohio)'
+            - 'US West (N. California)'
+            - 'US West (Oregon)'
+            - 'Africa (Cape Town)'
+            - 'Asia Pacific (Hong Kong)'
+            - 'Asia Pacific (Hyderabad)'
+            - 'Asia Pacific (Jakarta)'
+            - 'Asia Pacific (Melbourne)'
+            - 'Asia Pacific (Mumbai)'
+            - 'Asia Pacific (Osaka)'
+            - 'Asia Pacific (Seoul)'
+            - 'Asia Pacific (Singapore)'
+            - 'Asia Pacific (Sydney)'
+            - 'Asia Pacific (Tokyo)'
+            - 'Canada (Central)'
+            - 'Europe (Frankfurt)'
+            - 'Europe (Ireland)'
+            - 'Europe (London)'
+            - 'Europe (Milan)'
+            - 'Europe (Paris)'
+            - 'Europe (Spain)'
+            - 'Europe (Stockholm)'
+            - 'Europe (Zurich)'
+            - 'Middle East (Bahrain)'
+            - 'Middle East (UAE)'
+            - 'South America (São Paulo)'
+        environmentRole:
+          title: Environment Role ARN
+          type: string
+          description: The IAM role ARN to assume in order to provision the new environment.
+        vpc_configuration:
+          title: VPC Configuration
+          description: Choose 'Use Existing VPC' to utilize an existing VPC, or continue with 'Create New VPC' for a new setup.
+          type: string
+          default: create_new
+          enum:
+            - create_new
+            - use_existing
+          enumNames:
+            - 'Create New VPC'
+            - 'Use Existing VPC'
+           
+      # Only ask for the allow-list if user chose public API access
+      dependencies:
+        vpc_configuration:
+          oneOf:
+            - properties:
+                vpc_configuration:
+                  enum:
+                    - use_existing
+                vpc_id:
+                  title: VPC ID
+                  type: string
+                  description: Specify the existing VPC ID
+            - properties:
+                vpc_configuration:
+                  enum:
+                    - create_new
+                cidr:
+                  title: CIDR
+                  type: string
+                  description: Specify the CIDR block for the new VPC. Default is 10.0.0.0/24
+                  default: 10.0.0.0/24
+
+    - title: Provide Repository information
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+            allowedOwners:
+              - aws-fsi-pace
+
+  steps:
+    # fetch account/region information about where OPA/Backstage is running
+    - id: opaGetPlatformInfo
+      name: Get OPA platform information
+      action: opa:get-platform-metadata
+
+    # fetch SSM Parameter Store parameter values for platform role and pipeline role
+    - id: resolvePlatformVariables
+      name: Resolve Platform Variables
+      action: opa:get-platform-parameters
+      input:
+        paramKeys:
+          - '/opa/platform-role'
+          - '/opa/pipeline-role'
+
+    # pulls aws-tf-ecs-environment-provider repo content to local temp workspace with placeholder replacement
+    - id: fetchBase
+      name: Fetch Code Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          name: ${{ parameters.name | lower }}
+          albName: ${{ parameters.albName }}
+          title: ${{ parameters.name }}
+          description: ${{ parameters.env_description }}
+          owner: ${{ parameters.owner }}
+          repoName: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] }}
+          projectSlug: "${{ parameters.repoUrl | projectSlug }}"
+          envType: ecs
+          awsRegion: ${{ parameters.awsRegion }}
+          awsAccount: ${{ parameters.awsAccountID }}
+          environmentRole: ${{ parameters.environmentRole }}
+          platformRole: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
+          pipelineRole: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
+          platformAccount: ${{ steps['opaGetPlatformInfo'].output.platformAccount }}
+          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          prefix: ${{parameters.prefix}}
+          cidr: ${{parameters.cidr}}
+          vpcid: ${{parameters.vpc_id}}
+          tfProject: 'stt-mig'
+          pipelineID: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] | lower | replace("-", "", 10) }}
+          gitConnectorRef: 'OPA_GitHub_Connector'
+          orgIdentifier: 'default'
+          projectIdentifier: 'default_project'
+          branchName: 'main'
+          secretsManagerName: 'OPAAwsSecretsManager'  # checkov:skip=CKV_SECRET_6: variable does not represent a secret value
+          kubernetesConnectionName: 'opacicdrunnercluster'
+          platformAwsConnectorName: 'StateAwsConnector'
+
+    # pull Terraform IaC code to local temp workspace for ECS cluster template with placeholder replacement
+    - id: fetchBaseIAC
+      name: Fetch IAC Base
+      action: fetch:template
+      input:
+        targetPath: ./.iac
+        url: "https://github.com/aws-fsi-pace/opaadmin_backstage-reference/blob/main/environments/opa-ecs-environment/terraform"
+        values:
+          name: ${{ parameters.name | lower }}
+
+    # pull common Terraform modules to local temp workspace
+    - id: fetchIacCommonConstructs
+      name: Fetch IaC Common Constructs
+      action: fetch:plain
+      input:
+        targetPath: ./.iac
+        url: "https://github.com/aws-fsi-pace/opaadmin_backstage-reference/blob/main/environments/opa-common-constructs/terraform"
+          
+    # push temp workspace to new GitHub repository
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        # repoVisibility: private
+        defaultBranch: main
+        protectDefaultBranch: false
+        protectEnforceAdmins: false
+
+    # ############################################################
+    # Create and register Harness components
+    # ############################################################
+
+    # create a new Harness AWS Connector for provisioning of resources in the target account
+    - id: registerOpaEnvProvisioningHarnessAwsConnector
+      name: Register OPA Environment Provisioning Harness AWS Connector
+      action: opa:register-harness-aws-connector
+      input:
+        connectorName: opa_envprovisioning_${{ parameters.awsAccountID }}_connector
+        connectorRoleArn: ${{ parameters.environmentRole }}
+        orgIdentifier: 'default'
+        projectIdentifier: 'default_project'
+
+    # create a new Harness AWS Connector for provisioning of resources for the ECS cluster
+    - id: registerOPAProviderHarnessAwsConnector
+      name: Register OPA Provider Harness AWS Connector
+      action: opa:register-harness-aws-connector
+      input:
+        connectorName: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] | lower }}_connector
+        connectorRoleArn: arn:aws:iam::${{ parameters.awsAccountID }}:role/${{parameters.prefix}}-${{ parameters.name | lower }}-provisioning-role
+        orgIdentifier: 'default'
+        projectIdentifier: 'default_project'
+
+    # Create/register a Harness pipeline for the ECS infrastructure from the GitHub repository
+    - id: registerHarnessPipeline
+      name: Register Harness CICD Pipeline
+      action: opa:register-harness-cicd-pipeline
+      input:
+        repoName: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] }}
+        gitConnectorRef: 'OPA_GitHub_Connector'
+        orgIdentifier: 'default'
+        projectIdentifier: 'default_project'
+
+    # Create/register a Harness input set for the main branch
+    - id: registerHarnessTriggerInputset
+      name: Register Harness Trigger Inputset
+      action: opa:register-harness-trigger-inputset
+      input:
+        pipelineIdentifier: ${{ steps['registerHarnessPipeline'].output.pipelineIdentifier }}
+        branchName: 'main'
+        repoName: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] }}
+        gitConnectorRef: 'OPA_GitHub_Connector'
+        orgIdentifier: 'default'
+        projectIdentifier: 'default_project'
+        
+    # Create/register a Harness trigger for the new GitHub repo to perform TF plan/apply
+    - id: registerHarnessTrigger
+      name: Register Harness Trigger
+      action: opa:register-harness-trigger
+      input:
+        inputsetRef: ${{ steps['registerHarnessTriggerInputset'].output.inputsetID }}
+        pipelineIdentifier: ${{ steps['registerHarnessPipeline'].output.pipelineIdentifier }}
+        branchName: 'main'
+        repoName: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] }}
+        gitConnectorRef: 'OPA_GitHub_Connector'
+        orgIdentifier: 'default'
+        projectIdentifier: 'default_project'
+        isTfDestroyPipeline: false
+        stagesToExecute: ['TerraformApply', 'UpdateBackstageEntity']
+
+    # Create/register a Harness trigger for the new GitHub repo to perform TF destroy
+    - id: registerHarnessTFDestroyTrigger
+      name: Register Harness Trigger for Terraform Destroy
+      action: opa:register-harness-trigger
+      input:
+        inputsetRef: ${{ steps['registerHarnessTriggerInputset'].output.inputsetID }}
+        pipelineIdentifier: ${{ steps['registerHarnessPipeline'].output.pipelineIdentifier }}
+        branchName: 'main'
+        repoName: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] }}
+        gitConnectorRef: 'OPA_GitHub_Connector'
+        orgIdentifier: 'default'
+        projectIdentifier: 'default_project'
+        isTfDestroyPipeline: true
+        triggerName: mainBranchTfDestroyTrigger
+        stagesToExecute: ['TerraformDestroy']
+    
+    # Explicitly trigger a pipeline execution
+    - id: executeHarnessPipeline
+      name: Execute Harness Pipeline
+      action: opa:execute-harness-pipeline
+      input:
+        pipelineIdentifier: ${{ steps['registerHarnessPipeline'].output.pipelineIdentifier }}
+        branchName: 'main'
+        repoName: ${{ (parameters.repoUrl | parseRepoUrl)['repo'] }}
+        gitConnectorRef: 'OPA_GitHub_Connector'
+        orgIdentifier: 'default'
+        projectIdentifier: 'default_project'
+        stageIdentifiers: ['TerraformApply', 'UpdateBackstageEntity']
+        runtimeInput: ${{ steps['registerHarnessTriggerInputset'].output.runtimeInput }}
+        
+    # The final step is to register our new component in the catalog.
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

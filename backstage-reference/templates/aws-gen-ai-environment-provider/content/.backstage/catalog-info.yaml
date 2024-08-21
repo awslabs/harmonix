@@ -12,6 +12,9 @@ metadata:
     - aws-environment-provider
     - serverless
     - gen-ai
+  iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   envType: ${{values.envType}}
   awsAccount: "${{values.awsAccount}}"
   awsRegion: ${{values.awsRegion}}

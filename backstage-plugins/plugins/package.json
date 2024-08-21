@@ -18,11 +18,12 @@
         "aws-apps-backend",
         "aws-apps-common",
         "aws-apps-demo",
+        "catalog-backend-module-aws-apps-entities-processor",
         "scaffolder-backend-module-aws-apps"
       ]
     },
     "engines": {
-      "node": "16 || 18"
+      "node": "18"
     },
     "scripts": {
       "bootstrap": "lerna bootstrap",
@@ -41,17 +42,17 @@
       "yarn:audit:fix": "yarn-audit-fix"
     },
     "devDependencies": {
-      "@backstage/cli": "^0.22.1",
-      "@spotify/prettier-config": "^14.0.0",
-      "@types/react": "^17.0.0",
-      "lerna": "^6.0.1",
-      "prettier": "^2.2.1",
-      "react": "^17.0.0",
-      "react-dom": "^17.0.0",
-      "react-router": "^6.3.0",
-      "react-router-dom": "^6.3.0",
-      "typescript": "~5.0.0",
-      "yarn-audit-fix": "^9.3.8"
+      "@backstage/cli": "^0.26.11",
+      "@spotify/prettier-config": "^15.0.0",
+      "@types/react": "^18.3.3",
+      "lerna": "^8.1.7",
+      "prettier": "^3.3.3",
+      "react": "^18.3.1",
+      "react-dom": "^18.3.1",
+      "react-router": "^6.26.0",
+      "react-router-dom": "^6.26.0",
+      "typescript": "~5.5.4",
+      "yarn-audit-fix": "^10.0.7"
     },
     "prettier": "@spotify/prettier-config"
   }

@@ -52,16 +52,16 @@ Our goal is to provide a simple, safe, easy-to-use solution, that reduces the ov
         Simon Gebreselassie 
     </td>
     <td align="center">
-        <img src="img/team/kareem.jpeg"/><br/>
-        Kareem Abdol-Hamid
-    </td>
-    <td align="center">
         <img src="img/team/daniela.jpeg"/><br/>
         Daniela Vargas
     </td>
     <td align="center">
        <img src="img/team/hemal.jpeg"/><br/>
         Hemal Gadhiya
+    </td>
+        <td align="center">
+        <img src="img/team/kareem.jpeg"/><br/>
+        Kareem Abdol-Hamid
     </td>
 </tr>
 <tr>
@@ -70,8 +70,12 @@ Our goal is to provide a simple, safe, easy-to-use solution, that reduces the ov
         Alseny Diallo
     </td>
     <td align="center">
+       <img src="img/team/brendan.jpeg"/><br/>
+        Brendan Paul
     </td>
     <td align="center">
+        <img src="img/team/blake.jpeg"/><br/>
+        Blake Franzen
     </td>
     <td align="center">
     </td>

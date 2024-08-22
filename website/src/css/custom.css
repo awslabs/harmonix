@@ -108,6 +108,11 @@ font-size:12px;
   color: #0d317f;
   font-weight: bold;
 }
+.opaDescription
+{
+  max-width: 65%;
+  margin: auto;
+}
 
 @media screen and (max-width: 620px) {
   .logoText1 {
@@ -155,6 +160,15 @@ font-size:12px;
     font-size: 1rem;
     margin:0;
 
+  }
+
+  .opa-video-item iframe{
+    width: 300px;
+  }
+
+.opaDescription
+  {
+    max-width: 100%;
   }
 
 }

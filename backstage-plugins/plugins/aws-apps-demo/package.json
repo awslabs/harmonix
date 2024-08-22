@@ -23,7 +23,11 @@
     "url": "https://github.com/awslabs/app-development-for-backstage-io-on-aws/issues"
   },
   "backstage": {
-    "role": "frontend-plugin"
+    "role": "frontend-plugin",
+    "pluginId": "aws-apps-demo",
+    "pluginPackages": [
+      "@backstage/plugin-home"
+    ]
   },
   "scripts": {
     "start": "backstage-cli package start",

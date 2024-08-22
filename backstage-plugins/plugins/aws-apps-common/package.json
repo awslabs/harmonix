@@ -24,7 +24,9 @@
     "url": "https://github.com/awslabs/app-development-for-backstage-io-on-aws/issues"
   },
   "backstage": {
-    "role": "common-library"
+    "role": "common-library",
+    "pluginId": "aws-apps-common",
+    "pluginPackages": ["@aws/plugin-aws-apps-common-for-backstage"]
   },
   "scripts": {
     "build": "backstage-cli package build",

@@ -47,7 +47,7 @@ const opaSixthVideoContent = (
   <div className='opa-video-item'>
   {/* <h4>Hamburg Containers days 2024</h4> */}
   
-  <div  style={{ width: '400px', height:'225px', }}></div>
+  <div className='empty-video'></div>
 </div>
 )
 

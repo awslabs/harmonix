@@ -170,7 +170,14 @@ font-size:12px;
   {
     max-width: 100%;
   }
+.empty-video {
+  width: 300px !important;
+}
+}
 
+.empty-video {
+  width: 400px;
+  height: 225px;
 }
 
 .tagline {

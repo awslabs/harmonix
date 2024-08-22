@@ -67,7 +67,7 @@ const ResourceBindingCard = ({
 
     //select view for only current environment
     const currentEnvironment = awsComponent.currentEnvironment.environment.name;
-    
+
     const matchedResources = resourcesEntities.filter(entity => {
       const appData = entity!.metadata["appData"] as any;
       return appData && appData[currentEnvironment]
@@ -151,14 +151,14 @@ const ResourceBindingCard = ({
       });
     }
     else if (item.resourceType === "aws-secretsmanager") {
-          const secretPolicy = SECRET_POLICY.replace("@@@PLACEHOLDER@@@", item.resourceArn);
-          policies.push({
-            policyFileName: `statement-secrets-${awsComponent.currentEnvironment.environment.name}-${item.provider}-${item.resourceName}`,
-            policyContent: secretPolicy,
-            policyResource: item.resourceType
-          });
-    }  else if (item.resourceType === "aws-s3") {
-      const s3Policy = S3_POLICY.replace("@@@PLACEHOLDER@@@",`"${item.resourceArn}","${item.resourceArn}/*"`);
+      const secretPolicy = SECRET_POLICY.replace("@@@PLACEHOLDER@@@", item.resourceArn);
+      policies.push({
+        policyFileName: `statement-secrets-${awsComponent.currentEnvironment.environment.name}-${item.provider}-${item.resourceName}`,
+        policyContent: secretPolicy,
+        policyResource: item.resourceType
+      });
+    } else if (item.resourceType === "aws-s3") {
+      const s3Policy = S3_POLICY.replace("@@@PLACEHOLDER@@@", `"${item.resourceArn}","${item.resourceArn}/*"`);
       policies.push({
         policyFileName: `statement-s3-${awsComponent.currentEnvironment.environment.name}-${item.provider}-${item.resourceName}`,
         policyContent: s3Policy,
@@ -176,7 +176,7 @@ const ResourceBindingCard = ({
       policies
     };
 
-    return api.bindResource({repoInfo, params, gitAdminSecret: getGitCredentailsSecret(repoInfo)} )
+    return api.bindResource({ repoInfo, params, gitAdminSecret: getGitCredentailsSecret(repoInfo) })
   }
 
   async function removeResource(item: ResourceBinding): Promise<any> {
@@ -217,7 +217,7 @@ const ResourceBindingCard = ({
       policies
     };
 
-    return api.unBindResource({repoInfo,params, gitAdminSecret: getGitCredentailsSecret(repoInfo) })
+    return api.unBindResource({ repoInfo, params, gitAdminSecret: getGitCredentailsSecret(repoInfo) })
   }
 
 

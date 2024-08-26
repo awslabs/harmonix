@@ -15,7 +15,7 @@ Before interacting with your application, you will need to enable certain Bedroc
 ### **Step 1: Set Configuration Parameters** 
 Once the application is successfully deployed, data scientists can set their custom parameters for the solution.
 
-1. Find the link to your API in the Application's entity page on the OPA website under *Links*. Use the API Platform of your choice or the Amazon API Gateway Console to make your API request. *Be sure to add the /setConfiguration to the URI*.
+1. Find the link to your API in the Application's entity page on the Harmonix website under *Links*. Use the API Platform of your choice or the Amazon API Gateway Console to make your API request. *Be sure to add the /setConfiguration to the URI*.
 2. Sample request bodies can be found in `./events/set-configuration.json`. of the application source code repo. The following parameters can be customized for your solution:
 
     * `response_prompt` *(string)*: Used in the **Response Lambda,** it sets up the context for the Claude model to create an answer. For proper response generation you need to format the prompt using                 `"{question}"`,  and `<document></document> XML tags:{documents} `  . This will serve as placeholders for the questions asked and the documents that will be use to answer it.  (More information can be found in [Prompt Guidelines](https://docs.aws.amazon.com/bedrock/latest/userguide/general-guidelines-for-bedrock-users.html))

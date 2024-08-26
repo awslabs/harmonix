@@ -18,14 +18,14 @@ function HomepageHeader() {
         {/* <div className='bg-splash'>
           <img src={useBaseUrl('img/bg_splash.svg')} />
         </div> */}
-      <Grid container spacing={3} className="perspective-container">
-        <Grid item xs={6} className="hero hero--primary bgimg logoWrapper">
-          <span className='logoText1'>Orchestrate Platforms <br/>and Applications</span>
+      <Grid container spacing={3} className="perspective-container" style={{marginLeft:'0px'}}>
+        <Grid item xs={5} className="hero hero--primary bgimg logoWrapper">
+          {/* <span className='logoText1'>Orchestrate Platforms <br/>and Applications</span> */}
           <span className='logoText2'>on AWS</span>
         </Grid>
-        <Grid className='tagWrapper' item xs={5}>
-          <Grid container direction="column" spacing={2} style={{display: 'flex'}}>
-            <Grid item  className="hero__subtitle tagline" style={{display: 'flex', alignItems: 'left', marginTop: 50, paddingRight: 50}}>
+        <Grid className='tagWrapper' item xs={7}>
+          <Grid container direction="column" spacing={2}>
+            <Grid item  className="hero__subtitle tagline" style={{ marginTop: 50, paddingLeft:'50px'}}>
               <p>{siteConfig.tagline}</p>
             </Grid>
             {/* <Grid item style={{alignItems: 'left', textAlign: "center", paddingRight: 50}}>

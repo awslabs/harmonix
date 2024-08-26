@@ -15,21 +15,21 @@ sidebar_position: 2
 <!-- 
 [![Introduction](https://img.youtube.com/vi/jP7zLghcFz8/hqdefault.jpg)](https://www.youtube.com/playlist?list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3) -->
 <div className=''>
-  <iframe width="100%" height="450" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <iframe width="100%" height="450" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="Harmonix on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
 
 ### Decks
-1. [OPA on AWS - Part 1 - Introduction](/decks/OPAonAWS-Part1-Introduction.pdf)
-2. [OPA on AWS - Part 2 - Platform engineering](/decks/OPAonAWS-Part2-PlatformEngineering.pdf)
-3. [OPA on AWS - Part 3 - Application developer](/decks/OPAonAWS-Part3-ApplicationDeveloper.pdf)
-4. [OPA on AWS - Part 4 - Deploy Application to other environments](/decks/OPAonAWS-Part4-DeployApplicationToOtherEnvironments.pdf)
-5. [OPA on AWS - Part 5 - Provision AWS Resources and resource binding](/decks/OPAonAWS-Part5-ProvisionAWSResourcesAndResourceBinding.pdf)
-6. [OPA on AWS - Part 6 - Deploying Serverless APIs](/decks/OPAonAWS-Part6-DeployingServerlessAPIs.pdf)
-7. [OPA on AWS - Part 7 - OPA Security and RBAC](/decks/OPAonAWS-Part7-OPASecurityAndRBAC.pdf)
-8. [OPA on AWS - Part 8 - Orchestrating and Managing CI-CD](/decks/OPAonAWS-Part8-OrchestratingAndManagingCI-CD.pdf)
-9. [OPA on AWS - Part 9 - Using Terraform to Orchestrate Applications](/decks/OPAonAWS-Part9-UsingTerraformToOrchestrateApplications.pdf)
-10. [OPA on AWS - Part 10 - Customizing your platform - Adding providers](/decks/OPAonAWS-Part10-CustomizingYourPlatform-AddingProviders.pdf)
-11. [OPA on AWS - Part 11 - Customizing your platform - Adding Templates](/decks/OPAonAWS-Part11-CustomizingYourPlatform-AddingTemplates.pdf)
+1. [Harmonix on AWS - Part 1 - Introduction](/decks/OPAonAWS-Part1-Introduction.pdf)
+2. [Harmonix on AWS - Part 2 - Platform engineering](/decks/OPAonAWS-Part2-PlatformEngineering.pdf)
+3. [Harmonix on AWS - Part 3 - Application developer](/decks/OPAonAWS-Part3-ApplicationDeveloper.pdf)
+4. [Harmonix on AWS - Part 4 - Deploy Application to other environments](/decks/OPAonAWS-Part4-DeployApplicationToOtherEnvironments.pdf)
+5. [Harmonix on AWS - Part 5 - Provision AWS Resources and resource binding](/decks/OPAonAWS-Part5-ProvisionAWSResourcesAndResourceBinding.pdf)
+6. [Harmonix on AWS - Part 6 - Deploying Serverless APIs](/decks/OPAonAWS-Part6-DeployingServerlessAPIs.pdf)
+7. [Harmonix on AWS - Part 7 - OPA Security and RBAC](/decks/OPAonAWS-Part7-OPASecurityAndRBAC.pdf)
+8. [Harmonix on AWS - Part 8 - Orchestrating and Managing CI-CD](/decks/OPAonAWS-Part8-OrchestratingAndManagingCI-CD.pdf)
+9. [Harmonix on AWS - Part 9 - Using Terraform to Orchestrate Applications](/decks/OPAonAWS-Part9-UsingTerraformToOrchestrateApplications.pdf)
+10. [Harmonix on AWS - Part 10 - Customizing your platform - Adding providers](/decks/OPAonAWS-Part10-CustomizingYourPlatform-AddingProviders.pdf)
+11. [Harmonix on AWS - Part 11 - Customizing your platform - Adding Templates](/decks/OPAonAWS-Part11-CustomizingYourPlatform-AddingTemplates.pdf)
 
 ### Individual videos
 
@@ -79,25 +79,25 @@ sidebar_position: 2
 
 ## PlatformCon 2024
  <div className=''>
-  <h4>OPA on AWS at PlatformCon 2024</h4>
+  <h4>Harmonix on AWS at PlatformCon 2024</h4>
   <iframe width="400" height="250" src="https://www.youtube.com/embed/cjovvIWdgRU/1.jpg" title="Unlocking Platform Engineer Efficiency: Automation Strategies with Backstage" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
 
 ## BackstageCon 2024
 <div className=''>
-  <h4>OPA on AWS at BackstageCon 2024</h4>
+  <h4>Harmonix on AWS at BackstageCon 2024</h4>
   <iframe width="400" height="250" src="https://www.youtube.com/embed/40B6YmmhOvI/2.jpg?start=670" title="Let’s Go Backstage: End to End IDP Tips &amp; Tricks for Platform Engineers - Oshrat Nir &amp; Guy Menahem" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
 
 ## Containers from the couch
   <div className=''>
     <h4>Containers from the couch</h4>
-    <iframe width="400" height="250" src="https://www.youtube.com/embed/EN6mlTX71Ts/1.jpg?" title="OPA on AWS" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <iframe width="400" height="250" src="https://www.youtube.com/embed/EN6mlTX71Ts/1.jpg?" title="Harmonix on AWS" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
   </div>
 
 ## The Platformers review + demo
 <div className=''>
   <h4>Containers from the couch</h4>
-  <iframe width="400" height="250" src="https://www.youtube.com/embed/h9HwnkkmQPA/1.jpg?" title="What is OPA on AWS + Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <iframe width="400" height="250" src="https://www.youtube.com/embed/h9HwnkkmQPA/1.jpg?" title="What is Harmonix on AWS + Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div> 
 

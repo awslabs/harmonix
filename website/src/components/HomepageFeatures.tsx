@@ -11,14 +11,14 @@ type FeatureGroup = {
 
 const opaMainVideoContent = (
   <div className='opa-video-item'>
-  <h4>The Platformers - OPA on AWS</h4>
+  <h4>The Platformers - Harmonix on AWS</h4>
   <iframe width="400" height="225" src="https://www.youtube.com/embed/h9HwnkkmQPA/1.jpg?" title="What is OPA on AWS + Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div> 
 )
 
 const opaSecondVideoContent = (
   <div className='opa-video-item'>
-  <h4>OPA on AWS at PlatformCon 2024</h4>
+  <h4>Harmonix on AWS at PlatformCon 2024</h4>
   <iframe width="400" height="225" src="https://www.youtube.com/embed/cjovvIWdgRU/1.jpg" title="Unlocking Platform Engineer Efficiency: Automation Strategies with Backstage" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
 )
@@ -31,14 +31,14 @@ const opaThirdVideoContent = (
 )
 const opaForthVideoContent = (
   <div className='opa-video-item'>
-  <h4>OPA on AWS at BackstageCon 2024</h4>
+  <h4>Harmonix on AWS at BackstageCon 2023</h4>
   <iframe width="400" height="225" src="https://www.youtube.com/embed/40B6YmmhOvI/2.jpg?start=670" title="Let’s Go Backstage: End to End IDP Tips &amp; Tricks for Platform Engineers - Oshrat Nir &amp; Guy Menahem" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
 )
 
 const opaFifthVideoContent = (
   <div className='opa-video-item'>
-  <h4>OPA on AWS Tech Playlist</h4>
+  <h4>Harmonix on AWS Tech Playlist</h4>
   {/* <iframe width="400" height="250" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> */}
   <iframe width="400" height="225" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
@@ -65,7 +65,7 @@ const carouselContent = (
     <Carousel.Caption style={{minHeight:'120px'}}>
       <h4>🚀 NEW 🚀</h4>
       <p><b>GitHub Source Control Integration</b></p>
-      <p>OPA on AWS is now integrated with both GitHub & Gitlab Source control <br/>You can even extend it to more git providers. Read more <a href="/docs/integration/git" >-->here</a></p>
+      <p>Harmonix on AWS is now integrated with both GitHub & Gitlab Source control <br/>You can even extend it to more git providers. Read more <a href="/docs/integration/git" >-->here</a></p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
@@ -79,7 +79,7 @@ const carouselContent = (
     <Carousel.Caption style={{minHeight:'120px'}}>
       <h4>🚀 NEW 🚀</h4>
       <p><b>GenAI provider and RAG app</b></p>
-      <p>New GenAI Provider for development of GenAI Applications <br/> And a new RAG demo app to get you started quickly with experimenting with GenAI applications <a href="/docs/category/generative-ai">Click here for more details</a></p>
+      <p>New GenAI Provider for development of GenAI Applications <br/> A new RAG demo app to get you started quickly <a href="/docs/category/generative-ai">Click here for more details</a></p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
@@ -93,7 +93,7 @@ const carouselContent = (
     <Carousel.Caption style={{minHeight:'120px'}}>
       <h4>🚀 NEW 🚀</h4>
       <p><b>AWS Control Tower & AFT Integration</b></p>
-      <p>Step by Step <a href="/docs/integration/control-tower-and-aft" >Documentation</a> how to integrate OPA on AWS <br/> with AWS Control Tower and AFT (Account Factory for Terraform)</p>
+      <p>Step by Step <a href="/docs/integration/control-tower-and-aft" >Documentation</a> how to integrate Harmonix on AWS <br/> with AWS Control Tower and AFT (Account Factory for Terraform)</p>
     </Carousel.Caption>
   </Carousel.Item>
   
@@ -146,7 +146,7 @@ const opaDescription : FeatureItem[] = [
     customTextStyle:{fontSize:'24px', textAlign:'left', maxWidth:'100%', margin:'auto', minHeight:'275px'},
     description: (
       <div className="opaDescription">
-       <b>Orchestrate Platforms and Applications (OPA) on AWS </b>is an open source reference implementation that ties together AWS services into an enterprise-ready offering. By abstracting AWS services, OPA on AWS allows application developers to focus on what they do best – write application logic! <br/> <br/> Platform engineering teams can promote best practices at-scale, while providing a productive and pleasurable experience for non-cloud developers
+       <b>Harmonix on AWS </b> (Previously known as OPA on AWS) is an open source reference implementation that ties together AWS services into an enterprise-ready offering. By abstracting AWS services, Harmonix on AWS allows application developers to focus on what they do best – write application logic! <br/> <br/> Platform engineering teams can promote best practices at-scale, while providing a productive and pleasurable experience for non-cloud developers  <br/> <br/> Harmonix on AWS reduces the time to build your customized developer portal by up to 80%
       </div>
     ),
   },

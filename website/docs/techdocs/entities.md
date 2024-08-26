@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Entities
 
-OPA on AWS uses some Backstage out of the box entities but also introduces two new entities in the software catalog.
+Harmonix on AWS uses some Backstage out of the box entities but also introduces two new entities in the software catalog.
 
 ## AWS Environment & Environment Provider
 These custom Backstage entity kinds were created to represent an abstract AWS environment and environment provider. 

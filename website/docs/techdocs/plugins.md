@@ -5,7 +5,7 @@ sidebar_position: 3
 
 # Plugins
 
-OPA on AWS published four plugins, which together compose the platform and provide the integration with AWS services.
+Harmonix on AWS published four plugins, which together compose the platform and provide the integration with AWS services.
 
 ## Architecture
 

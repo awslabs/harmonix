@@ -5,7 +5,7 @@ sidebar_position: 2
 # Git
 
 ### Introduction
-This article will describe how OPA on AWS integrates with various git providers including Gitlab and Github. In addition, we provide a deeper dive and customization examples to add your own git provider.
+This article will describe how Harmonix on AWS integrates with various git providers including Gitlab and Github. In addition, we provide a deeper dive and customization examples to add your own git provider.
 
 
 ## Architecture
@@ -15,12 +15,12 @@ graph TD;
     GitProviderInterface-->GitLabImpl;
     GitProviderInterface-->GitHubImpl;
     GitProviderInterface-->BitBucketImpl;
-    OPA-Backend-Plugin-->GitProviderInterface
+    Harmonix-Backend-Plugin-->GitProviderInterface
 ```
 
 ## Git provider interface
 
-Currently, OPA on AWS offers two git implementations:
+Currently, Harmonix on AWS offers two git implementations:
 1. GitLabs
 2. GitGub
 
@@ -105,7 +105,7 @@ public constructor(
 ```
 
 :::info
-Adding a git provider will allow OPA on AWS to preform the same actions based on your implementation, However you will still need to to implement the corresponding pipelines to complete the event execution. Please see the [GitLabs pipelines examples](https://github.com/awslabs/app-development-for-backstage-io-on-aws/tree/main/backstage-reference/common/cicd) we provide as a reference for your desired pipeline tool.
+Adding a git provider will allow Harmonix on AWS to preform the same actions based on your implementation, However you will still need to to implement the corresponding pipelines to complete the event execution. Please see the [GitLabs pipelines examples](https://github.com/awslabs/app-development-for-backstage-io-on-aws/tree/main/backstage-reference/common/cicd) we provide as a reference for your desired pipeline tool.
 :::
 
 :::tip

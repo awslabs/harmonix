@@ -8,13 +8,13 @@ import rehypeKatex from 'rehype-katex';
 
 
 const config: Config = {
-  title: 'OPA on AWS',
+  title: 'Harmonix on AWS',
   // tagline: 'Orchestrate Platforms and Applications',
   tagline: 'Fast, secure, and at-scale. A developer portal to meet your Enterprise needs.',
   favicon: 'img/favicon.ico',
 
   // Set the production url of your site here
-  url: 'https://opaonaws.io',
+  url: 'https://harmonixonaws.io',
   // Set the /<baseUrl>/ pathname under which your site is served
   // For GitHub pages deployment, it is often '/<projectName>/'
   baseUrl: '/',
@@ -62,15 +62,15 @@ const config: Config = {
 
   themeConfig: {
       // Replace with your project's social card
-    image: 'img/opa-logo.png',
+    image: 'img/harmonix-blue.png',
     navbar: {
-      // title: 'OPA on AWS', 
+      // title: 'Harmonix on AWS', 
       hideOnScroll: false,
       logo: {
-        alt: 'OPA on AWS Logo',
-        src: 'img/opa_white.svg',
-        srcDark: 'img/opa_dark.svg',
-        className: 'opa-nav-logo',
+        alt: 'Harmonix on AWS Logo',
+        src: 'img/harmonix-white.svg',
+        srcDark: 'img/harmonix-white.svg',
+        className: 'harmonix-nav-logo',
         // width: 128,
         // height: 128,
       },
@@ -112,7 +112,7 @@ const config: Config = {
     },
     announcementBar: {
       content:
-      'OPA on AWS 0.3.4 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/app-development-for-backstage-io-on-aws">GitHub</a>! ⭐️.  View changes <a target="_blank" rel="noopener noreferrer" href="https://opaonaws.io/docs/CHANGELOG">here</a>.',
+      'Harmonix on AWS 0.3.4 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/app-development-for-backstage-io-on-aws">GitHub</a>! ⭐️.  View changes <a target="_blank" rel="noopener noreferrer" href="https://harmonixonaws.io/docs/CHANGELOG">here</a>.',
       backgroundColor: '#ffffff',
       textColor: '#000000',
       isCloseable: true,
@@ -164,7 +164,7 @@ const config: Config = {
       respectPrefersColorScheme: false,
     },
     zoom: {
-      selector: 'img:not(.opa-nav-logo)',
+      selector: 'img:not(.harmonix-nav-logo)',
       background: {
         light: 'rgb(255, 255, 255)',
         dark: 'rgb(50, 50, 50)'

@@ -14,7 +14,7 @@ In this tutorial, you will build out a new AWS microservice application and depl
 This tutorial assumes that you have run the [Create an Environment](/docs/tutorials/create-environments) tutorial and expects input values from that setup.  If you have created different Environment entities, then substitute the appropriate values.
 :::
 
-**1.** In the OPA on AWS site, navigate to the **Create...** menu. Search for and select **Node.js Express Web App**. 
+**1.** In the Harmonix on AWS site, navigate to the **Create...** menu. Search for and select **Node.js Express Web App**. 
 <center><img src={ChooseAppImg} width="50%" height="auto" /></center>
 
 

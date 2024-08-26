@@ -4,7 +4,7 @@ sidebar_position: 1
 
 # New Cluster Template
 
-The "AWS EKS Environment Provider" template will create everything OPA needs to provision an EKS runtime. This includes creating and configuring the EKS cluster. You can customize this template to best suit your standards or use it as a reference to create your own template from scratch. The template itself allows for the user to make choices with respect to infrastructure creation. 
+The "AWS EKS Environment Provider" template will create everything Harmonix needs to provision an EKS runtime. This includes creating and configuring the EKS cluster. You can customize this template to best suit your standards or use it as a reference to create your own template from scratch. The template itself allows for the user to make choices with respect to infrastructure creation. 
 
 #### Template Choice Examples
   * Create an EKS cluster that is made up of managed nodes or utilize a serverless approach with Fargate. 
@@ -19,11 +19,11 @@ The "AWS EKS Environment Provider" template will create everything OPA needs to 
 
 ## AWS Infrastructure Created By This Template
 
-#### Standard OPA Provider Components:
+#### Standard Harmonix Provider Components:
 - IAM Roles
-  - OPA Operations Role
+  - Harmonix Operations Role
     * Has sufficient permissions to perform operations on the environment provider's resources
-  - OPA Provisioning Role
+  - Harmonix Provisioning Role
     * Has sufficient permissions to provision the environment provider's resources
 - Audit Table
   * A dedicated DynamoDB table to capture the actions performed on the applications that are running on this environment provider.
@@ -56,11 +56,11 @@ The "AWS EKS Environment Provider" template will create everything OPA needs to 
   * A lambda function used for configuring and querying kubernetes cluster resources, including installing Helm charts
   * This function runs in the same VPC as the EKS cluster so that it can communicate with the kubernetes API server even if the API server is not exposed publicly
   * Used by Infrastructure as Code (IaC) that adds/updates resources on the EKS cluster
-    * For example, OPA's EKS Environment Provider templates run CDK code to configure cluster resources
-  * OPA uses this lambda function to update and query the EKS cluster instead of using direct calls to the API server
+    * For example, Harmonix's EKS Environment Provider templates run CDK code to configure cluster resources
+  * Harmonix uses this lambda function to update and query the EKS cluster instead of using direct calls to the API server
   * This function makes use of kubectl (by way of a [lambda layer](https://docs.aws.amazon.com/lambda/latest/dg/chapter-layers.html)). The version of kubectl it uses must be compatible with the kubernetes cluster version. If you update your kubernetes cluster version, you should also update the kubectl lambda layer so that the kubectl client version matches your cluster.
   
-#### OPA Uses of the Kubectl Lambda Function:
+#### Harmonix Uses of the Kubectl Lambda Function:
 <p align="center">
 ![kubectl_lambda.png](/img/opa/providers/kubectl_lambda.png)
 </p>
@@ -73,12 +73,12 @@ The "AWS EKS Environment Provider" template will create everything OPA needs to 
   * Configured to forward pod logs to AWS Cloudwatch logs
 
   :::info
-  The OPA UI has a Logs tab that can show an application's logs from a particular environment. If the cluster is not set up to have FluentBit (or a similar tool such as Fluentd) send application logs to CloudWatch, this functionality will not work.
+  The Harmonix UI has a Logs tab that can show an application's logs from a particular environment. If the cluster is not set up to have FluentBit (or a similar tool such as Fluentd) send application logs to CloudWatch, this functionality will not work.
   :::
 
 * ClusterRoleBinding
-  * This binds the principal that OPA uses to administer the cluster ("opa-cluster-admin") to the ClusterRole that has cluster-wide admin permissions
+  * This binds the principal that Harmonix uses to administer the cluster ("opa-cluster-admin") to the ClusterRole that has cluster-wide admin permissions
 * ClusterRole for viewing/listing namespaces
-  * OPA application operations make use of this ClusterRole
+  * Harmonix application operations make use of this ClusterRole
 * aws-auth ConfigMap settings
-  * The aws-auth ConfigMap is updated to configure a k8s principal for OPA to use to perform cluster and application provisioning
+  * The aws-auth ConfigMap is updated to configure a k8s principal for Harmonix to use to perform cluster and application provisioning

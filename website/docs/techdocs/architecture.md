@@ -4,15 +4,15 @@ sidebar_position: 1
 
 # Architecture
 
-## OPA Platform
+## Harmonix on AWS Platform
 
-The below diagram illustrates the major components of the OPA platform. 
+The below diagram illustrates the major components of the Harmonix platform. 
 
 The platform creation is automated by way of executing an AWS CDK script that will provision the needed resources in your AWS account. After running the script, you will have the Backstage developer portal running on AWS and it will be set up to persist its configurations to an RDS database. Backstage will be integrated with an identity provider to facilitate user logins. The default identity provider is Okta, but you can customize this to use a different one. 
 
 Backstage is also integrated with a version control system. It is configured to discover entity definition files in existing Git repositories so that these entities will show up in the portal. Backstage will also be able to create new repositories to hold the source code of applications and other resources that are created by portal users. 
 
-The default OPA version control system is GitLab. The platform creation scripts will set up a Community Edition of GitLab that runs on AWS, so that it can be used for demonstration purposes. It is possible through code modifications to switch to a different version control vendor that can be hosted on or outside of the AWS cloud. 
+The default Harmonix version control system is GitLab. The platform creation scripts will set up a Community Edition of GitLab that runs on AWS, so that it can be used for demonstration purposes. It is possible through code modifications to switch to a different version control vendor that can be hosted on or outside of the AWS cloud. 
 
 <p align="center">
 ![Website_Architecture_OPA_Platform.jpg](/img/diagrams/opa-architecture.png)
@@ -32,7 +32,7 @@ An environment is just a Backstage entity that contains metadata and association
 
 The below diagram illustrates the AWS cloud components that make up an environment provider that could be used to host a containerized application.
 
-Every provider must include a security role for Backstage CICD pipelines to use to provision and update applications in a specific AWS account and region. Providers's must also contain an operations role, which is assumed by the Backstage portal to grant it access to execute the operations that portal users are choosing. The final requirement of a provider is that it must contain an audit table, which OPA uses to track user actions made to applications running on the provider's account.
+Every provider must include a security role for Backstage CICD pipelines to use to provision and update applications in a specific AWS account and region. Providers's must also contain an operations role, which is assumed by the Backstage portal to grant it access to execute the operations that portal users are choosing. The final requirement of a provider is that it must contain an audit table, which Harmonix uses to track user actions made to applications running on the provider's account.
 
 Providers can also commonly include networking configurations, encryption keys, and secrets.
 
@@ -56,7 +56,7 @@ When the Git repository is created, its CICD pipeline will execute, resulting in
 
 The below diagram illustrates an application's CICD pipeline. The application is associated with 3 environments (DEV, QA, PROD). 
 
-OPA is able to create pipelines like this for you when it creates a new application. These pipelines are capable of deploying to as many AWS accounts as you need.
+Harmonix is able to create pipelines like this for you when it creates a new application. These pipelines are capable of deploying to as many AWS accounts as you need.
 
 <p align="center">
 ![CICD_With_AWS.jpg](/img/diagrams/CICD_With_AWS.jpg)

@@ -5,23 +5,23 @@ sidebar_position: 5
 
 # Security
 
-OPA on AWS is built on the Backstage open source project and, thus, inherits the security considerations applicable to the platform.  
+Harmonix on AWS is built on the Backstage open source project and, thus, inherits the security considerations applicable to the platform.  
 
-The sections below capture details about the OPA on AWS reference implementation to help you understand the out-of-the-box implementations related to security.  Many of the configurations can easily be changed to meet your specific access control needs.
+The sections below capture details about the Harmonix on AWS reference implementation to help you understand the out-of-the-box implementations related to security.  Many of the configurations can easily be changed to meet your specific access control needs.
 
 :::warning
 It is **strongly** recommended that you read the [Backstage Threat Model](https://backstage.io/docs/overview/threat-model) documentation to familiarize yourself with the trust model and integrator responsibilities to secure access.
 :::
 
 ## Authentication
-The [Backstage Authentication system](https://backstage.io/docs/auth/) provides for sign-in and identification of users.  The OPA on AWS reference implementation is pre-configured to use Okta as an authentication provider. This demonstrates one type of authentication provider; however, it can easily be changed to other common identity providers such as Active Directory and other OAuth 2 supported providers.
+The [Backstage Authentication system](https://backstage.io/docs/auth/) provides for sign-in and identification of users.  The Harmonix on AWS reference implementation is pre-configured to use Okta as an authentication provider. This demonstrates one type of authentication provider; however, it can easily be changed to other common identity providers such as Active Directory and other OAuth 2 supported providers.
 
 :::info
 Multiple providers are supported by Backstage. For the complete list, consult the [Backstage "Included providers" documentation](https://backstage.io/docs/auth/)
 :::
 
 ## Organizational data
-Backstage provides support to map organizational data such as users and groups into entities in the Backstage catalog.  The OPA on AWS reference implementation is pre-configured to use the `OktaOrgEntityProvider` from the [catalog-backend-module-okta plugin](https://www.npmjs.com/package/@roadiehq/catalog-backend-module-okta) from [Roadie](https://roadie.io).  This plugin will read Okta Users and Groups from a configured Okta instance and create entities in the catalog.  Once they are populated in the catalog, user and group entities can be used for creating relationships (e.g. "ownedBy") with other entities.  User and Group entities can also be used in the Backstage permission framework to enforce allow/deny policy decisions.
+Backstage provides support to map organizational data such as users and groups into entities in the Backstage catalog.  The Harmonix on AWS reference implementation is pre-configured to use the `OktaOrgEntityProvider` from the [catalog-backend-module-okta plugin](https://www.npmjs.com/package/@roadiehq/catalog-backend-module-okta) from [Roadie](https://roadie.io).  This plugin will read Okta Users and Groups from a configured Okta instance and create entities in the catalog.  Once they are populated in the catalog, user and group entities can be used for creating relationships (e.g. "ownedBy") with other entities.  User and Group entities can also be used in the Backstage permission framework to enforce allow/deny policy decisions.
 
 Alternatives for organizational data ingestion can be configured for [OpenLDAP](https://backstage.io/docs/integrations/ldap/org), [GitHub](https://backstage.io/docs/integrations/github/org), [GitLab](https://backstage.io/docs/integrations/gitlab/org), and more.  Consult the [Backstage Integrations documentation](https://backstage.io/docs/integrations/) and [Backstage plugin directory](https://backstage.io/plugins/) for additional options and details.
 
@@ -96,12 +96,12 @@ flowchart LR
 ```
 
 :::info
-Environment provider authors can reason about the required set of permissions for provisioning and operating applications for this environment. OPA on AWS provides sample templates for Amazon ECS, Amazon EKS, and Serverless environment providers.
+Environment provider authors can reason about the required set of permissions for provisioning and operating applications for this environment. Harmonix on AWS provides sample templates for Amazon ECS, Amazon EKS, and Serverless environment providers.
 :::
 
 ### Diving deep to access roles trust policy
 
-As described above, OPA on AWS provides a pattern of assuming access to particular AWS environments. Out of the box, when provisioning a new environment provider, the *provisioning role* and *operations role* are created and their trust policy is modified to enable the platform role and pipeline role respectively.
+As described above, Harmonix on AWS provides a pattern of assuming access to particular AWS environments. Out of the box, when provisioning a new environment provider, the *provisioning role* and *operations role* are created and their trust policy is modified to enable the platform role and pipeline role respectively.
 
 example of: commercial-us-commercial-dev-**provisioning-role** - Assumed by gitlab pipeline role
 ```json

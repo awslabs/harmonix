@@ -12,14 +12,14 @@ The described test cases below provider a starting point to map the different fe
 
 ## Assumptions
 
-1. You have OPA on AWS platform deployed and running.
+1. You have Harmonix on AWS platform deployed and running.
 2. You have several accounts that are used or can be used to provision environments and applications.
 3. You have an identity provider configured with backstage(Okta, AD, etc.)
 
 ## Test case, context and expected result
 We define a context of a test with the letter **"C"**. This will allow us to describe the existing state before we can execute a test case.
 
-We also define test case with the letter **"T"** which describe the set of instructions to test a scenario on OPA on AWS.
+We also define test case with the letter **"T"** which describe the set of instructions to test a scenario on Harmonix on AWS.
 
 Lastly we define the expected result with the letter **"E"**, this will describe the expected assertion of a resulted test case.
 

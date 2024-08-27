@@ -73,7 +73,7 @@ The *include* clause allows us to dynamically pull pipelines from another reposi
 ### Modular pipelines
 The idea of modular pipelines is to include smaller pipelines that contain jobs which together can provide a building block for different pipeline orchestrations. You may have already noticed from the example above we use several include statements. These statements help to reuse similar functionally for different templates / application patterns. 
 
-The complete list of pipeline patterns is available at: [CICD Directory](https://github.com/awslabs/app-development-for-backstage-io-on-aws/tree/main/backstage-reference/common/cicd)
+The complete list of pipeline patterns is available at: [CICD Directory](https://github.com/awslabs/harmonix/tree/main/backstage-reference/common/cicd)
 
 1. .gitlab-ci-aws-base.yml
 2. .gitlab-ci-aws-dind-spring-boot.yml

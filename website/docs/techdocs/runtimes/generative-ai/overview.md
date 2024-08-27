@@ -6,7 +6,7 @@ sidebar_position: 1
 
 
 **What is it?**
-The Gen AI Software template is an AWS App that can be deployed on top of the AWS Gen AI Environment Provider. It is a sample implementation of how we can deploy applications with common Gen AI use cases via OPA on AWS. The solution leverages RAG (Retrieval-Augmented Generation), an AI framework used to retrieve facts from an external knowledge base to ground large language models (LLMs), to create a Chatbot.
+The Gen AI Software template is an AWS App that can be deployed on top of the AWS Gen AI Environment Provider. It is a sample implementation of how we can deploy applications with common Gen AI use cases via Harmonix on AWS. The solution leverages RAG (Retrieval-Augmented Generation), an AI framework used to retrieve facts from an external knowledge base to ground large language models (LLMs), to create a Chatbot.
 
 **Why was it made?**
 With the rise of Generative AI, customers have become increasingly interested in how they can implement it into their own use cases.  For companies considering adopting an IDP, this software template provides a reference for how they can leverage an IDP to deploy modern AI solutions.  

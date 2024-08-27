@@ -10,6 +10,7 @@
 # Crash log files
 crash.log
 
+.docusaurus
 # *.zip
 *.pem
 backstage-old

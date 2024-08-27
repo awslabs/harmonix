@@ -1,7 +1,7 @@
 # Changelog
 
 ## 0.3.4 - 2024-08-23
-* Upgraded OPA on AWS to the latest Backstage version and new backend system. 1.29.0
+* Upgraded Harmonix on AWS to the latest Backstage version and new backend system. 1.29.0
 * New custom entity processor plugin - compatible with the new backend backstage system. <a href="docs/techdocs/plugins"> details here </a>
 * Updated Gitlab version 17.2.2
 * Support for Github and Multi-Git provider

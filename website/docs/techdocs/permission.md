@@ -6,13 +6,13 @@ title: Permissions
 
 # Authorization and Permissions
 
-The [Security Authentication section](/docs/techdocs/security#authentication) captures mechanisms used to authenticate and store users and organizational data.  At sign-in, it is possible to restrict access to OPA on AWS through configuration of identity provider integration to provide authorization at the "front door" of the application.  It is also possible to provide a more granular mechanism to enforce authorization of access to APIs, UI components, and data by utilizing the [Backstage permission framework](https://backstage.io/docs/permissions/overview).
+The [Security Authentication section](/docs/techdocs/security#authentication) captures mechanisms used to authenticate and store users and organizational data.  At sign-in, it is possible to restrict access to Harmonix on AWS through configuration of identity provider integration to provide authorization at the "front door" of the application.  It is also possible to provide a more granular mechanism to enforce authorization of access to APIs, UI components, and data by utilizing the [Backstage permission framework](https://backstage.io/docs/permissions/overview).
 
 The sections below document examples of how you can specify a policy and restrict access to specific types of actions and entities through group membership.
 
 ## Specifying a policy
 
-The OPA on AWS plugins for Backstage provide example permission policies to demonstrate how the permission framework can be leveraged to enforce access controls to specific template types and OPA APIs.  In the reference implementation, the policy used by the permission framework is found in the `backstage/packages/backend/src/plugins/permission.ts` file.  By default, an "allow all" sample policy is used.  In the example below, the policy configuration is modified to specify an alternative sample policy named `OpaSamplePermissionPolicy`.
+The Harmonix on AWS plugins for Backstage provide example permission policies to demonstrate how the permission framework can be leveraged to enforce access controls to specific template types and Harmonix APIs.  In the reference implementation, the policy used by the permission framework is found in the `backstage/packages/backend/src/plugins/permission.ts` file.  By default, an "allow all" sample policy is used.  In the example below, the policy configuration is modified to specify an alternative sample policy named `OpaSamplePermissionPolicy`.
 
 ```diff {4-5,13-14} title="backstage/packages/backend/src/plugins/permission.ts"
   import { createRouter } from '@backstage/plugin-permission-backend';
@@ -61,11 +61,11 @@ const DEVELOPERS_GROUP = stringifyEntityRef({
 
 With the groups defined, we can now review and modify the policy decision code to return authorization results to Backstage plugins.
 
-## Restricting access to OPA audit logs
+## Restricting access to Harmonix audit logs
 
-OPA on AWS provides an example permission to control access to OPA application audit logs using the `readOpaAppAuditPermission` permission definition (defined in the `@aws/plugin-aws-apps-common-for-backstage` plugin).  The code below is part of the `OpaSamplePermissionPolicy.ts` permission policy.  
+Harmonix on AWS provides an example permission to control access to OPA application audit logs using the `readOpaAppAuditPermission` permission definition (defined in the `@aws/plugin-aws-apps-common-for-backstage` plugin).  The code below is part of the `OpaSamplePermissionPolicy.ts` permission policy.  
 
-Additional permissions for OPA on AWS APIs may be provided in the future.  If there is a specific permission required,  [open an issue](https://github.com/awslabs/app-development-for-backstage-io-on-aws/issues) or [submit a pull request](https://github.com/awslabs/app-development-for-backstage-io-on-aws/pulls) for support.
+Additional permissions for Harmonix on AWS APIs may be provided in the future.  If there is a specific permission required,  [open an issue](https://github.com/awslabs/harmonix/issues) or [submit a pull request](https://github.com/awslabs/harmonix/pulls) for support.
 
 ```ts title="backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts"
 ...

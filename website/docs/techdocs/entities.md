@@ -4,7 +4,7 @@ sidebar_position: 2
 
 # Entities
 
-OPA on AWS uses some Backstage out of the box entities but also introduces two new entities in the software catalog.
+Harmonix on AWS uses some Backstage out of the box entities but also introduces two new entities in the software catalog.
 
 ## AWS Environment & Environment Provider
 These custom Backstage entity kinds were created to represent an abstract AWS environment and environment provider. 
@@ -21,7 +21,7 @@ An abstracted entity that captures the intent of use of a particular environment
 7. Hierarchy – where does it position in the hierarchy of other environments (low – dev, high – prod).
 
 :::info
-AWS Environment Entity Definition: [AWSEnvironmentEntityV1.ts](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/aws-apps-backend/src/model/kind/AWSEnvironmentEntityV1.ts)
+AWS Environment Entity Definition: [AWSEnvironmentEntityV1.ts](https://github.com/awslabs/harmonix/blob/main/backstage-plugins/plugins/aws-apps-backend/src/model/kind/AWSEnvironmentEntityV1.ts)
 :::
 
 AWS Environment Principles:
@@ -74,7 +74,7 @@ AWS Environment enforces the creation of a relationship with environment provide
 ```
 
 :::info
-AWS Environment Processor code: [AWSEnvironmentEntitiesProcessor.ts](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/aws-apps-backend/src/model/processor/AWSEnvironmentEntitiesProcessor.ts)
+AWS Environment Processor code: [AWSEnvironmentEntitiesProcessor.ts](https://github.com/awslabs/harmonix/blob/main/backstage-plugins/plugins/aws-apps-backend/src/model/processor/AWSEnvironmentEntitiesProcessor.ts)
 :::
 
 ### AWS Environment Provider
@@ -96,7 +96,7 @@ An Environment provider can be defined by:
 
 
 :::info
-AWS Environment Provider Entity Definition: [AWSEnvironmentProviderEntityV1.ts](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/aws-apps-backend/src/model/kind/AWSEnvironmentProviderEntityV1.ts)
+AWS Environment Provider Entity Definition: [AWSEnvironmentProviderEntityV1.ts](https://github.com/awslabs/harmonix/blob/main/backstage-plugins/plugins/aws-apps-backend/src/model/kind/AWSEnvironmentProviderEntityV1.ts)
 :::
 
 ```jsx title="AWSEnvironmentEntityV1.ts"
@@ -110,7 +110,7 @@ AWS Environment Provider Entity Definition: [AWSEnvironmentProviderEntityV1.ts](
 ```
 
 :::info
-AWS Environment Provider Processor code: [AWSEnvironmentProviderEntitiesProcessor.ts](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/aws-apps-backend/src/model/processor/AWSEnvironmentProviderEntitiesProcessor.ts)
+AWS Environment Provider Processor code: [AWSEnvironmentProviderEntitiesProcessor.ts](https://github.com/awslabs/harmonix/blob/main/backstage-plugins/plugins/aws-apps-backend/src/model/processor/AWSEnvironmentProviderEntitiesProcessor.ts)
 :::
 
 ## Components
@@ -129,6 +129,8 @@ metadata:
     - aws
     - nodejs
   iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   repoSecretArn: "arn:aws:secretsmanager:us-east-1:**********.:secret:***"
   spec:
     type: aws-app
@@ -159,6 +161,8 @@ metadata:
   annotations:
     aws.amazon.com/opa-repoSecretArn: "arn:aws:secretsmanager:us-east-1:**********.:secret:aws-apps-aml-detection-emea-access-token-V9w8Ea"
   iacType: cdk
+  componentState: cloudformation
+  gitProvider: gitlab
   repoSecretArn: "arn:aws:secretsmanager:us-east-1:**********.:secret:aws-apps-aml-detection-emea-access-token-V9w8Ea"
   appData:
     EMEA-AML-dev:

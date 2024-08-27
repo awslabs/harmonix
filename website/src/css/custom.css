@@ -26,7 +26,7 @@
 
   --ifm-footer-link-hover-color: var(--ifm-color-white);
 
-  --ifm-image-portal: url("/img/opa_white.svg");
+  --ifm-image-portal: url("/img/harmonix-white.svg");
 }
 .theme-doc-sidebar-container {
   background-color: #ebebeb;
@@ -59,7 +59,7 @@
   --ifm-color-primary-lightest: #ced3e0;
   --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.3);
 
-  --ifm-image-portal: url("/img/squid_OPA_text02.png");
+  --ifm-image-portal: url("/img/harmonix-blue.png");
 }
 
 .hero--primary {
@@ -76,9 +76,9 @@
 
 .logoText2 {
   position: absolute;
-  bottom:10%;
-  font-size:32px;
-  left: 62%;
+  bottom:15%;
+  font-size:1.75vw;
+  left: 80%;
   font-style: italic; 
   text-align:left;
   color: #ff9900;
@@ -104,6 +104,11 @@
 font-size:12px;
 }
 
+.perspective-container
+{
+  margin-left:0px;
+}
+
 .imageSubtitle {
   color: #0d317f;
   font-weight: bold;
@@ -112,6 +117,34 @@ font-size:12px;
 {
   max-width: 65%;
   margin: auto;
+}
+.logoWrapper {
+   /* padding-left: 2rem !important; */
+   /* background-color: red; */
+}
+
+@media screen and (max-width: 1400px) {
+  .logoText2 {
+    position: absolute;
+    bottom:20%;
+    
+    left: 78%;
+    font-style: italic; 
+    text-align:left;
+    color: #ff9900;
+  }
+}
+
+@media screen and (max-width: 960px) {
+  .logoText2 {
+    position: absolute;
+    bottom:25%;
+   
+    /* left: 60%; */
+    font-style: italic; 
+    text-align:left;
+    color: #ff9900;
+  }
 }
 
 @media screen and (max-width: 620px) {
@@ -125,9 +158,9 @@ font-size:12px;
   
   .logoText2 {
     position: absolute;
-    bottom:2%;
+    bottom:25%;
     font-size:18px;
-    left: 62%;
+    left: 80%;
     font-style: italic; 
     text-align:left;
     color: #ff9900;
@@ -136,9 +169,15 @@ font-size:12px;
     padding: 0 !important;
   }
 
+  .css-zow5z4-MuiGrid-root
+  {
+    margin-left: 0px !important;
+  }
+
   .logoWrapper {
     max-width: 100% !important;
     width: 100% !important;
+    /* margin-left: 2rem !important; */
     -webkit-flex-basis: 100% !important;
     /* width: 100% !important; */
     /* background-color: black; */

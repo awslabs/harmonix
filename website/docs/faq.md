@@ -33,7 +33,7 @@ toc_max_heading_level: 4
 
 #### What support do you offer? How can I learn to use Harmonix on AWS?
 > 
-> Harmonix on AWS is accompanied with documentation, detailed ReadMes, and a series of YouTube videos. All of these resources can help you learn more about the solution and get started. For any issue beyond the current available information, you can reach us by [opening an issue via GitHub](https://github.com/awslabs/app-development-for-backstage-io-on-aws/issues)
+> Harmonix on AWS is accompanied with documentation, detailed ReadMes, and a series of YouTube videos. All of these resources can help you learn more about the solution and get started. For any issue beyond the current available information, you can reach us by [opening an issue via GitHub](https://github.com/awslabs/harmonix/issues)
 <br/>
 
 #### What is Harmonix on AWS’s license?
@@ -82,7 +82,7 @@ toc_max_heading_level: 4
 
 #### How can I report bugs or submit feature requests?
 > 
-> Please submit any issues and requests via the [public repository](https://github.com/awslabs/app-development-for-backstage-io-on-aws/issues)
+> Please submit any issues and requests via the [public repository](https://github.com/awslabs/harmonix/issues)
 <br/>
 
 #### Will AWS supply templates or examples? How will they be maintained?

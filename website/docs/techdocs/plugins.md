@@ -41,8 +41,8 @@ graph TD;
 
 ## Plugin source code
 
-1. [Backend plugin](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/aws-apps-backend/README.md)
-2. [Frontend plugin](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/aws-apps/README.md)
-3. [Common plugin](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/aws-apps-common/README.md)
-4. [Scaffolder plugin](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/scaffolder-backend-module-aws-apps/README.md)
-5. [Entity Processor plugin](https://github.com/awslabs/app-development-for-backstage-io-on-aws/blob/main/backstage-plugins/plugins/catalog-backend-module-aws-apps-entities-processor/README.md)
+1. [Backend plugin](https://github.com/awslabs/harmonix/blob/main/backstage-plugins/plugins/aws-apps-backend/README.md)
+2. [Frontend plugin](https://github.com/awslabs/harmonix/blob/main/backstage-plugins/plugins/aws-apps/README.md)
+3. [Common plugin](https://github.com/awslabs/harmonix/blob/main/backstage-plugins/plugins/aws-apps-common/README.md)
+4. [Scaffolder plugin](https://github.com/awslabs/harmonix/blob/main/backstage-plugins/plugins/scaffolder-backend-module-aws-apps/README.md)
+5. [Entity Processor plugin](https://github.com/awslabs/harmonix/blob/main/backstage-plugins/plugins/catalog-backend-module-aws-apps-entities-processor/README.md)

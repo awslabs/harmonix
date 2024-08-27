@@ -64,7 +64,7 @@ The result of this step is a template for this type of application pattern that 
 ### Step 3 - Additional Shared Resources
 Now we need to find out if the application requires other resources such as: databases, S3 buckets, shared file systems, queues, streams etc.
 
-If it does, we will need to create a shared resource template for each one, including IaC and support for future policy permissions grants. [See this example](https://github.com/awslabs/app-development-for-backstage-io-on-aws/tree/main/backstage-reference/common/aws_rds).
+If it does, we will need to create a shared resource template for each one, including IaC and support for future policy permissions grants. [See this example](https://github.com/awslabs/harmonix/tree/main/backstage-reference/common/aws_rds).
 
 
 ### Step 4 - Pipelines

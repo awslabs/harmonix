@@ -21,7 +21,7 @@ const config: Config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  projectName: 'app-development-for-backstage-io-on-aws', // Usually your repo name.
+  projectName: 'harmonix', // Usually your repo name.
   organizationName: 'awslabs', // Usually your GitHub org/user name.
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
@@ -103,7 +103,7 @@ const config: Config = {
           position: 'left'
         },
         {
-          href: 'https://github.com/awslabs/app-development-for-backstage-io-on-aws',
+          href: 'https://github.com/awslabs/harmonix',
           position: 'right',
           className: 'header-github-link',
           "aria-label": 'Github repository',
@@ -112,7 +112,7 @@ const config: Config = {
     },
     announcementBar: {
       content:
-      'Harmonix on AWS 0.3.4 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/app-development-for-backstage-io-on-aws">GitHub</a>! ⭐️.  View changes <a target="_blank" rel="noopener noreferrer" href="https://harmonixonaws.io/docs/CHANGELOG">here</a>.',
+      'Harmonix on AWS 0.3.4 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/harmonix">GitHub</a>! ⭐️.  View changes <a target="_blank" rel="noopener noreferrer" href="https://harmonixonaws.io/docs/CHANGELOG">here</a>.',
       backgroundColor: '#ffffff',
       textColor: '#000000',
       isCloseable: true,
@@ -151,7 +151,7 @@ const config: Config = {
             // },
             {
               label: 'GitHub',
-              href: 'https://github.com/awslabs/app-development-for-backstage-io-on-aws',
+              href: 'https://github.com/awslabs/harmonix',
             },
           ],
         },
@@ -191,7 +191,7 @@ const config: Config = {
     ['docusaurus-plugin-remote-content',  
     {
       name: "content",
-      sourceBaseUrl: "https://raw.githubusercontent.com/awslabs/app-development-for-backstage-io-on-aws/main/",
+      sourceBaseUrl: "https://raw.githubusercontent.com/awslabs/harmonix/main/",
       outDir: "docs",
       documents: ["CHANGELOG.md"],
       performCleanup: true,

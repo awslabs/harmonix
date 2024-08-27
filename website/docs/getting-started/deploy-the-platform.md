@@ -69,8 +69,8 @@ Prior to installing the Harmonix solution platform, you will need to ensure that
 
 1. Clone the repository and change to the repository location
    ```sh
-   git clone https://github.com/awslabs/app-development-for-backstage-io-on-aws.git
-   cd app-development-for-backstage-io-on-aws
+   git clone https://github.com/awslabs/harmonix.git
+   cd harmonix
    ```
 
 2. Configure the solution

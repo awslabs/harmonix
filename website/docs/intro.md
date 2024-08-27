@@ -26,7 +26,7 @@ Harmonix on AWS provides the provisioning and operational layers to build applic
 
 ## What's included?
 
-The [open source solution](https://github.com/awslabs/app-development-for-backstage-io-on-aws) includes the following:
+The [open source solution](https://github.com/awslabs/harmonix) includes the following:
 
 1. Complete source code to customize your own platform.
 2. Dozens of templates and examples to create environments, providers, applications and AWS resources.

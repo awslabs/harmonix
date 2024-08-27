@@ -65,7 +65,7 @@ With the groups defined, we can now review and modify the policy decision code t
 
 Harmonix on AWS provides an example permission to control access to OPA application audit logs using the `readOpaAppAuditPermission` permission definition (defined in the `@aws/plugin-aws-apps-common-for-backstage` plugin).  The code below is part of the `OpaSamplePermissionPolicy.ts` permission policy.  
 
-Additional permissions for Harmonix on AWS APIs may be provided in the future.  If there is a specific permission required,  [open an issue](https://github.com/awslabs/app-development-for-backstage-io-on-aws/issues) or [submit a pull request](https://github.com/awslabs/app-development-for-backstage-io-on-aws/pulls) for support.
+Additional permissions for Harmonix on AWS APIs may be provided in the future.  If there is a specific permission required,  [open an issue](https://github.com/awslabs/harmonix/issues) or [submit a pull request](https://github.com/awslabs/harmonix/pulls) for support.
 
 ```ts title="backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts"
 ...

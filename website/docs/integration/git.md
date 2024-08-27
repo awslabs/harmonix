@@ -105,7 +105,7 @@ public constructor(
 ```
 
 :::info
-Adding a git provider will allow Harmonix on AWS to preform the same actions based on your implementation, However you will still need to to implement the corresponding pipelines to complete the event execution. Please see the [GitLabs pipelines examples](https://github.com/awslabs/app-development-for-backstage-io-on-aws/tree/main/backstage-reference/common/cicd) we provide as a reference for your desired pipeline tool.
+Adding a git provider will allow Harmonix on AWS to preform the same actions based on your implementation, However you will still need to to implement the corresponding pipelines to complete the event execution. Please see the [GitLabs pipelines examples](https://github.com/awslabs/harmonix/tree/main/backstage-reference/common/cicd) we provide as a reference for your desired pipeline tool.
 :::
 
 :::tip

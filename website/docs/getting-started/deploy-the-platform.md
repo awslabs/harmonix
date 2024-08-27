@@ -18,7 +18,7 @@ Installing Harmonix on AWS solution will provide you with the complete reference
 
 The following software is required to perform the installation of the platform solution:
 - Unix-based operating system (Linux, MacOS, or the Windows Subsystem for Linux)
-- [node.js](https://nodejs.org/en/) - 18.19 or higher
+- [node.js](https://nodejs.org/en/) - 18.20 or higher
 - [yarn](https://classic.yarnpkg.com/en/docs/install) - v1.x (Yarn classic)
 - [aws-cli](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
 - [aws-cdk](https://docs.aws.amazon.com/cdk/v2/guide/getting_started.html#getting_started_install)

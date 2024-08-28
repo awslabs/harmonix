@@ -42,22 +42,6 @@ Prior to installing the Harmonix solution platform, you will need to ensure that
 
 * **AWS Account ID and region** - The solution will be installed into an AWS account and region.  You will need the 12-digit account ID and must be able to log into the account with sufficient permissions to provision infrastructure resources.
 
-* **GitLab Community Edition EC2 AMI id** - The solution will install a small GitLab instance where application source code will be stored.  The AWS Marketplace provides a **free**, community edition of GitLab used by the solution.  
-  * You will need to subscribe to the AWS Marketplace offering.  Search for "GitLab Community Edition" by GitLab or use a direct link: https://aws.amazon.com/marketplace/pp/prodview-w6ykryurkesjq
-  * Once your account is subscribed to the GitLab CE Marketplace offering, save the EC2 AMI for the appropriate region from the "Launch new instance" page as shown in the image below (_do not actually launch an instance as this will be done for you during installation_).  
-  ![Marketplace GitLab EC2 AMI](/img/gitlab_marketplace.png)  <!-- <img src={require('/img/gitlab_marketplace.png').default} alt="Marketplace Gitlab EC2 AMI" width="60%" height="60%" /> -->  
-  Alternatively, you can query for the AMI using the AWS CLI (substitute the appropriate region value for the `--region` option):
-      ```sh
-
-      aws ec2 describe-images --owners "aws-marketplace" --filters "Name=name,Values=*GitLab CE 16.8.1*" --query 'Images[].[ImageId]' --region <AWS_REGION> --output text
-      ```
-
-* **GitLab Runner image** - The solution will set up an EC2 instance as a GitLab Runner to execute GitLab CI/CD pipelines.  The Amazon-provided "Jammy" image will be used for the runner image.  Save the EC2 AMI for the appropriate region for this AMI.  The following AMI command will return the appropriate image id.  Replace the value for "--region" to reflect your target region:
-   ```sh
-
-   aws ec2 describe-images --owners "amazon" --filters "Name=name,Values=*ubuntu-jammy-22.04-amd64-server-20230208*" --query 'Images[].[ImageId]' --region <AWS_REGION> --output text
-   ```
-
 * **Route 53 Hosted Zone** - The solution will ensure secure communcations and set up a certificate for your defined domain.  Ensure that a public hosted zone is set up in your account.  See the AWS documentation for [creating a public hosted zone](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/CreatingHostedZone.html)
 
 * **Okta authentication** - The solution uses Okta and RoadieHQ Backstage plugins for authentication of users and groups.  You will need a client id, client secret, and API key for configuration of the solution.  If you wish to use Okta for authentication and do not have an existing account, you can [sign up a free *Workforce Identity Cloud* developer account](https://developer.okta.com/signup/).  

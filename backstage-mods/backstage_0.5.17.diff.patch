@@ -1,6 +1,6 @@
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/app-config.yaml backstage/app-config.yaml
---- backstage_0.5.17/app-config.yaml	2024-08-16 12:58:11
-+++ backstage/app-config.yaml	2024-08-16 12:57:43
+--- backstage_0.5.17/app-config.yaml	2024-08-28 10:01:37
++++ backstage/app-config.yaml	2024-08-28 09:38:57
 @@ -1,9 +1,11 @@
  app:
 -  title: Scaffolded Backstage App
@@ -165,7 +165,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +    okta:
 +      - orgUrl: ${OKTA_AUDIENCE}
 +        token: ${OKTA_API_TOKEN}
-+        frequency: { minutes: 1 }
++        frequency: { minutes: 5 }
 +        timeout: { minutes: 3 }
 +        # userFilter: profile.department eq "engineering"
 +        # groupFilter: profile.name eq "Developers"
@@ -198,8 +198,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +    #       timeout: { minutes: 3 }
 \ No newline at end of file
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/packages/app/src/App.tsx backstage/packages/app/src/App.tsx
---- backstage_0.5.17/packages/app/src/App.tsx	2024-08-16 12:58:11
-+++ backstage/packages/app/src/App.tsx	2024-08-16 12:57:43
+--- backstage_0.5.17/packages/app/src/App.tsx	2024-08-28 10:01:37
++++ backstage/packages/app/src/App.tsx	2024-08-28 09:38:57
 @@ -36,9 +36,32 @@
  import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
  import { RequirePermission } from '@backstage/plugin-permission-react';
@@ -348,8 +348,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  );
  
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/packages/app/src/apis.ts backstage/packages/app/src/apis.ts
---- backstage_0.5.17/packages/app/src/apis.ts	2024-08-16 12:58:11
-+++ backstage/packages/app/src/apis.ts	2024-08-16 12:57:43
+--- backstage_0.5.17/packages/app/src/apis.ts	2024-08-28 10:01:37
++++ backstage/packages/app/src/apis.ts	2024-08-28 09:38:57
 @@ -7,13 +7,29 @@
    AnyApiFactory,
    configApiRef,
@@ -381,8 +381,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
    ScmAuth.createDefaultApiFactory(),
  ];
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/packages/app/src/components/Root/Root.tsx backstage/packages/app/src/components/Root/Root.tsx
---- backstage_0.5.17/packages/app/src/components/Root/Root.tsx	2024-08-16 12:58:11
-+++ backstage/packages/app/src/components/Root/Root.tsx	2024-08-16 12:57:43
+--- backstage_0.5.17/packages/app/src/components/Root/Root.tsx	2024-08-28 10:01:37
++++ backstage/packages/app/src/components/Root/Root.tsx	2024-08-28 09:38:57
 @@ -2,6 +2,7 @@
  import { makeStyles } from '@material-ui/core';
  import HomeIcon from '@material-ui/icons/Home';
@@ -498,8 +498,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
        </SidebarGroup>
        <SidebarSpace />
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/packages/app/src/components/catalog/EntityPage.tsx backstage/packages/app/src/components/catalog/EntityPage.tsx
---- backstage_0.5.17/packages/app/src/components/catalog/EntityPage.tsx	2024-08-16 12:58:11
-+++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2024-08-16 12:57:43
+--- backstage_0.5.17/packages/app/src/components/catalog/EntityPage.tsx	2024-08-28 10:01:37
++++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2024-08-28 09:38:57
 @@ -27,8 +27,13 @@
    isOrphan,
    hasRelationWarnings,
@@ -700,8 +700,8 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
      <EntitySwitch.Case if={isKind('group')} children={groupPage} />
      <EntitySwitch.Case if={isKind('user')} children={userPage} />
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
---- backstage_0.5.17/packages/backend/src/index.ts	2024-08-16 12:58:11
-+++ backstage/packages/backend/src/index.ts	2024-08-16 12:57:43
+--- backstage_0.5.17/packages/backend/src/index.ts	2024-08-28 10:01:37
++++ backstage/packages/backend/src/index.ts	2024-08-28 09:38:57
 @@ -7,6 +7,34 @@
   */
  
@@ -724,7 +724,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +import { OktaOrgEntityProvider } from '@roadiehq/catalog-backend-module-okta';
 +import { createAppendFileAction, createWriteFileAction } from '@roadiehq/scaffolder-backend-module-utils';
 +import { customOktaAuth } from './plugins/CustomOktaAuth';
-+import { EntityProviderFactory, oktaCatalogBackendEntityProviderFactoryExtensionPoint } from '@roadiehq/catalog-backend-module-okta/new-backend';
++import oktaCatalogBackendModule, { EntityProviderFactory, oktaCatalogBackendEntityProviderFactoryExtensionPoint } from '@roadiehq/catalog-backend-module-okta/new-backend';
 +import { loggerToWinstonLogger } from '@backstage/backend-common';
 +import { createGitlabGroupEnsureExistsAction, createGitlabIssueAction, createGitlabProjectAccessTokenAction, createGitlabProjectDeployTokenAction, createGitlabProjectVariableAction, createGitlabRepoPushAction, createPublishGitlabAction, createPublishGitlabMergeRequestAction, createTriggerGitlabPipelineAction, editGitlabIssueAction } from '@backstage/plugin-scaffolder-backend-module-gitlab';
 +import { policyExtensionPoint } from '@backstage/plugin-permission-node/alpha';
@@ -807,7 +807,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  
  // search plugin
  backend.add(import('@backstage/plugin-search-backend/alpha'));
-@@ -46,5 +109,140 @@
+@@ -46,5 +109,150 @@
  // search collators
  backend.add(import('@backstage/plugin-search-backend-module-catalog/alpha'));
  backend.add(import('@backstage/plugin-search-backend-module-techdocs/alpha'));
@@ -821,7 +821,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +
 +
 +// Loading Okta catalog - using new backend - bug - awaiting for fix: https://github.com/RoadieHQ/roadie-backstage-plugins/issues/1537
-+export const oktaCatalogBackendModule = createBackendModule({
++export const oktaCatalogBackendModuleCustom = createBackendModule({
 +  pluginId: 'catalog',
 +  moduleId: 'okta-entity-provider-custom',
 +  register(env) {
@@ -845,8 +845,18 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +  },
 +});
 +
-+backend.add(oktaCatalogBackendModule);
-+backend.add(import('@roadiehq/catalog-backend-module-okta/new-backend'));
++backend.add(oktaCatalogBackendModuleCustom);
++// Temp fix until roadiehq will update the plugin
++const oktaBackendFeature = oktaCatalogBackendModule;
++backend.add(oktaBackendFeature());
++// backend.add(import('@roadiehq/catalog-backend-module-okta/new-backend'));
++
++
++
++// import('@roadiehq/catalog-backend-module-okta/new-backend').then(module => {
++//   let backendFeature = module.default
++//   backend.add(backendFeature());
++// });
 +
 +
 +
@@ -950,7 +960,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  backend.start();
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/packages/backend/src/plugins/CustomOktaAuth.ts backstage/packages/backend/src/plugins/CustomOktaAuth.ts
 --- backstage_0.5.17/packages/backend/src/plugins/CustomOktaAuth.ts	1969-12-31 19:00:00
-+++ backstage/packages/backend/src/plugins/CustomOktaAuth.ts	2024-08-16 12:57:43
++++ backstage/packages/backend/src/plugins/CustomOktaAuth.ts	2024-08-28 09:38:57
 @@ -0,0 +1,60 @@
 +import { createBackendModule } from '@backstage/backend-plugin-api';
 +import { oktaAuthenticator } from '@backstage/plugin-auth-backend-module-okta-provider';
@@ -1015,7 +1025,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 \ No newline at end of file
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts
 --- backstage_0.5.17/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts	1969-12-31 19:00:00
-+++ backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts	2024-08-16 12:57:43
++++ backstage/packages/backend/src/plugins/OpaSamplePermissionPolicy.ts	2024-08-28 09:38:57
 @@ -0,0 +1,94 @@
 +import { readOpaAppAuditPermission } from '@aws/plugin-aws-apps-common-for-backstage';
 +import { DEFAULT_NAMESPACE, stringifyEntityRef } from '@backstage/catalog-model';
@@ -1113,7 +1123,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +}
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/packages/backend/src/plugins/catalog.ts backstage/packages/backend/src/plugins/catalog.ts
 --- backstage_0.5.17/packages/backend/src/plugins/catalog.ts	1969-12-31 19:00:00
-+++ backstage/packages/backend/src/plugins/catalog.ts	2024-08-16 12:57:43
++++ backstage/packages/backend/src/plugins/catalog.ts	2024-08-28 09:38:57
 @@ -0,0 +1,22 @@
 +import { CatalogBuilder } from '@backstage/plugin-catalog-backend';
 +import { Router } from 'express';
@@ -1139,7 +1149,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +}
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store backstage_0.5.17/packages/backend/src/types.ts backstage/packages/backend/src/types.ts
 --- backstage_0.5.17/packages/backend/src/types.ts	1969-12-31 19:00:00
-+++ backstage/packages/backend/src/types.ts	2024-08-16 12:57:43
++++ backstage/packages/backend/src/types.ts	2024-08-28 09:38:57
 @@ -0,0 +1,25 @@
 +import { Logger } from 'winston';
 +import { Config } from '@backstage/config';

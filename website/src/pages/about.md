@@ -78,6 +78,8 @@ Our goal is to provide a simple, safe, easy-to-use solution, that reduces the ov
         Blake Franzen
     </td>
     <td align="center">
+     <img src="img/team/uri.jpeg"/><br/>
+        Uri Finzi
     </td>
 </tr>
 </table>

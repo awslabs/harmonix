@@ -1,4 +1,4 @@
 boto3==1.34.68
-langchain==0.2.5
+langchain==0.2.10
 langchain_community==0.2.5
 opensearch-py==2.6.0

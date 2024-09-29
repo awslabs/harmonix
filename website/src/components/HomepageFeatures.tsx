@@ -45,9 +45,8 @@ const opaFifthVideoContent = (
 )
 const opaSixthVideoContent = (
   <div className='opa-video-item'>
-  {/* <h4>Hamburg Containers days 2024</h4> */}
-  
-  <div className='empty-video'></div>
+  <h4>Container days Conference 2024</h4>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/Sg0X4RPJbvQ/2.jpg?start=1451" title="Building modern Architectures and Developer Acceleration" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
 )
 

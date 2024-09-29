@@ -137,8 +137,8 @@ const config: Config = {
           title: 'Learn',
           items: [
             {
-              label: 'YouTube Tech-videos',
-              href: 'https://www.youtube.com/playlist?list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3' 
+              label: 'Video Tutorials',
+              href: 'https://harmonixonaws.io/docs/getting-started/videos' 
             }
           ]
         },

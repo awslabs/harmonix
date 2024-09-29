@@ -9,6 +9,7 @@ sidebar_position: 2
 3. BackstageCon 2024
 4. Containers from the couch
 5. The Platformers review + demo
+6. Container days Conference 2024 + demo
 
 
 ## YouTube technical playlist
@@ -101,3 +102,8 @@ sidebar_position: 2
   <iframe width="400" height="250" src="https://www.youtube.com/embed/h9HwnkkmQPA/1.jpg?" title="What is Harmonix on AWS + Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div> 
 
+## Container days Conference 2024 + demo
+<div className=''>
+  <h4>Container days Conference 2024</h4>
+  <iframe width="400" height="250" src="https://www.youtube.com/embed/Sg0X4RPJbvQ/1.jpg?start=1451" title="What is Harmonix on AWS + Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+</div> 

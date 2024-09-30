@@ -75,6 +75,7 @@ iac/bootstrap/final-tf-backend-cf-stack.json
 config/.env
 localenv.sh
 
+!website/yarn.lock
 # transpiled JavaScript, Typings and test files
 
 !backstage/*.js

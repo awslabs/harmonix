@@ -175,7 +175,7 @@ const createCustomThemeOverrides = (theme: BackstageTheme): BackstageOverrides &
     MuiAutocomplete: {
       root: {
         '&[aria-expanded=true]': {
-          backgroundColor: '#26385A',
+          // backgroundColor: '#26385A',
           color: '#F7F8F9',
         },
         '&[aria-expanded=true] path': {

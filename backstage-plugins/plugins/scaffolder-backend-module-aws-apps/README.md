@@ -13,10 +13,30 @@ This plugin provides scaffolder actions to create AWS resources and utility acti
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/backend @aws/plugin-scaffolder-backend-aws-apps-for-backstage@0.2.0
+yarn add --cwd packages/backend @aws/plugin-scaffolder-backend-aws-apps-for-backstage
 ```
 
 ## Configuration
+
+### New backend system
+
+```ts
+// packages/backend/src/index.ts
+import { createBackend } from '@backstage/backend-defaults';
+
+const backend = createBackend();
+
+...
+
+// scaffolder backend modules
+backend.add(import('@aws/plugin-scaffolder-backend-aws-apps-for-backstage'))
+
+...
+
+backend.start();
+```
+
+### Legacy backend
 
 Configure the action(s) you would like to use in your Backstage app.
 

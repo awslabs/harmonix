@@ -9,3 +9,4 @@
  */
 
 export * from './actions';
+export { scaffolderModuleAwsApps as default } from './module'

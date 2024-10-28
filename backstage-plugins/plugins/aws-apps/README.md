@@ -106,7 +106,7 @@ const componentPage = (
 
 // Add support for aws resource, environment and environment provider specific entity pages
 // to the entityPage variable
-const entityPage = (
+const resourceEntityPage = (
   <EntitySwitch>
     ...
     <EntitySwitch.Case if={isKind('resource')} children={resourceEntityPage} />

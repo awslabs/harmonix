@@ -6,22 +6,28 @@ import {
   DeleteStackCommandOutput,
   DescribeStackEventsCommandOutput,
   Stack,
-  UpdateStackCommandOutput
-} from "@aws-sdk/client-cloudformation";
+  UpdateStackCommandOutput,
+} from '@aws-sdk/client-cloudformation';
 import { LogStream } from '@aws-sdk/client-cloudwatch-logs';
 import { ScanCommandOutput } from '@aws-sdk/client-dynamodb';
 import { Service, Task, TaskDefinition } from '@aws-sdk/client-ecs';
 import { HeadObjectCommandOutput } from '@aws-sdk/client-s3';
 import { DeleteSecretCommandOutput, GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
-import { AWSEnvironmentProviderRecord, AWSProviderParams, AWSServiceResources, BackendParams, BindResourceParams, IRepositoryInfo } from '@aws/plugin-aws-apps-common-for-backstage';
+import {
+  AWSEnvironmentProviderRecord,
+  AWSProviderParams,
+  AWSServiceResources,
+  BackendParams,
+  BindResourceParams,
+  IRepositoryInfo,
+} from '@aws/plugin-aws-apps-common-for-backstage';
 import { ConfigApi, FetchApi } from '@backstage/core-plugin-api';
 import { ResponseError } from '@backstage/errors';
 import { OPAApi } from '.';
 import { HTTP } from '../helpers/constants';
 import { ContainerDetailsType } from '../types';
-import { InvokeCommandOutput } from "@aws-sdk/client-lambda";
-
+import { InvokeCommandOutput } from '@aws-sdk/client-lambda';
 
 export class OPAApiClient implements OPAApi {
   private readonly configApi: ConfigApi;
@@ -30,7 +36,7 @@ export class OPAApiClient implements OPAApi {
   private platformAppName: string;
   private platformRegion: string;
 
-  public constructor(options: { configApi: ConfigApi; fetchApi: FetchApi; }) {
+  public constructor(options: { configApi: ConfigApi; fetchApi: FetchApi }) {
     this.configApi = options.configApi;
     this.fetchApi = options.fetchApi;
     this.backendParams = { appName: '', awsAccount: '', awsRegion: '', prefix: '', providerName: '' };
@@ -62,16 +68,15 @@ export class OPAApiClient implements OPAApi {
   }: {
     cluster: string;
     service: string;
-    backendParamsOverrides?: BackendParams
+    backendParamsOverrides?: BackendParams;
   }): Promise<Task> {
-
     const beParams = this.getAppliedBackendParams(backendParamsOverrides);
 
     const postBody = {
       ...beParams,
       serviceName: service,
       clusterName: cluster,
-    }
+    };
 
     const task = this.fetch<Task>('/ecs', HTTP.POST, postBody);
 
@@ -99,9 +104,8 @@ export class OPAApiClient implements OPAApi {
     taskDefinition: string;
     desiredCount: number | undefined;
     restart: boolean;
-    backendParamsOverrides?: BackendParams
+    backendParamsOverrides?: BackendParams;
   }): Promise<Service> {
-
     const beParams = this.getAppliedBackendParams(backendParamsOverrides);
 
     const postBody = {
@@ -111,7 +115,7 @@ export class OPAApiClient implements OPAApi {
       taskDefinition: taskDefinition,
       restart: restart,
       desiredCount: desiredCount,
-    }
+    };
 
     const serviceDetails = this.fetch<Service>('/ecs/updateService', HTTP.POST, postBody);
 
@@ -130,7 +134,7 @@ export class OPAApiClient implements OPAApi {
     const postBody = {
       ...beParams,
       secretArn: secretName,
-    }
+    };
     const secretDetails = this.fetch<GetSecretValueCommandOutput>('/secrets', HTTP.POST, postBody);
 
     return secretDetails;
@@ -161,7 +165,7 @@ export class OPAApiClient implements OPAApi {
   }: {
     logGroupName: string;
     logStreamName: string;
-    backendParamsOverrides?: BackendParams
+    backendParamsOverrides?: BackendParams;
   }): Promise<string> {
     const beParams = this.getAppliedBackendParams(backendParamsOverrides);
     const path = '/logs/stream-events';
@@ -176,33 +180,22 @@ export class OPAApiClient implements OPAApi {
   }
 
   //TODO: Move platform calls to separate backend endpoints - interface does not require provider information
-  async getPlatformSecret({
-    secretName,
-  }: {
-    secretName: string;
-  }): Promise<GetSecretValueCommandOutput> {
-
+  async getPlatformSecret({ secretName }: { secretName: string }): Promise<GetSecretValueCommandOutput> {
     const postBody = {
       ...this.backendParams,
-      secretArn: secretName
-    }
+      secretArn: secretName,
+    };
 
     const secretDetails = this.fetch<GetSecretValueCommandOutput>('/platform/secrets', HTTP.POST, postBody);
 
     return secretDetails;
   }
 
-  async getPlatformSSMParam({
-    paramName,
-  }: {
-    paramName: string;
-  }): Promise<GetParameterCommandOutput> {
-
-
+  async getPlatformSSMParam({ paramName }: { paramName: string }): Promise<GetParameterCommandOutput> {
     const postBody = {
       ...this.backendParams,
-      paramName
-    }
+      paramName,
+    };
 
     const paramDetails = this.fetch<GetParameterCommandOutput>('/platform/ssm', HTTP.POST, postBody);
 
@@ -217,10 +210,8 @@ export class OPAApiClient implements OPAApi {
     repoInfo: IRepositoryInfo;
     params: BindResourceParams;
     gitAdminSecret: string;
-    backendParamsOverrides?: BackendParams
+    backendParamsOverrides?: BackendParams;
   }): Promise<any> {
-
-
     const postBody = {
       ...this.backendParams,
       providerName: params.providerName,
@@ -229,8 +220,8 @@ export class OPAApiClient implements OPAApi {
       envName: params.envName,
       policies: params.policies,
       resourceName: params.resourceName,
-      resourceEntityRef: params.resourceEntityRef
-    }
+      resourceEntityRef: params.resourceEntityRef,
+    };
 
     const bindResponse = this.fetch<any>('/platform/bind-resource', HTTP.POST, postBody);
 
@@ -259,8 +250,8 @@ export class OPAApiClient implements OPAApi {
       envName: params.envName,
       policies: params.policies,
       resourceName: params.resourceName,
-      resourceEntityRef: params.resourceEntityRef
-    }
+      resourceEntityRef: params.resourceEntityRef,
+    };
 
     const unBindResponse = this.fetch<any>('/platform/unbind-resource', HTTP.POST, postBody);
 
@@ -276,7 +267,7 @@ export class OPAApiClient implements OPAApi {
     backendParamsOverrides,
   }: {
     repoInfo: IRepositoryInfo;
-    provider: AWSEnvironmentProviderRecord
+    provider: AWSEnvironmentProviderRecord;
     gitAdminSecret: string;
     envName: string;
     action: string;
@@ -289,11 +280,11 @@ export class OPAApiClient implements OPAApi {
       repoInfo,
       gitAdminSecret,
       envName,
-      action
-    }
+      action,
+    };
 
     const addProviderResponse = this.fetch<any>('/platform/update-provider', HTTP.POST, postBody);
-    return addProviderResponse
+    return addProviderResponse;
   }
 
   deleteTFProvider({
@@ -303,7 +294,7 @@ export class OPAApiClient implements OPAApi {
     envName,
   }: {
     backendParamsOverrides: BackendParams;
-    repoInfo: IRepositoryInfo
+    repoInfo: IRepositoryInfo;
     gitAdminSecret: string;
     envName: string;
   }): Promise<any> {
@@ -312,33 +303,28 @@ export class OPAApiClient implements OPAApi {
       ...beParams,
       repoInfo,
       gitAdminSecret,
-      envName
-    }
+      envName,
+    };
 
     const deleteResponse = this.fetch<any>('/platform/delete-tf-provider', HTTP.POST, postBody);
 
     return deleteResponse;
   }
 
-  async deletePlatformSecret({
-    secretName
-  }: {
-    secretName: string;
-  }): Promise<DeleteSecretCommandOutput> {
+  async deletePlatformSecret({ secretName }: { secretName: string }): Promise<DeleteSecretCommandOutput> {
     const postBody = {
       awsRegion: this.platformRegion,
       awsAccount: '',
       appName: this.platformAppName,
       prefix: '',
       providerName: '',
-      secretName
-    }
+      secretName,
+    };
 
     const deleteResponse = this.fetch<DeleteSecretCommandOutput>('/platform/delete-secret', HTTP.POST, postBody);
 
     return deleteResponse;
-
-  };
+  }
 
   async deleteRepository({
     repoInfo,
@@ -353,8 +339,8 @@ export class OPAApiClient implements OPAApi {
     const postBody = {
       ...beParams,
       repoInfo,
-      gitAdminSecret
-    }
+      gitAdminSecret,
+    };
     const deleteResponse = this.fetch<any>('/platform/delete-repository', HTTP.POST, postBody);
     return deleteResponse;
   }
@@ -377,9 +363,13 @@ export class OPAApiClient implements OPAApi {
     return stack;
   }
 
-  async getStackEvents(
-    { stackName, backendParamsOverrides, }: { stackName: string; backendParamsOverrides?: BackendParams; })
-    : Promise<DescribeStackEventsCommandOutput> {
+  async getStackEvents({
+    stackName,
+    backendParamsOverrides,
+  }: {
+    stackName: string;
+    backendParamsOverrides?: BackendParams;
+  }): Promise<DescribeStackEventsCommandOutput> {
     const beParams = this.getAppliedBackendParams(backendParamsOverrides);
     const path = '/cloudformation/describeStackEvents';
 
@@ -550,7 +540,7 @@ export class OPAApiClient implements OPAApi {
     const postBody = {
       ...beParams,
       taskDefinition: taskDefinitionArn,
-    }
+    };
     const taskD = this.fetch<TaskDefinition>('/ecs/describeTaskDefinition', HTTP.POST, postBody);
 
     return taskD;
@@ -569,8 +559,8 @@ export class OPAApiClient implements OPAApi {
     const postBody = {
       ...beParams,
       taskDefinition: taskDefinitionArn,
-      envVar: envVar
-    }
+      envVar: envVar,
+    };
 
     const taskD = this.fetch<TaskDefinition>('/ecs/updateTaskDefinition', HTTP.POST, postBody);
     return taskD;
@@ -597,8 +587,8 @@ export class OPAApiClient implements OPAApi {
       envRequiresManualApproval,
       repoInfo,
       gitAdminSecret,
-      providers: providersData
-    }
+      providers: providersData,
+    };
     const results = this.fetch<any>('/git/promote', HTTP.POST, postBody);
     return results;
   }
@@ -607,7 +597,7 @@ export class OPAApiClient implements OPAApi {
     functionName,
     actionDescription,
     body,
-    backendParamsOverrides
+    backendParamsOverrides,
   }: {
     functionName: string;
     actionDescription: string;
@@ -619,7 +609,7 @@ export class OPAApiClient implements OPAApi {
       ...beParams,
       functionName,
       actionDescription,
-      body
+      body,
     };
     // console.log(postBody)
     const lambdaResult = await this.fetch<InvokeCommandOutput>('/lambda/invoke', HTTP.POST, postBody);
@@ -630,7 +620,7 @@ export class OPAApiClient implements OPAApi {
     envName,
     gitAdminSecret,
     repoInfo,
-    backendParamsOverrides
+    backendParamsOverrides,
   }: {
     envName: string;
     gitAdminSecret: string;
@@ -643,7 +633,7 @@ export class OPAApiClient implements OPAApi {
       ...beParams,
       envName,
       gitAdminSecret,
-      repoInfo
+      repoInfo,
     };
 
     // console.log(postBody)
@@ -663,7 +653,7 @@ export class OPAApiClient implements OPAApi {
     lambdaRoleArn,
     gitAdminSecret,
     repoInfo,
-    backendParamsOverrides
+    backendParamsOverrides,
   }: {
     actionDescription: string;
     envName: string;
@@ -680,7 +670,7 @@ export class OPAApiClient implements OPAApi {
       envName,
       gitAdminSecret,
       repoInfo,
-      backendParamsOverrides
+      backendParamsOverrides,
     });
 
     const updateKeyArray = updateKey.split('.');
@@ -693,39 +683,37 @@ export class OPAApiClient implements OPAApi {
           // console.log(currObj)
           if (i === updateKeyArray.length - 1) {
             // console.log(`key ${currKey} found , current value ${currObj[currKey]}`)
-            currObj[currKey] = updateValue
+            currObj[currKey] = updateValue;
             // console.log(`Updating key ${currKey} found , current value ${currObj[currKey]}`)
-
           } else {
-            currObj = currObj[currKey]
+            currObj = currObj[currKey];
           }
-        }
-        else {
-          break
+        } else {
+          break;
         }
       }
-    })
+    });
     // console.log(configResult)
 
     //make changes to config
-    const manifest = JSON.stringify(configResult)
+    const manifest = JSON.stringify(configResult);
     const bodyParam = {
-      RequestType: "Update",
-      ResourceType: "Custom::AWSCDK-EKS-KubernetesResource",
+      RequestType: 'Update',
+      ResourceType: 'Custom::AWSCDK-EKS-KubernetesResource',
       ResourceProperties: {
-        TimeoutSeconds: "5",
+        TimeoutSeconds: '5',
         ClusterName: cluster,
         RoleArn: lambdaRoleArn,
         InvocationType: 'RequestResponse',
         Manifest: manifest,
-      }
+      },
     };
 
     const configUpdateResult = await this.invokeLambda({
       functionName: kubectlLambda,
       actionDescription,
-      body: JSON.stringify(bodyParam)
-    })
+      body: JSON.stringify(bodyParam),
+    });
 
     return configUpdateResult;
   }

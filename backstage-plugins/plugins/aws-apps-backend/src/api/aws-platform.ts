@@ -17,17 +17,19 @@ import {
   SSMClient,
 } from '@aws-sdk/client-ssm';
 import {
-  AWSEnvironmentProviderRecord,
   AppPromoParams,
+  AWSEnvironmentProviderRecord,
   BindResourceParams,
-  GitProviders, 
-  ICommitChange, 
-  IGitAPIResult, 
-  IRepositoryInfo
+  GitProviders,
+  ICommitChange,
+  IGitAPIResult,
+  IRepositoryInfo,
 } from '@aws/plugin-aws-apps-common-for-backstage';
 import YAML from 'yaml';
 import { GitAPI } from './git-api';
 import { LoggerService } from '@backstage/backend-plugin-api';
+import { DefaultAwsCredentialsManager } from '@backstage/integration-aws-node';
+import { Config } from '@backstage/config';
 
 export type GitLabDownloadFileResponse = {
   file_name: string;
@@ -45,13 +47,14 @@ export type GitLabDownloadFileResponse = {
 
 export class AwsAppsPlatformApi {
   public git: GitAPI;
-   
+
   public constructor(
+    private readonly config: Config,
     private readonly logger: LoggerService,
     private readonly platformRegion: string,
     private readonly awsRegion: string,
     private readonly awsAccount: string,
-    private readonly gitProvider: GitProviders
+    private readonly gitProvider: GitProviders,
   ) {
     this.logger.info('Instantiating AWS Apps Platform API with:');
     this.logger.info(`platformRegion: ${this.platformRegion}`);
@@ -74,15 +77,21 @@ export class AwsAppsPlatformApi {
   public async getPlatformSecretValue(secretArn: string): Promise<GetSecretValueCommandOutput> {
     this.logger.info(`Calling getPlatformSecretValue for ${secretArn} against platform region ${this.platformRegion}`);
 
+    const accountId = this.awsAccount;
+    const awsCredentialsManager = DefaultAwsCredentialsManager.fromConfig(this.config);
+    const awsCredentialProvider = await awsCredentialsManager.getCredentialProvider({
+      accountId,
+    });
     const client = new SecretsManagerClient({
       region: this.platformRegion,
+      credentialDefaultProvider: () => awsCredentialProvider.sdkCredentialProvider,
     });
+
     const params: GetSecretValueCommandInput = {
       SecretId: secretArn,
     };
     const command = new GetSecretValueCommand(params);
-    const resp = client.send(command);
-    return resp;
+    return client.send(command);
   }
 
   /**
@@ -97,8 +106,15 @@ export class AwsAppsPlatformApi {
    */
   public async getSsmValue(ssmKey: string): Promise<GetParameterCommandOutput> {
     this.logger.info(`Calling getSsmValue for ${ssmKey} against platform region ${this.platformRegion}`);
+
+    const accountId = this.awsAccount;
+    const awsCredentialsManager = DefaultAwsCredentialsManager.fromConfig(this.config);
+    const awsCredentialProvider = await awsCredentialsManager.getCredentialProvider({
+      accountId,
+    });
     const client = new SSMClient({
       region: this.platformRegion,
+      credentialDefaultProvider: () => awsCredentialProvider.sdkCredentialProvider,
     });
 
     const params: GetParameterCommandInput = {
@@ -106,8 +122,7 @@ export class AwsAppsPlatformApi {
       WithDecryption: true,
     };
     const command = new GetParameterCommand(params);
-    const resp = client.send(command);
-    return resp;
+    return client.send(command);
   }
 
   public async deletePlatformSecret(secretName: string): Promise<DeleteSecretCommandOutput> {
@@ -121,10 +136,8 @@ export class AwsAppsPlatformApi {
       ForceDeleteWithoutRecovery: true,
     };
     const command = new DeleteSecretCommand(params);
-    const resp = client.send(command);
-    return resp;
+    return client.send(command);
   }
-
 
   public async deleteTFProvider(
     envName: string,
@@ -137,16 +150,13 @@ export class AwsAppsPlatformApi {
     const tfDeleteContent = `PROVIDER_FILE_TO_DELETE=${envName}-${providerName}.properties\nENV_ENTITY_REF="awsenvironment:default/${envName}"\nTARGET_ENV_NAME=${envName}\nTARGET_ENV_PROVIDER_NAME=${providerName}`;
     let tfDeleteFile;
 
-    if (envName==="")
-    {
+    if (envName === '') {
       tfDeleteFile = `env-destroy-params-temp.properties`;
-    }
-    else
-    {
-     tfDeleteFile = `.awsdeployment/env-destroy-params-temp.properties`;
+    } else {
+      tfDeleteFile = `.awsdeployment/env-destroy-params-temp.properties`;
     }
 
-    const change:ICommitChange = {
+    const change: ICommitChange = {
       commitMessage: `Destroy TF Infrastructure`,
       branch: 'main',
       actions: [
@@ -154,33 +164,29 @@ export class AwsAppsPlatformApi {
           action: 'create',
           file_path: tfDeleteFile,
           content: tfDeleteContent,
-        }
-      ]
-    }
+        },
+      ],
+    };
 
     const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
 
-    if (!result.isSuccuess) {
+    if (!result.isSuccess) {
       console.error(`ERROR: Failed to Destroy ${envName}. Response: ${result}`);
-      let message = '';
+      let message: string;
       if (result.value?.includes('A file with this name already exists')) {
         message = `${envName} has already been scheduled for destruction. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`;
       } else {
         message = result.value || '';
       }
       return { status: 'FAILURE', message };
-    } else {
-      return {
-        status: 'SUCCESS',
-        message: `Destroy will not be complete until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
-      };
     }
+    return {
+      status: 'SUCCESS',
+      message: `Destroy will not be complete until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
+    };
   }
 
-  public async deleteRepository(
-    repo: IRepositoryInfo,
-    gitSecretName: string,
-  ): Promise<IGitAPIResult> {
+  public async deleteRepository(repo: IRepositoryInfo, gitSecretName: string): Promise<IGitAPIResult> {
     const gitToken = await this.getGitToken(gitSecretName);
     const result = await this.git.getGitProvider().deleteRepository(repo, gitToken);
 
@@ -190,24 +196,18 @@ export class AwsAppsPlatformApi {
 
   private async getGitToken(gitSecretName: string): Promise<string> {
     const gitAdminSecret = await this.getPlatformSecretValue(gitSecretName);
-    const gitAdminSecretObj = JSON.parse(gitAdminSecret.SecretString || '');
-    return gitAdminSecretObj['apiToken'];
+    const gitAdminSecretObj = JSON.parse(gitAdminSecret.SecretString ?? '');
+    return gitAdminSecretObj.apiToken;
   }
 
-  public async getFileContentsFromGit(
-    repo: IRepositoryInfo,
-    filePath: string,
-    gitSecretName: string,
-  ): Promise<string> {
+  public async getFileContentsFromGit(repo: IRepositoryInfo, filePath: string, gitSecretName: string): Promise<string> {
     const gitToken = await this.getGitToken(gitSecretName);
 
-    const result = await this.git.getGitProvider().getFileContent(filePath,repo,gitToken);
-  
+    const result = await this.git.getGitProvider().getFileContent(filePath, repo, gitToken);
+
     const resultBody = await result.value;
-    if (!result.isSuccuess) {
-      console.error(
-        `ERROR: Failed to retrieve ${filePath} for ${repo.gitRepoName}. Response: ${result}`,
-      );
+    if (!result.isSuccess) {
+      console.error(`ERROR: Failed to retrieve ${filePath} for ${repo.gitRepoName}. Response: ${result}`);
       throw new Error(`Failed to retrieve ${filePath} for ${repo.gitRepoName}. Response: ${result}`);
     } else {
       return resultBody;
@@ -245,34 +245,29 @@ export class AwsAppsPlatformApi {
       }),
     );
 
-
-    const change:ICommitChange = {
+    const change: ICommitChange = {
       commitMessage: `generate CICD stages`,
       branch: 'main',
-      actions
-    }
+      actions,
+    };
 
     const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
 
-
     const resultBody = result.value;
-    if (!result.isSuccuess) {
-      console.error(
-        `ERROR: Failed to schedule deployment for ${input.envName}. Response: ${result}`,
-      );
-      let message = '';
+    if (!result.isSuccess) {
+      console.error(`ERROR: Failed to schedule deployment for ${input.envName}. Response: ${result}`);
+      let message: string;
       if (resultBody.message?.includes('A file with this name already exists')) {
         message = `${input.envName} has already been scheduled for deployment. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`;
       } else {
         message = resultBody.message || '';
       }
       return { status: 'FAILURE', message };
-    } else {
-      return {
-        status: 'SUCCESS',
-        message: `The app will not be ready to run until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
-      };
     }
+    return {
+      status: 'SUCCESS',
+      message: `The app will not be ready to run until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
+    };
   }
 
   public async bindResource(
@@ -301,29 +296,28 @@ export class AwsAppsPlatformApi {
       content: resourceBindContent,
     });
 
-    const change:ICommitChange = {
+    const change: ICommitChange = {
       commitMessage: `Bind Resource`,
       branch: 'main',
-      actions
-    }
+      actions,
+    };
 
     const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
     const resultBody = result.value;
-    if (!result.isSuccuess) {
+    if (!result.isSuccess) {
       console.error(`ERROR: Failed to bind ${input.envName}. Response: ${result}`);
-      let message = '';
+      let message: string;
       if (resultBody.message?.includes('A file with this name already exists')) {
         message = `${input.envName} has already been scheduled for binding. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`;
       } else {
         message = resultBody.message || '';
       }
       return { status: 'FAILURE', message };
-    } else {
-      return {
-        status: 'SUCCESS',
-        message: `Binding will not be complete until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
-      };
     }
+    return {
+      status: 'SUCCESS',
+      message: `Binding will not be complete until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
+    };
   }
 
   public async unBindResource(
@@ -352,30 +346,29 @@ export class AwsAppsPlatformApi {
       content: resourceBindContent,
     });
 
-    const change:ICommitChange = {
+    const change: ICommitChange = {
       commitMessage: `UnBind Resource`,
       branch: 'main',
-      actions
-    }
+      actions,
+    };
 
     const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
 
     const resultBody = await result.value.json();
-    if (!result.isSuccuess) {
+    if (!result.isSuccess) {
       console.error(`ERROR: Failed to unbind ${input.envName}. Response: ${result}`);
-      let message = '';
+      let message: string;
       if (resultBody.message?.includes('A file with this name already exists')) {
         message = `${input.envName} has already been scheduled for unbinding. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`;
       } else {
         message = resultBody.message || '';
       }
       return { status: 'FAILURE', message };
-    } else {
-      return {
-        status: 'SUCCESS',
-        message: `Unbinding will not be complete until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
-      };
     }
+    return {
+      status: 'SUCCESS',
+      message: `Unbinding will not be complete until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
+    };
   }
 
   public async updateProvider(
@@ -388,7 +381,7 @@ export class AwsAppsPlatformApi {
   ): Promise<{ status: string; message?: string }> {
     const gitToken = await this.getGitToken(gitSecretName);
 
-    let actions = [];
+    const actions = [];
     if (action === 'add') {
       console.log(entityCatalog);
       const newDependencies = entityCatalog.spec.dependsOn as Array<string>;
@@ -405,10 +398,10 @@ export class AwsAppsPlatformApi {
     } else if (action === 'remove') {
       console.log(entityCatalog);
       const dependencies = entityCatalog.spec.dependsOn as Array<string>;
-      let newDependencies = Array<string>();
+      const newDependencies = Array<string>();
       dependencies.forEach(p => {
         const providerToRemove = `awsenvironmentprovider:default/${provider.name.toLowerCase()}`;
-        if (p != providerToRemove) {
+        if (p !== providerToRemove) {
           newDependencies.push(p);
         }
       });
@@ -425,43 +418,35 @@ export class AwsAppsPlatformApi {
       throw new Error('Not yet implemented');
     }
 
-    const change:ICommitChange = {
+    const change: ICommitChange = {
       commitMessage: `Update Environment Provider`,
       branch: 'main',
-      actions
-    }
+      actions,
+    };
 
     const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
-    console.log(result)
+    console.log(result);
     let resultBody;
 
-    if (this.gitProvider===GitProviders.GITLAB)
-      {
-        resultBody = await result.value.json();
-      }
-      else if (this.gitProvider===GitProviders.GITHUB) 
-      {
-        resultBody = result.message
-      }
-    
+    if (this.gitProvider === GitProviders.GITLAB) {
+      resultBody = await result.value.json();
+    } else if (this.gitProvider === GitProviders.GITHUB) {
+      resultBody = result.message;
+    }
 
-    
-    if (!result.isSuccuess) {
-      console.error(
-        `ERROR: Failed to Update provider ${provider.name}. Response: ${result}`,
-      );
-      let message = '';
+    if (!result.isSuccess) {
+      console.error(`ERROR: Failed to Update provider ${provider.name}. Response: ${result}`);
+      let message: string;
       if (resultBody.message?.includes('A file with this name already exists')) {
         message = `Update ${provider.name} has already been scheduled. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`;
       } else {
         message = resultBody.message || '';
       }
       return { status: 'FAILURE', message };
-    } else {
-      return {
-        status: 'SUCCESS',
-        message: `Update Provider for ${envName} will not be complete until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
-      };
     }
+    return {
+      status: 'SUCCESS',
+      message: `Update Provider for ${envName} will not be complete until deployment succeeds. Check the CICD pipeline for the most up-to-date information. UI status may take a few minutes to update.`,
+    };
   }
 }

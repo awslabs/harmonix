@@ -112,10 +112,9 @@ export function AppCatalogPage(props: AppCatalogPageProps) {
       columnFactories.createMetadataDescriptionColumn(),
       columnFactories.createTagsColumn(),
     ];
-    columns=awsAppsColumns
+    columns = awsAppsColumns;
     allowedKinds = ['Component'];
     initiallySelectedFilter = 'all';
-
   } else if (kind === 'resource') {
     const awsResourcesColumns: TableColumn<CatalogTableRow>[] = [
       columnFactories.createTitleColumn({ hidden: true }),

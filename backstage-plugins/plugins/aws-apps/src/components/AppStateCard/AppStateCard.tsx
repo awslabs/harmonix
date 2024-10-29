@@ -13,8 +13,10 @@ import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { AWSComponent, AWSECSAppDeploymentEnvironment } from '@aws/plugin-aws-apps-common-for-backstage';
 
 const OpaAppStateOverview = ({
-  input: { cluster, serviceArn, taskDefArn }
-}: { input: { cluster: string, serviceArn: string, taskDefArn: string, awsComponent: AWSComponent } }) => {
+  input: { cluster, serviceArn, taskDefArn },
+}: {
+  input: { cluster: string; serviceArn: string; taskDefArn: string; awsComponent: AWSComponent };
+}) => {
   const api = useApi(opaApiRef);
 
   const [taskData, setTaskData] = useState<Task>({});
@@ -30,7 +32,7 @@ const OpaAppStateOverview = ({
     await sleep(5000);
     return api.getTaskDetails({
       cluster: cluster,
-      service: serviceArn
+      service: serviceArn,
     });
   }
 
@@ -39,7 +41,6 @@ const OpaAppStateOverview = ({
   entity and also task Data
   */
   async function getData() {
-
     const tasks = await api.getTaskDetails({
       cluster,
       service: serviceArn,
@@ -174,18 +175,18 @@ export const AppStateCard = () => {
   const awsAppLoadingStatus = useAsyncAwsApp();
 
   if (awsAppLoadingStatus.loading) {
-    return <LinearProgress />
+    return <LinearProgress />;
   } else if (awsAppLoadingStatus.component) {
     const env = awsAppLoadingStatus.component.currentEnvironment as AWSECSAppDeploymentEnvironment;
-    const latestTaskDef = env.app.taskDefArn.substring(0, env.app.taskDefArn.lastIndexOf(":"))
+    const latestTaskDef = env.app.taskDefArn.substring(0, env.app.taskDefArn.lastIndexOf(':'));
     const input = {
       cluster: env.clusterName,
       serviceArn: env.app.serviceArn,
       taskDefArn: latestTaskDef,
-      awsComponent: awsAppLoadingStatus.component
+      awsComponent: awsAppLoadingStatus.component,
     };
-    return <OpaAppStateOverview input={input} />
+    return <OpaAppStateOverview input={input} />;
   } else {
-    return <EmptyState missing="data" title="No state data to show" description="State data would show here" />
+    return <EmptyState missing="data" title="No state data to show" description="State data would show here" />;
   }
 };

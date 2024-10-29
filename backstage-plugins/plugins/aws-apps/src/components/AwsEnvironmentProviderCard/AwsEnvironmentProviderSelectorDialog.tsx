@@ -7,8 +7,12 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle, Grid,
-  IconButton, InputLabel, MenuItem, makeStyles
+  DialogTitle,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  makeStyles,
 } from '@material-ui/core';
 import { Close } from '@mui/icons-material';
 import React, { useEffect, useState } from 'react';
@@ -47,21 +51,20 @@ export const AwsEnvironmentProviderSelectorDialog = ({
   isOpen,
   closeDialogHandler,
   selectHandler,
-  providersInput
+  providersInput,
 }: {
   isOpen: boolean;
   closeDialogHandler: () => void;
   selectHandler: (item: AWSEnvironmentProviderRecord) => void;
   providersInput: AWSEnvironmentProviderRecord[];
 }) => {
-
   const classes = useStyles();
   const [selectedProvider, setSelectedProvider] = useState<AWSEnvironmentProviderRecord>();
 
   const handleChangeSelectedProvider = (event: SelectChangeEvent) => {
     const selectedProvider = event.target.value as string;
     const matchingProviders = providersInput.filter(providerRecord => {
-      return selectedProvider === `${providerRecord.prefix}:${providerRecord.name}`
+      return selectedProvider === `${providerRecord.prefix}:${providerRecord.name}`;
     });
 
     if (matchingProviders.length != 1) {
@@ -77,30 +80,31 @@ export const AwsEnvironmentProviderSelectorDialog = ({
       selectHandler(selectedProvider);
     }
     closeDialogHandler();
-  }
+  };
 
   if (!selectedProvider && providersInput.length > 0) {
-    setSelectedProvider(providersInput[0])
+    setSelectedProvider(providersInput[0]);
   }
 
   const selectorProviders = providersInput.map(p => {
     const key = `${p.prefix}:${p.name}`;
     const title = `${p.prefix}:${p.name}`;
-    return (<MenuItem key={key} value={key}>{title}</MenuItem>)
+    return (
+      <MenuItem key={key} value={key}>
+        {title}
+      </MenuItem>
+    );
   });
 
   const getSelectedProvider = () => {
     if (selectedProvider) {
       return `${selectedProvider?.prefix}:${selectedProvider?.name}`;
+    } else {
+      return;
     }
-    else {
-      return
-    }
-  }
+  };
 
-  useEffect(() => {
-
-  }, []);
+  useEffect(() => {}, []);
 
   return (
     <Dialog className={classes.container} open={isOpen} onClose={closeDialogHandler} disableEnforceFocus>
@@ -114,7 +118,8 @@ export const AwsEnvironmentProviderSelectorDialog = ({
         <Grid container>
           <FormControl fullWidth sx={{ m: 2 }}>
             <InputLabel id="lbl-select-aws-environment">Providers</InputLabel>
-            <Select sx={{ width: 300 }}
+            <Select
+              sx={{ width: 300 }}
               labelId="select-aws-environment-provider"
               id="select-aws-environment-provider"
               value={getSelectedProvider()}
@@ -137,4 +142,3 @@ export const AwsEnvironmentProviderSelectorDialog = ({
     </Dialog>
   );
 };
-

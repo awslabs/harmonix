@@ -26,9 +26,10 @@
     "role": "frontend-plugin",
     "pluginId": "aws-apps-demo",
     "pluginPackages": [
-      "@backstage/plugin-home"
+      "@aws/plugin-aws-apps-demo-for-backstage"
     ]
   },
+  "sideEffects": false,
   "scripts": {
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
@@ -42,7 +43,7 @@
     "@backstage/core-components": "^0.14.9",
     "@backstage/core-plugin-api": "^1.9.3",
     "@backstage/plugin-catalog-react": "^1.12.2",
-    "@backstage/plugin-home": "^0.7.8",
+    "@backstage/plugin-home": "^0.7.7",
     "@backstage/plugin-search": "^1.4.14",
     "@backstage/plugin-techdocs-react": "^1.2.6",
     "@backstage/theme": "^0.5.6",
@@ -56,9 +57,9 @@
   },
   "devDependencies": {
     "@backstage/cli": "^0.26.11",
-    "@backstage/core-app-api": "^1.14.1",
-    "@backstage/dev-utils": "^1.0.36",
-    "@backstage/test-utils": "^1.5.9",
+    "@backstage/core-app-api": "^1.14.0",
+    "@backstage/dev-utils": "^1.0.35",
+    "@backstage/test-utils": "^1.5.8",
     "@testing-library/jest-dom": "^6.4.8",
     "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.5.2",

@@ -4,5 +4,4 @@ export { awsAppsPlugin as default } from './plugin';
 
 export * from './api';
 export * from './service/router';
-
-
+export type { DynamoDBTableData } from './api';

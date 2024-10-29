@@ -3,13 +3,15 @@
 
 import { AwsAuthResponse } from '@aws/plugin-aws-apps-backend-for-backstage';
 
+/** @public */
 export type EnvironmentProviderConnection = {
   providerName: string;
   accountId: string;
   region: string;
   awsAuthResponse: AwsAuthResponse;
-}
+};
 
+/** @public */
 export type EnvironmentProvider = {
   envProviderName: string;
   envProviderType: string;
@@ -23,4 +25,4 @@ export type EnvironmentProvider = {
   assumedRoleArn: string;
   kubectlLambdaArn?: string;
   kubectlLambdaRoleArn?: string;
-}
+};

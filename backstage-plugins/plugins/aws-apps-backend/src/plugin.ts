@@ -1,9 +1,7 @@
-import {
-  coreServices,
-  createBackendPlugin,
-} from '@backstage/backend-plugin-api';
+import { BackendPluginRegistrationPoints, coreServices, createBackendPlugin } from '@backstage/backend-plugin-api';
 import { createRouter } from './service/router';
 import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
+
 /**
  * awsAppsPlugin backend plugin
  *
@@ -11,7 +9,7 @@ import { catalogServiceRef } from '@backstage/plugin-catalog-node/alpha';
  */
 export const awsAppsPlugin = createBackendPlugin({
   pluginId: 'aws-apps-backend',
-  register(env) {
+  register(env: BackendPluginRegistrationPoints): void {
     env.registerInit({
       deps: {
         config: coreServices.rootConfig,
@@ -23,16 +21,7 @@ export const awsAppsPlugin = createBackendPlugin({
         auth: coreServices.auth,
         httpAuth: coreServices.httpAuth,
       },
-      async init({
-        config,
-        logger,
-        httpRouter,
-        userInfo,
-        catalogApi,
-        permissions,
-        auth,
-        httpAuth,
-      }) {
+      async init({ config, logger, httpRouter, userInfo, catalogApi, permissions, auth, httpAuth }) {
         httpRouter.use(
           await createRouter({
             config,

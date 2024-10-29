@@ -32,7 +32,6 @@ const useStyles = makeStyles(theme => ({
   },
 }));
 
-
 const useLogoStyles = makeStyles(theme => ({
   container: {
     margin: theme.spacing(2, 0),
@@ -54,7 +53,6 @@ export const OPAHomePage = () => {
     <SearchContextProvider>
       <Page themeId="home">
         <Content>
-
           <Grid container justifyContent="center" spacing={2}>
             <Grid item xs={12} md={5}>
               <HomePageCompanyLogo className={container} logo={<OPALogoFull />} />
@@ -66,10 +64,11 @@ export const OPAHomePage = () => {
               <Header title={<WelcomeTitle language={['English']} />} pageTitleOverride="Home" />
             </Grid>
             <Grid container item xs={12} alignItems="center" direction="row">
-              <HomePageSearchBar 
-                classes={{ root: classes.searchBar }} 
+              <HomePageSearchBar
+                classes={{ root: classes.searchBar }}
                 InputProps={{ classes: { notchedOutline: classes.searchBarOutline } }}
-                placeholder="Search" />
+                placeholder="Search"
+              />
             </Grid>
             <Grid container item xs={12}>
               <Grid item xs={12} md={6}>

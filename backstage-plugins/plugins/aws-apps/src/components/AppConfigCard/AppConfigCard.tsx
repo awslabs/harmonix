@@ -29,7 +29,7 @@ const AppConfigOverview = ({
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
   const env = awsComponent.currentEnvironment as AWSECSAppDeploymentEnvironment;
   // get latest task definition
-  const latestTaskDef = env.app.taskDefArn.substring(0, env.app.taskDefArn.lastIndexOf(":"))
+  const latestTaskDef = env.app.taskDefArn.substring(0, env.app.taskDefArn.lastIndexOf(':'));
 
   async function getData() {
     const taskDefinition = await api.describeTaskDefinition({
@@ -60,7 +60,6 @@ const AppConfigOverview = ({
   }, []);
 
   const onEdit = (containerName: string) => {
-
     // don't allow switching out of edit mode if any environment variables are empty
     if (edit) {
       let emptyVar = false;
@@ -101,7 +100,7 @@ const AppConfigOverview = ({
     api
       .updateTaskDefinition({
         taskDefinitionArn: latestTaskDef,
-        envVar: envVariables
+        envVar: envVariables,
       })
       .then(td => {
         const containerDet = td.containerDefinitions?.map(condef => {
@@ -135,7 +134,6 @@ const AppConfigOverview = ({
         setLoading(false);
         setError({ isError: true, errorMsg: `Unexpected error occurred while udpating taskDefinition: ${e}` });
       });
-
   };
 
   // Returns a new object reference that is a shallow clone of envVariables, except for the
@@ -153,7 +151,6 @@ const AppConfigOverview = ({
   };
 
   const checkForUnsavedChanges = (containerName: string, newDetails: ContainerDetailsType[]) => {
-
     if (savedEnvVariables === newDetails) {
       setUnsavedChanges(false);
       return;
@@ -177,16 +174,14 @@ const AppConfigOverview = ({
     for (let index = 0; index < (savedDetails.env?.length || 0); index++) {
       const keyValPair = savedDetails.env![index];
 
-      if (keyValPair?.name !== details.env?.[index]?.name ||
-        keyValPair?.value !== details.env?.[index]?.value) {
-
+      if (keyValPair?.name !== details.env?.[index]?.name || keyValPair?.value !== details.env?.[index]?.value) {
         setUnsavedChanges(true);
         return;
       }
     }
 
     setUnsavedChanges(false);
-  }
+  };
 
   const onEnvVarChange = (containerName: string, type: string, value: string, envVarIndex: number) => {
     const newState = getEnvVarsPartialDeepClone(containerName);
@@ -194,7 +189,7 @@ const AppConfigOverview = ({
 
     const originalKeyVal = containerDetails.env![envVarIndex];
 
-    if (type === "key") {
+    if (type === 'key') {
       containerDetails.env![envVarIndex] = { ...originalKeyVal, name: value };
     } else {
       containerDetails.env![envVarIndex] = { ...originalKeyVal, value };
@@ -210,7 +205,7 @@ const AppConfigOverview = ({
     containerDetails.env!.splice(envVarIndex, 1); // delete the env var out of the array
     checkForUnsavedChanges(containerName, newState);
     setEnvVariables(newState);
-  }
+  };
 
   const onAddEnvVar = (containerName: string) => {
     const newState = getEnvVarsPartialDeepClone(containerName);
@@ -249,7 +244,9 @@ const AppConfigOverview = ({
               <div key={containerDetails.containerName}>
                 <Grid key={`${containerDetails.containerName!}Grid`} container sx={index == 0 ? { mt: 0 } : { mt: 5 }}>
                   <Grid item xs={12}>
-                    <Typography sx={{ fontWeight: 'bold' }}>ENVIRONMENT VARIABLES: "{containerDetails.containerName}"</Typography>
+                    <Typography sx={{ fontWeight: 'bold' }}>
+                      ENVIRONMENT VARIABLES: "{containerDetails.containerName}"
+                    </Typography>
                     <Button
                       sx={{ mt: 1 }}
                       variant="outlined"
@@ -296,15 +293,22 @@ const AppConfigOverview = ({
                     )}
 
                     {containerDetails.env?.map((nameAndValue, envVarIndex) => (
-                      <Grid container key={`${containerDetails.containerName}${envVarIndex}`} direction={'row'} sx={{ mt: 1 }} spacing={1}>
+                      <Grid
+                        container
+                        key={`${containerDetails.containerName}${envVarIndex}`}
+                        direction={'row'}
+                        sx={{ mt: 1 }}
+                        spacing={1}
+                      >
                         <Grid item xs={edit ? 5 : 6}>
-
                           <TextField
                             id={`key|${index}|${envVarIndex}`}
                             size="small"
                             fullWidth
                             value={nameAndValue.name}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvVarChange(containerDetails.containerName!, "key", e.target.value, envVarIndex)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                              onEnvVarChange(containerDetails.containerName!, 'key', e.target.value, envVarIndex)
+                            }
                             disabled={!edit}
                             error={!nameAndValue.name}
                             helperText={nameAndValue.name ? '' : 'Cannot be Empty'}
@@ -316,22 +320,27 @@ const AppConfigOverview = ({
                             size="small"
                             fullWidth
                             value={nameAndValue.value}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => onEnvVarChange(containerDetails.containerName!, "value", e.target.value, envVarIndex)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                              onEnvVarChange(containerDetails.containerName!, 'value', e.target.value, envVarIndex)
+                            }
                             disabled={!edit}
                             error={!nameAndValue.value}
                             helperText={nameAndValue.value ? '' : 'Cannot be Empty'}
                           ></TextField>
                         </Grid>
-                        {edit &&
+                        {edit && (
                           <Grid item xs={1}>
-
                             <Tooltip title="Delete">
-                              <IconButton size="small" aria-label="delete" onClick={() => onDeleteEnvVar(containerDetails.containerName!, envVarIndex)}>
+                              <IconButton
+                                size="small"
+                                aria-label="delete"
+                                onClick={() => onDeleteEnvVar(containerDetails.containerName!, envVarIndex)}
+                              >
                                 <DeleteIcon aria-label="delete" color="primary" />
                               </IconButton>
                             </Tooltip>
                           </Grid>
-                        }
+                        )}
                       </Grid>
                     ))}
                   </Grid>
@@ -352,7 +361,7 @@ export const AppConfigCard = () => {
     return <LinearProgress />;
   } else if (awsAppLoadingStatus.component) {
     const input = {
-      awsComponent: awsAppLoadingStatus.component
+      awsComponent: awsAppLoadingStatus.component,
     };
 
     return <AppConfigOverview input={input} />;

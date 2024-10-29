@@ -4,14 +4,16 @@
 import React from 'react';
 import { Grid } from '@material-ui/core';
 import { EntityAboutCard } from '@backstage/plugin-catalog';
-import { EntityGeneralInfoCard, EntityAppStateCard, EntityInfrastructureInfoCard, EntityAppConfigCard, EntityAppLinksCard } from '../../plugin';
 import {
-  EntityCatalogGraphCard
-} from '@backstage/plugin-catalog-graph';
+  EntityGeneralInfoCard,
+  EntityAppStateCard,
+  EntityInfrastructureInfoCard,
+  EntityAppConfigCard,
+  EntityAppLinksCard,
+} from '../../plugin';
+import { EntityCatalogGraphCard } from '@backstage/plugin-catalog-graph';
 
-interface AwsECSAppPageProps {
-
-}
+interface AwsECSAppPageProps {}
 
 /** @public */
 export function AwsECSAppPage(_props: AwsECSAppPageProps) {
@@ -42,10 +44,5 @@ export function AwsECSAppPage(_props: AwsECSAppPageProps) {
     </Grid>
   );
 
-
-  return (
-    <>
-      {awsEcsAppViewContent}
-    </>
-  );
+  return <>{awsEcsAppViewContent}</>;
 }

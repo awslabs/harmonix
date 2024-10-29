@@ -1,10 +1,11 @@
-<!-- 
+<!--
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0 
+SPDX-License-Identifier: Apache-2.0
 -->
+
 # OPA on AWS Frontend
 
-This is the frontend UI of the OPA on AWS plugin.  An AWS Catalog Page and several entity cards are contributed to the UI from this plugin.
+This is the frontend UI of the OPA on AWS plugin. An AWS Catalog Page and several entity cards are contributed to the UI from this plugin.
 
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -23,13 +24,14 @@ yarn add --cwd packages/app @aws/plugin-aws-apps-for-backstage@0.2.0
 
 ## Configuration
 
-Each of the UI components contributed in the OPA on AWS frontend plugin can be configured independently and added to your Backstage platform as desired.  Details for adding each type of UI component are found in the sections below.
+Each of the UI components contributed in the OPA on AWS frontend plugin can be configured independently and added to your Backstage platform as desired. Details for adding each type of UI component are found in the sections below.
 
 ### EntityPage customization for AWS apps
 
 To build an AWS app-specific entity presentation, we will rely on identification of a component as being of type "aws-app" (as specified under the `spec.type` configuration in the entity's `catalog-info.yaml` file).
 
 Add the code shown below to `EntityPage.tsx`
+
 ```ts
 // packages/app/src/components/catalog/EntityPage.tsx
 
@@ -117,9 +119,10 @@ const entityPage = (
 );
 
 ```
+
 When running the Backstage app, you are now setup for customized views of AWS applications in the platform.
 
-###  AWS Software Catalog Page
+### AWS Software Catalog Page
 
 The AWS Software Catalog page provides a customized view into the Backstage catalog with a focus on applications deployed to AWS through Backstage.
 ![AWS Software Catalog Page](images/ui_aws_software_catalog.png 'AWS Software Catalog Page')
@@ -159,7 +162,7 @@ const routes = (
 ```
 
 Next, add the AWS Software Catalog to the sidebar navigation in the `Root.tsx` file.  
-Determine your preferred placement in the sidebar using the example below as guidance.  Exact contents and children of the <SidebarPage> may differ in your installation.
+Determine your preferred placement in the sidebar using the example below as guidance. Exact contents and children of the <SidebarPage> may differ in your installation.
 
 ```diff
 // packages/app/src/components/Root/Root.tsx

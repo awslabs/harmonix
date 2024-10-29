@@ -3,6 +3,7 @@
 
 import { createPermission } from '@backstage/plugin-permission-common';
 
+/** @public */
 export const readOpaAppAuditPermission = createPermission({
   name: 'opa.app.audit.read',
   attributes: {
@@ -10,4 +11,5 @@ export const readOpaAppAuditPermission = createPermission({
   },
 });
 
+/** @public */
 export const opaPermissions = [readOpaAppAuditPermission];

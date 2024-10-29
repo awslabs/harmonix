@@ -10,7 +10,7 @@ metadata:
 spec:
   owner: group:developers
   type: website
-  
+
   parameters:
     - title: Provide basic component information
       required:
@@ -49,7 +49,7 @@ spec:
               - AWSEnvironment
             defaultKind: AWSEnvironment
 
-   # Get the Gitlab repository for source code management
+    # Get the Gitlab repository for source code management
     - title: Choose a git repository location
       required:
         - repoUrl
@@ -60,7 +60,7 @@ spec:
           ui:field: RepoUrlPicker
           ui:options:
             allowedHosts:
-              - {{ gitlab_hostname }}
+              - { { gitlab_hostname } }
             allowedOwners:
               - aws-app
 
@@ -102,17 +102,17 @@ spec:
       input:
         secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
 
-    # Retrieves Infrastructure as Code (IaC) that should be executed (by the CICD pipeline) before the applicaiton 
+    # Retrieves Infrastructure as Code (IaC) that should be executed (by the CICD pipeline) before the applicaiton
     # is deployed. The below example retrieves AWS ECS CDK code
     - id: fetchIac
       name: Fetch ECS Infrastructure as Code
       action: fetch:template
-      input: 
+      input:
         url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_ecs
         targetPath: ./.iac
         values:
           component_id: ${{ parameters.component_id | lower }}
-          appEnvPlaintext: ""
+          appEnvPlaintext: ''
 
     # Fetches the template code from the remote repo where this template resides
     # In a real template, the input values which start with "aws_" would be used to
@@ -157,7 +157,7 @@ spec:
       action: catalog:register
       input:
         repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
-        catalogInfoPath: "/.backstage/catalog-info.yaml"
+        catalogInfoPath: '/.backstage/catalog-info.yaml'
 
   # Outputs are displayed to the user after a successful execution of the template.
   output:

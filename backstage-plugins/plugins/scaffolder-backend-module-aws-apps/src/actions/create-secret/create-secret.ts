@@ -3,15 +3,16 @@
 
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { createSecret } from '../../helpers/action-context';
-import { Config } from '@backstage/config'
+import { Config } from '@backstage/config';
 
+/** @public */
 export function createSecretAction(options: { envConfig: Config }) {
   const { envConfig } = options;
   return createTemplateAction<{
     secretName: string;
     description?: string;
     region?: string;
-    tags?: { Key: string, Value: string | number | boolean }[];
+    tags?: { Key: string; Value: string | number | boolean }[];
   }>({
     id: 'opa:create-secret',
     description: 'Creates secret in Secret Manager',
@@ -45,8 +46,8 @@ export function createSecretAction(options: { envConfig: Config }) {
                 type: 'object',
                 properties: {
                   Key: { type: 'string' },
-                  Value: { type: ['string', 'number', 'boolean'] }
-                }
+                  Value: { type: ['string', 'number', 'boolean'] },
+                },
               },
             ],
           },
@@ -63,20 +64,20 @@ export function createSecretAction(options: { envConfig: Config }) {
       },
     },
     async handler(ctx) {
-      let { secretName, description, region, tags } = ctx.input;
+      const { secretName, description, tags } = ctx.input;
+      let { region } = ctx.input;
+
       if (!region) {
-        region = envConfig.getString('backend.platformRegion')
+        region = envConfig.getString('backend.platformRegion');
       }
       const secretDescription = description ?? 'Secret created from Backstage scaffolder action';
 
       try {
         const ARN = await createSecret(secretName, secretDescription, region, tags, ctx.logger);
         ctx.output('awsSecretArn', ARN!);
-
       } catch (e) {
         throw new Error(e instanceof Error ? e.message : JSON.stringify(e));
-      };
+      }
     },
-
   });
 }

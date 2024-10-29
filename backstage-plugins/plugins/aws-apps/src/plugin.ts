@@ -88,7 +88,8 @@ export const EntityAppStateCardCloudFormation = opaPlugin.provide(
   createComponentExtension({
     name: 'AppStateCardCloudFormation',
     component: {
-      lazy: () => import('./components/AppStateCardCloudFormation/AppStateCardCloudFormation').then(m => m.AppStateCard),
+      lazy: () =>
+        import('./components/AppStateCardCloudFormation/AppStateCardCloudFormation').then(m => m.AppStateCard),
     },
   }),
 );
@@ -146,7 +147,6 @@ export const EntityInfrastructureInfoCard = opaPlugin.provide(
     },
   }),
 );
-
 
 export const EntityProviderInfoCard = opaPlugin.provide(
   createComponentExtension({
@@ -215,7 +215,10 @@ export const EntityAwsEnvironmentProviderSelectorCard = opaPlugin.provide(
   createComponentExtension({
     name: 'AwsEnvironmentProviderSelectorCard',
     component: {
-      lazy: () => import('./components/AwsEnvironmentProviderCard/AwsEnvironmentProviderCard').then(m => m.AwsEnvironmentProviderCardWidget),
+      lazy: () =>
+        import('./components/AwsEnvironmentProviderCard/AwsEnvironmentProviderCard').then(
+          m => m.AwsEnvironmentProviderCardWidget,
+        ),
     },
   }),
 );
@@ -251,7 +254,8 @@ export const AwsEnvironmentProviderPage = opaPlugin.provide(
   createComponentExtension({
     name: 'AwsEnvironmentProviderPage',
     component: {
-      lazy: () => import('./pages/AwsEnvironmentProviderPage/AwsEnvironmentProviderPage').then(m => m.AwsEnvironmentProviderPage),
+      lazy: () =>
+        import('./pages/AwsEnvironmentProviderPage/AwsEnvironmentProviderPage').then(m => m.AwsEnvironmentProviderPage),
     },
   }),
 );

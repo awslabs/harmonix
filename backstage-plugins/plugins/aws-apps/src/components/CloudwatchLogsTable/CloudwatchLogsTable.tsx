@@ -24,7 +24,7 @@ import {
   AWSComponent,
   isAWSECSAppDeploymentEnvironment,
   isAWSEKSAppDeploymentEnvironment,
-  isAWSServerlessAppDeploymentEnvironment
+  isAWSServerlessAppDeploymentEnvironment,
 } from '@aws/plugin-aws-apps-common-for-backstage';
 
 interface TableData {
@@ -48,13 +48,13 @@ const useStyles = makeStyles(theme => ({
 type LogsTableInput = {
   logGroupNames: string[];
   stackName?: string;
-  awsComponent: AWSComponent
+  awsComponent: AWSComponent;
 };
 
 type LogGroupStreams = {
   logGroupName: string;
   logStreamsList: LogStream[];
-}
+};
 
 const CloudwatchLogsTable = ({ input: { logGroupNames, stackName } }: { input: LogsTableInput }) => {
   const emptyLogStreams = [...logGroupNames.map(_ => [])];
@@ -78,47 +78,46 @@ const CloudwatchLogsTable = ({ input: { logGroupNames, stackName } }: { input: L
 
     Promise.all(
       logGroupNames.map(async (logGroupName: string): Promise<LogGroupStreams> => {
-        return api.getLogStreamNames({ logGroupName })
-          .then(logStreams => { return { logGroupName, logStreamsList: logStreams } as LogGroupStreams });
+        return api.getLogStreamNames({ logGroupName }).then(logStreams => {
+          return { logGroupName, logStreamsList: logStreams } as LogGroupStreams;
+        });
+      }),
+    )
+      .then(allLogGroupStreams => {
+        const streamsData: Array<TableData[]> = [];
+
+        allLogGroupStreams.forEach(logGroupStreams => {
+          const logGroupName = logGroupStreams.logGroupName;
+          const logStreamsList = logGroupStreams.logStreamsList;
+
+          streamsData.push(
+            logStreamsList.map(streamData => {
+              const timestamp = streamData.lastEventTimestamp ? streamData.lastEventTimestamp : streamData.creationTime;
+              const lastEvent = new Date(timestamp as number);
+              return {
+                arn: streamData.arn as string,
+                name: streamData.logStreamName as string,
+                lastEventTime: formatWithTime(lastEvent),
+                logGroupName,
+              };
+            }),
+          );
+        });
+
+        setLogStreams(streamsData);
+        setLoading(false);
+        setError({ isError: false, errorMsg: '' });
       })
-    ).then(allLogGroupStreams => {
-
-      const streamsData: Array<TableData[]> = [];
-
-      allLogGroupStreams.forEach(logGroupStreams => {
-        const logGroupName = logGroupStreams.logGroupName;
-        const logStreamsList = logGroupStreams.logStreamsList;
-
-        streamsData.push(
-          logStreamsList.map(streamData => {
-            const timestamp = streamData.lastEventTimestamp ? streamData.lastEventTimestamp : streamData.creationTime;
-            const lastEvent = new Date(timestamp as number);
-            return {
-              arn: streamData.arn as string,
-              name: streamData.logStreamName as string,
-              lastEventTime: formatWithTime(lastEvent),
-              logGroupName,
-            };
-          })
-        );
-
+      .catch(e => {
+        console.log(e); // rejectReason of any first rejected promise
+        setLoading(false);
+        setError({ isError: true, errorMsg: `Unexpected error occurred while retrieving log streams: ${e}` });
       });
-
-      setLogStreams(streamsData);
-      setLoading(false);
-      setError({ isError: false, errorMsg: '' });
-
-    }).catch(e => {
-      console.log(e); // rejectReason of any first rejected promise
-      setLoading(false);
-      setError({ isError: true, errorMsg: `Unexpected error occurred while retrieving log streams: ${e}` });
-    });
-
   }, []);
 
   const getLogGroupName = (logGroupName: string) => {
     if (logGroupName.startsWith('API-Gateway')) {
-      return "API Gateway";
+      return 'API Gateway';
     } else if (logGroupName.startsWith('/aws/lambda')) {
       let title;
       if (logGroupName.includes('-') && logGroupName.includes('unction')) {
@@ -138,7 +137,7 @@ const CloudwatchLogsTable = ({ input: { logGroupNames, stackName } }: { input: L
     } else {
       return `Logs - ${logGroupName}`;
     }
-  }
+  };
 
   const handleClickOpen = (streamName: string, logGroupName: string) => {
     setOpen(true);
@@ -183,7 +182,6 @@ const CloudwatchLogsTable = ({ input: { logGroupNames, stackName } }: { input: L
     <>
       {logGroupNames.map((logGroupName, index) => (
         <div key={logGroupName}>
-
           <Dialog open={open} onClose={handleClose} fullWidth maxWidth="xl">
             <DialogTitle>{logStreamName}</DialogTitle>
             <DialogContent>
@@ -243,7 +241,6 @@ const CloudwatchLogsTable = ({ input: { logGroupNames, stackName } }: { input: L
               },
             ]}
           />
-
         </div>
       ))}
     </>
@@ -270,18 +267,17 @@ export const CloudwatchLogsWidget = () => {
     }
 
     if (logGroupNames && logGroupNames.length > 0) {
-      const stackName = '' //env.app.cloudFormation!
+      const stackName = ''; //env.app.cloudFormation!
       return (
         <CloudwatchLogsTable
           input={{
             logGroupNames,
             stackName,
-            awsComponent: awsAppLoadingStatus.component
+            awsComponent: awsAppLoadingStatus.component,
           }}
         />
       );
-    }
-    else {
+    } else {
       return <EmptyState missing="data" title="Application Logs" description="Logs would show here" />;
     }
   } else {

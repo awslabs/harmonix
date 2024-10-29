@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEntity, } from '@backstage/plugin-catalog-react';
+import { useEntity } from '@backstage/plugin-catalog-react';
 import React from 'react';
 import { InfoCard, Table, TableColumn } from '@backstage/core-components';
 import { Entity } from '@backstage/catalog-model';
@@ -35,74 +35,74 @@ const ProviderInfo = (props: ProviderInfoProps) => {
     },
   ];
 
-  let items: KeyValue[] = []
+  let items: KeyValue[] = [];
   items.push({
-    key: "Prefix",
-    value: metadata['prefix']?.toString() || ""
+    key: 'Prefix',
+    value: metadata['prefix']?.toString() || '',
   });
   items.push({
-    key: "Name",
-    value: metadata.name.toString() || ""
-  });
-
-  items.push({
-    key: "AWS Account",
-    value: metadata['awsAccount']?.toString() || ""
+    key: 'Name',
+    value: metadata.name.toString() || '',
   });
 
   items.push({
-    key: "AWS Region",
-    value: metadata['awsRegion']?.toString() || ""
+    key: 'AWS Account',
+    value: metadata['awsAccount']?.toString() || '',
+  });
+
+  items.push({
+    key: 'AWS Region',
+    value: metadata['awsRegion']?.toString() || '',
   });
   items.push({
-    key: "Runtime",
-    value: metadata['envType']?.toString() || ""
+    key: 'Runtime',
+    value: metadata['envType']?.toString() || '',
   });
   items.push({
-    key: "Audit Table",
-    value: metadata['auditTable']?.toString() || ""
+    key: 'Audit Table',
+    value: metadata['auditTable']?.toString() || '',
   });
   items.push({
-    key: "VPC",
-    value: metadata['vpc']?.toString() || ""
+    key: 'VPC',
+    value: metadata['vpc']?.toString() || '',
   });
-  const envType = metadata['envType']?.toString() || "";
+  const envType = metadata['envType']?.toString() || '';
   if (envType === ProviderType.ECS || envType === ProviderType.EKS) {
     items.push({
-      key: "Cluster Name",
-      value: metadata['clusterName']?.toString() || ""
+      key: 'Cluster Name',
+      value: metadata['clusterName']?.toString() || '',
     });
   }
   if (envType === ProviderType.EKS) {
     items.push({
-      key: "Node Type",
-      value: metadata['nodeType']?.toString() || ""
+      key: 'Node Type',
+      value: metadata['nodeType']?.toString() || '',
     });
   }
   items.push({
-    key: "Operation Role",
-    value: metadata['operationRole']?.toString() || ""
+    key: 'Operation Role',
+    value: metadata['operationRole']?.toString() || '',
   });
   items.push({
-    key: "Provisioning Role",
-    value: metadata['provisioningRole']?.toString() || ""
+    key: 'Provisioning Role',
+    value: metadata['provisioningRole']?.toString() || '',
   });
   if (envType === ProviderType.EKS) {
     items.push({
-      key: "Cluster Admin Role ARN",
-      value: metadata['clusterAdminRole']?.toString() || ""
+      key: 'Cluster Admin Role ARN',
+      value: metadata['clusterAdminRole']?.toString() || '',
     });
     items.push({
-      key: "API Endpoint Access",
-      value: metadata['apiAccess']?.toString() || ""
+      key: 'API Endpoint Access',
+      value: metadata['apiAccess']?.toString() || '',
     });
     items.push({
-      key: "Kubectl / Helm Lambda ARN",
-      value: metadata['kubectlLambdaArn']?.toString() || ""
+      key: 'Kubectl / Helm Lambda ARN',
+      value: metadata['kubectlLambdaArn']?.toString() || '',
     });
     items.push({
-      key: "Kubectl / Helm Lambda Role ARN",
-      value: metadata['kubectlLambdaAssumeRoleArn']?.toString() || ""
+      key: 'Kubectl / Helm Lambda Role ARN',
+      value: metadata['kubectlLambdaAssumeRoleArn']?.toString() || '',
     });
   }
 
@@ -116,7 +116,7 @@ const ProviderInfo = (props: ProviderInfoProps) => {
           showTitle: false,
           header: false,
           filtering: false,
-          toolbar: false
+          toolbar: false,
         }}
         data={items}
         columns={columns}

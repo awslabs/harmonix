@@ -35,7 +35,7 @@ export function AwsServerlessEnvironmentProviderPage(/* {children}: AwsEnvironme
             <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
           </Grid>
           <Grid item md={6}>
-            <EntityProviderInfoCard/>
+            <EntityProviderInfoCard />
           </Grid>
           <Grid item md={6} xs={12}>
             <EntityLinksCard />
@@ -53,9 +53,9 @@ export function AwsServerlessEnvironmentProviderPage(/* {children}: AwsEnvironme
         </EntityTechdocsContent>
       </EntityLayout.Route>
       <EntityLayout.Route path="/management" title="Management">
-         <Grid item md={6} xs={12}>
-            <EntityDeleteProviderCard />
-          </Grid>
+        <Grid item md={6} xs={12}>
+          <EntityDeleteProviderCard />
+        </Grid>
       </EntityLayout.Route>
     </EntityLayout>
   );

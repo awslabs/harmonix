@@ -4,13 +4,11 @@
 import { Grid } from '@material-ui/core';
 import React, { ReactNode } from 'react';
 import { EntityAboutCard, EntityLinksCard } from '@backstage/plugin-catalog';
-import {
-  EntityCatalogGraphCard
-} from '@backstage/plugin-catalog-graph';
+import { EntityCatalogGraphCard } from '@backstage/plugin-catalog-graph';
 import { EntityInfrastructureInfoCard } from '../../plugin';
 
 interface AwsSecretsManagerResourcePageProps {
-  children?: ReactNode
+  children?: ReactNode;
 }
 
 /** @public */
@@ -31,9 +29,5 @@ export function AwsSecretsManagerResourcePage(_props: AwsSecretsManagerResourceP
       </Grid>
     </Grid>
   );
-  return (
-    <>
-      {rdsContent}
-    </>
-  );
+  return <>{rdsContent}</>;
 }

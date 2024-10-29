@@ -1,19 +1,19 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect } from 'react';
 
 type CancellablePromise = {
   promise: Promise<any>;
   cancel: VoidFunction;
-}
+};
 
 /**
  * Wraps a promise so that it is cancellable. Rejects promise when cancellation
  * occurs.
- * 
+ *
  * Example use:
- * try { // invoke code that returns a cancellable promise } 
+ * try { // invoke code that returns a cancellable promise }
  * catch (e) {
  *   if ((e as any).isCanceled) {
  *     // handle cancellation
@@ -33,15 +33,15 @@ export function makeCancellableWithErrors(promise: Promise<any>): {
 
   const wrappedPromise = new Promise((resolve, reject) => {
     promise
-      .then((val) => (isCanceled ? reject({ isCanceled }) : resolve(val)))
-      .catch((error) => (isCanceled ? reject({ isCanceled }) : reject(error)));
+      .then(val => (isCanceled ? reject({ isCanceled }) : resolve(val)))
+      .catch(error => (isCanceled ? reject({ isCanceled }) : reject(error)));
   });
 
   return {
     promise: wrappedPromise,
     cancel() {
       isCanceled = true;
-    }
+    },
   };
 }
 
@@ -57,13 +57,10 @@ export function makeCancellable(promise: Promise<any>): {
   cancel(): void;
 } {
   let isCanceled = false;
-  const wrappedPromise =
-    new Promise((resolve, reject) => {
-      // Suppress resolution and rejection if canceled
-      promise
-        .then((val) => (!isCanceled && resolve(val)))
-        .catch((error) => (!isCanceled && reject(error)));
-    });
+  const wrappedPromise = new Promise((resolve, reject) => {
+    // Suppress resolution and rejection if canceled
+    promise.then(val => !isCanceled && resolve(val)).catch(error => !isCanceled && reject(error));
+  });
   return {
     promise: wrappedPromise,
     cancel() {
@@ -74,12 +71,12 @@ export function makeCancellable(promise: Promise<any>): {
 
 /**
  * Returns a function that wraps a promise so that it is canceled automatically
- * when the component unmounts. 
- * 
+ * when the component unmounts.
+ *
  * @param options - Optional. Allows control of whether promise is rejected when
  * cancellation occurs. Defaults to false.
  * @returns a function that wraps a promise so that it is canceled automatically
- * when the component unmounts. 
+ * when the component unmounts.
  */
 export function useCancellablePromise({ rejectOnCancel = false }): {
   cancellablePromise: <T>(p: Promise<T>) => Promise<T>;
@@ -89,9 +86,7 @@ export function useCancellablePromise({ rejectOnCancel = false }): {
 
   // test if the input argument is a cancelable promise generator
   if (cancellable(emptyPromise).cancel === undefined) {
-    throw new Error(
-      "promise wrapper argument must provide a cancel() function"
-    );
+    throw new Error('promise wrapper argument must provide a cancel() function');
   }
 
   const promises = useRef<any[]>();

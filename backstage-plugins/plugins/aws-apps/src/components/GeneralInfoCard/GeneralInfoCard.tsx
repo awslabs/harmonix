@@ -15,33 +15,31 @@ import { useEntity } from '@backstage/plugin-catalog-react';
 import { Entity } from '@backstage/catalog-model';
 
 const OpaAppGeneralInfo = ({
-  input: { entity, repoSecretArn, api }
-}: { input: { account: string, region: string, entity: Entity, repoSecretArn: string, api: OPAApi} }) => {
-
+  input: { entity, repoSecretArn, api },
+}: {
+  input: { account: string; region: string; entity: Entity; repoSecretArn: string; api: OPAApi };
+}) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
-  
-  const [secretData, setSecretData] = useState("");
- 
+
+  const [secretData, setSecretData] = useState('');
+
   let repoInfo = getRepoInfo(entity);
   const gitRepoUrl = getRepoUrl(repoInfo);
 
-// const getGitAppUrl = () => {
-//     const gitAppUrl = gitHost + "/" + gitApp + ".git"
-//     return gitAppUrl
-//   }
+  // const getGitAppUrl = () => {
+  //     const gitAppUrl = gitHost + "/" + gitApp + ".git"
+  //     return gitAppUrl
+  //   }
 
   const HandleCopyGitClone = () => {
-    let baseUrl = "git clone https://oauth2:"
-    let cloneUrl = ""
-    if (!repoSecretArn) 
-    {
-      baseUrl = "git clone https://"
+    let baseUrl = 'git clone https://oauth2:';
+    let cloneUrl = '';
+    if (!repoSecretArn) {
+      baseUrl = 'git clone https://';
       cloneUrl = baseUrl + gitRepoUrl;
-    }
-    else
-    {
-      cloneUrl = baseUrl + secretData + "@" + gitRepoUrl;
+    } else {
+      cloneUrl = baseUrl + secretData + '@' + gitRepoUrl;
     }
     navigator.clipboard.writeText(cloneUrl);
   };
@@ -52,21 +50,17 @@ const OpaAppGeneralInfo = ({
 
   async function getData() {
     if (!repoSecretArn) {
-      setSecretData("");  
-    }
-    else
-    {
+      setSecretData('');
+    } else {
       const secrets = await api.getPlatformSecret({
         secretName: repoSecretArn,
       });
-      console.log(secrets)
-      setSecretData(secrets.SecretString || "");
+      console.log(secrets);
+      setSecretData(secrets.SecretString || '');
     }
-
   }
 
   useEffect(() => {
-
     getData()
       .then(() => {
         setLoading(false);
@@ -95,11 +89,11 @@ const OpaAppGeneralInfo = ({
         <Grid container direction="column" rowSpacing={2}>
           <Grid container>
             <Grid item zeroMinWidth xs={8}>
-              {
-                repoSecretArn?
-                 (
-                  <>
-                  <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Repository Access Token</Typography>
+              {repoSecretArn ? (
+                <>
+                  <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>
+                    Repository Access Token
+                  </Typography>
                   <Typography noWrap>
                     <IconButton sx={{ p: 0 }} onClick={HandleCopySecret}>
                       <ContentCopyIcon></ContentCopyIcon>
@@ -107,10 +101,9 @@ const OpaAppGeneralInfo = ({
                     <SecretStringComponent secret={secretData ?? ''} />
                   </Typography>
                 </>
-                ):
-                (<></>)
-              }
-              
+              ) : (
+                <></>
+              )}
             </Grid>
             <Grid item zeroMinWidth xs={16}>
               <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold', mt: 1 }}>Clone url</Typography>
@@ -118,11 +111,13 @@ const OpaAppGeneralInfo = ({
                 <table>
                   <tbody>
                     <tr>
-                      <td><IconButton sx={{ p: 0 }} onClick={HandleCopyGitClone}>
-                        <ContentCopyIcon></ContentCopyIcon>
-                      </IconButton></td>
                       <td>
-                        <CodeSnippet language="text" text={"git clone https://" + gitRepoUrl} />
+                        <IconButton sx={{ p: 0 }} onClick={HandleCopyGitClone}>
+                          <ContentCopyIcon></ContentCopyIcon>
+                        </IconButton>
+                      </td>
+                      <td>
+                        <CodeSnippet language="text" text={'git clone https://' + gitRepoUrl} />
                       </td>
                     </tr>
                   </tbody>
@@ -149,12 +144,10 @@ export const GeneralInfoCard = ({ appPending }: { appPending: boolean }) => {
       api,
     };
     return <OpaAppGeneralInfo input={input} />;
-  }
-  else {
+  } else {
     if (awsAppLoadingStatus.loading) {
       return <LinearProgress />;
     } else if (awsAppLoadingStatus.component) {
-
       const env = awsAppLoadingStatus.component.currentEnvironment as AWSECSAppDeploymentEnvironment;
 
       const input = {
@@ -162,12 +155,11 @@ export const GeneralInfoCard = ({ appPending }: { appPending: boolean }) => {
         region: env.providerData.region,
         entity: entity,
         repoSecretArn: awsAppLoadingStatus.component.repoSecretArn,
-        api
+        api,
       };
       return <OpaAppGeneralInfo input={input} />;
     } else {
       return <EmptyState missing="data" title="No info data to show" description="Info data would show here" />;
     }
   }
-
 };

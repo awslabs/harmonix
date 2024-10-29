@@ -2,11 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import React from 'react';
-import {
-  humanizeEntityRef,
-  EntityRefLink,
-  EntityRefLinks,
-} from '@backstage/plugin-catalog-react';
+import { humanizeEntityRef, EntityRefLink, EntityRefLinks } from '@backstage/plugin-catalog-react';
 import { Chip } from '@material-ui/core';
 
 import { OverflowTooltip, TableColumn } from '@backstage/core-components';
@@ -18,9 +14,7 @@ import { CatalogTableRow } from '@backstage/plugin-catalog';
 // CatalogTable.columns field.
 /** @public */
 export const columnFactories = Object.freeze({
-  createNameColumn(options?: {
-    defaultKind?: string;
-  }): TableColumn<CatalogTableRow> {
+  createNameColumn(options?: { defaultKind?: string }): TableColumn<CatalogTableRow> {
     function formatContent(entity: Entity): string {
       return (
         entity.metadata?.title ||
@@ -40,28 +34,17 @@ export const columnFactories = Object.freeze({
         return formatContent(entity1).localeCompare(formatContent(entity2));
       },
       cellStyle: {
-        minWidth:'175px'
+        minWidth: '175px',
       },
-      render: ({ entity }) => (
-        <EntityRefLink
-          entityRef={entity}
-          defaultKind={options?.defaultKind ?? 'Component'}
-        />
-      ),
-      
+      render: ({ entity }) => <EntityRefLink entityRef={entity} defaultKind={options?.defaultKind ?? 'Component'} />,
     };
   },
   createSystemColumn(): TableColumn<CatalogTableRow> {
     return {
       title: 'System',
       field: 'resolved.partOfSystemRelationTitle',
-      render: ({ resolved }) => (
-        <EntityRefLinks
-          entityRefs={resolved.partOfSystemRelations}
-          defaultKind="system"
-        />
-      ),
-      width:'auto'
+      render: ({ resolved }) => <EntityRefLinks entityRefs={resolved.partOfSystemRelations} defaultKind="system" />,
+      width: 'auto',
     };
   },
   createOwnerColumn(): TableColumn<CatalogTableRow> {
@@ -69,14 +52,9 @@ export const columnFactories = Object.freeze({
       title: 'Owner',
       field: 'resolved.ownedByRelationsTitle',
       cellStyle: {
-        minWidth:'130px'
+        minWidth: '130px',
       },
-      render: ({ resolved }) => (
-        <EntityRefLinks
-          entityRefs={resolved.ownedByRelations}
-          defaultKind="group"
-        />
-      ),
+      render: ({ resolved }) => <EntityRefLinks entityRefs={resolved.ownedByRelations} defaultKind="group" />,
     };
   },
   createSpecTargetsColumn(): TableColumn<CatalogTableRow> {
@@ -87,9 +65,7 @@ export const columnFactories = Object.freeze({
         <>
           {(entity?.spec?.targets || entity?.spec?.target) && (
             <OverflowTooltip
-              text={(
-                (entity!.spec!.targets as JsonArray) || [entity.spec.target]
-              ).join(', ')}
+              text={((entity!.spec!.targets as JsonArray) || [entity.spec.target]).join(', ')}
               placement="bottom-start"
             />
           )}
@@ -112,7 +88,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      width:'auto'
+      width: 'auto',
     };
   },
   createMetadataDescriptionColumn(): TableColumn<CatalogTableRow> {
@@ -120,15 +96,9 @@ export const columnFactories = Object.freeze({
       title: 'Description',
       field: 'entity.metadata.description',
       cellStyle: {
-        minWidth:'175px'
+        minWidth: '175px',
       },
-      render: ({ entity }) => (
-        <OverflowTooltip
-          text={entity.metadata.description}
-          placement="bottom-start"
-        />
-      ),
-    
+      render: ({ entity }) => <OverflowTooltip text={entity.metadata.description} placement="bottom-start" />,
     };
   },
   createProviderAccountColumn(): TableColumn<CatalogTableRow> {
@@ -137,15 +107,9 @@ export const columnFactories = Object.freeze({
       field: 'entity.metadata["awsAccount"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
-        minWidth:'150px'
+        minWidth: '150px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["awsAccount"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['awsAccount']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -156,13 +120,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["awsRegion"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['awsRegion']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -173,13 +131,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["prefix"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['prefix']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -189,17 +141,10 @@ export const columnFactories = Object.freeze({
       field: 'entity.metadata["resourceType"]',
       cellStyle: {
         padding: '0px 16px 0px 20px',
-        minWidth:'30px'
+        minWidth: '30px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["resourceType"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['resourceType']?.toString() || ''}</>,
       //width: 'auto',
-      
     };
   },
   createIACColumn(): TableColumn<CatalogTableRow> {
@@ -209,13 +154,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["iacType"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['iacType']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -226,13 +165,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["environmentType"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['environmentType']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -243,13 +176,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.spec?.["system"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.spec?.['system']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -260,13 +187,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["category"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['category']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -277,13 +198,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["classification"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['classification']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -294,13 +209,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["level"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['level']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -311,13 +220,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["envTypeAccount"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['envTypeAccount']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -328,13 +231,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["envTypeRegion"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['envTypeRegion']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -345,13 +242,7 @@ export const columnFactories = Object.freeze({
       cellStyle: {
         padding: '0px 16px 0px 20px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.metadata["envType"]?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.metadata['envType']?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -361,15 +252,9 @@ export const columnFactories = Object.freeze({
       field: 'entity.spec.subType',
       cellStyle: {
         padding: '0px 16px 0px 20px',
-        minWidth:'150px'
+        minWidth: '150px',
       },
-      render: ({ entity }) => (
-        <>
-          {
-            entity.spec?.subType?.toString() || ""
-          }
-        </>
-      ),
+      render: ({ entity }) => <>{entity.spec?.subType?.toString() || ''}</>,
       width: 'auto',
     };
   },
@@ -384,22 +269,14 @@ export const columnFactories = Object.freeze({
         <>
           {entity.metadata.tags &&
             entity.metadata.tags.map(t => (
-              <Chip
-                key={t}
-                label={t}
-                size="small"
-                variant="outlined"
-                style={{ marginBottom: '0px' }}
-              />
+              <Chip key={t} label={t} size="small" variant="outlined" style={{ marginBottom: '0px' }} />
             ))}
         </>
       ),
       width: 'auto',
     };
   },
-  createTitleColumn(options?: {
-    hidden?: boolean;
-  }): TableColumn<CatalogTableRow> {
+  createTitleColumn(options?: { hidden?: boolean }): TableColumn<CatalogTableRow> {
     return {
       title: 'Title',
       field: 'entity.metadata.title',
@@ -407,10 +284,7 @@ export const columnFactories = Object.freeze({
       searchable: true,
     };
   },
-  createLabelColumn(
-    key: string,
-    options?: { title?: string; defaultValue?: string },
-  ): TableColumn<CatalogTableRow> {
+  createLabelColumn(key: string, options?: { title?: string; defaultValue?: string }): TableColumn<CatalogTableRow> {
     return {
       title: options?.title ?? 'Label',
       field: 'entity.metadata.labels',
@@ -418,19 +292,12 @@ export const columnFactories = Object.freeze({
         padding: '0px 16px 0px 20px',
       },
       render: ({ entity }: { entity: Entity }) => {
-        const labels: Record<string, string> | undefined =
-          entity.metadata?.labels;
-        const specifiedLabelValue =
-          (labels && labels[key]) || options?.defaultValue;
+        const labels: Record<string, string> | undefined = entity.metadata?.labels;
+        const specifiedLabelValue = (labels && labels[key]) || options?.defaultValue;
         return (
           <>
             {specifiedLabelValue && (
-              <Chip
-                key={specifiedLabelValue}
-                label={specifiedLabelValue}
-                size="small"
-                variant="outlined"
-              />
+              <Chip key={specifiedLabelValue} label={specifiedLabelValue} size="small" variant="outlined" />
             )}
           </>
         );

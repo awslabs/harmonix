@@ -17,6 +17,7 @@ export interface RoleConstructProps extends cdk.StackProps {
   vpcCollection: ec2.Vpc[];
   ecsCollection: ecs.ICluster[];
   rootRoleArn?: string;
+  gitlabRunnerRoleArn?: string;
 }
 
 const defaultProps: Partial<RoleConstructProps> = {};
@@ -39,6 +40,7 @@ export class RoleConstruct extends Construct {
         new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
         // new iam.ArnPrincipal(`arn:aws:iam::${props.config.Account}:role/${props.rootRole}`)
         new iam.ArnPrincipal(props.rootRoleArn ? props.rootRoleArn : "")
+        new iam.ArnPrincipal(props.gitlabRunnerRoleArn ? props.gitlabRunnerRoleArn : "")
       ),
       // : new iam.ServicePrincipal("ecs-tasks.amazonaws.com"),
       roleName: name,

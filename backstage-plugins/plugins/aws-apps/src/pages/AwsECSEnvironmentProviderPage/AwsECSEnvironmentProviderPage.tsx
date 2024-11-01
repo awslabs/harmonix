@@ -35,12 +35,11 @@ export function AwsECSEnvironmentProviderPage(/* {children}: AwsEnvironmentProvi
             <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
           </Grid>
           <Grid item md={6}>
-            <EntityProviderInfoCard/>
+            <EntityProviderInfoCard />
           </Grid>
           <Grid item md={6} xs={12}>
             <EntityLinksCard />
           </Grid>
-        
         </Grid>
       </EntityLayout.Route>
       <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
@@ -54,9 +53,9 @@ export function AwsECSEnvironmentProviderPage(/* {children}: AwsEnvironmentProvi
         </EntityTechdocsContent>
       </EntityLayout.Route>
       <EntityLayout.Route path="/management" title="Management">
-         <Grid item md={6} xs={12}>
-            <EntityDeleteProviderCard />
-          </Grid>
+        <Grid item md={6} xs={12}>
+          <EntityDeleteProviderCard />
+        </Grid>
       </EntityLayout.Route>
     </EntityLayout>
   );

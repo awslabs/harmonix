@@ -4,21 +4,22 @@
 import { EntityAboutCard, EntityLinksCard, EntityLayout } from '@backstage/plugin-catalog';
 import { Grid } from '@material-ui/core';
 import React, { ReactNode } from 'react';
-import {
-  EntityCatalogGraphCard
-} from '@backstage/plugin-catalog-graph';
+import { EntityCatalogGraphCard } from '@backstage/plugin-catalog-graph';
 
 export interface AwsEnvironmentPageProps {
-  children?: ReactNode
+  children?: ReactNode;
 }
 import { EntityTechdocsContent } from '@backstage/plugin-techdocs';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
-import { EntityAwsEnvironmentProviderSelectorCard, EntityDeleteEnvironmentCard, EntityEnvironmentInfoCard } from '../../plugin';
+import {
+  EntityAwsEnvironmentProviderSelectorCard,
+  EntityDeleteEnvironmentCard,
+  EntityEnvironmentInfoCard,
+} from '../../plugin';
 
 /** @public */
 export function AwsEnvironmentPage(/*{children}: AwsEnvironmentPageProps */) {
-
   const managementContent = (
     <Grid container spacing={1} alignItems="stretch">
       <Grid item md={6} xs={6}>

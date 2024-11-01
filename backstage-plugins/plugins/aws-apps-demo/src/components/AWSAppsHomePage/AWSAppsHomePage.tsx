@@ -59,10 +59,11 @@ export const AWSAppsHomePage = () => {
               <Header title={<WelcomeTitle />} pageTitleOverride="Home" />
             </Grid>
             <Grid container item xs={12} alignItems="center" direction="row">
-              <HomePageSearchBar 
-                classes={{ root: classes.searchBar }} 
+              <HomePageSearchBar
+                classes={{ root: classes.searchBar }}
                 InputProps={{ classes: { notchedOutline: classes.searchBarOutline } }}
-                placeholder="Search" />
+                placeholder="Search"
+              />
             </Grid>
             <Grid container item xs={12}>
               <Grid item xs={12} md={6}>

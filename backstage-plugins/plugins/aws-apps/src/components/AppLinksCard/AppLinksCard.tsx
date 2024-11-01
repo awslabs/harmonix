@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEntity, } from '@backstage/plugin-catalog-react';
+import { useEntity } from '@backstage/plugin-catalog-react';
 import LanguageIcon from '@material-ui/icons/Language';
 import React from 'react';
 import { ColumnBreakpoints } from '@backstage/plugin-catalog';
@@ -25,8 +25,7 @@ const AppLinks = (props: AppLinksProps) => {
   const { entity } = useEntity();
   const app = useApp();
 
-  const iconResolver = (key?: string): IconComponent =>
-    key ? app.getSystemIcon(key) ?? LanguageIcon : LanguageIcon;
+  const iconResolver = (key?: string): IconComponent => (key ? app.getSystemIcon(key) ?? LanguageIcon : LanguageIcon);
 
   let links = entity?.metadata?.links || [];
   if (awsComponent.currentEnvironment.app.links) {

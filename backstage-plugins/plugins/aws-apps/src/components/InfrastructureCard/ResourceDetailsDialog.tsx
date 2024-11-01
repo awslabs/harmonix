@@ -9,8 +9,12 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle, Grid,
-  IconButton, LinearProgress, makeStyles, Typography
+  DialogTitle,
+  Grid,
+  IconButton,
+  LinearProgress,
+  makeStyles,
+  Typography,
 } from '@material-ui/core';
 import { Close } from '@mui/icons-material';
 import React, { useEffect, useState } from 'react';
@@ -38,7 +42,6 @@ const useStyles = makeStyles(theme => ({
     justifyContent: 'center',
   },
 }));
-
 
 /**
  * A Table component for showing AWS Resource details. The table can accommodate varying numbers of columns
@@ -82,9 +85,9 @@ export const ResourceDetailsDialog = ({
   isOpen,
   closeDialogHandler,
   resource,
-  // prefix,
-  // providerName
-}: {
+}: // prefix,
+// providerName
+{
   isOpen: boolean;
   closeDialogHandler: () => void;
   resource: AWSResource;
@@ -126,7 +129,6 @@ export const ResourceDetailsDialog = ({
 
   // Get the secret details
   async function getData() {
-
     if (resource.resourceTypeId == 'AWS::SecretsManager::Secret') {
       const secretResponse = await api.getSecret({ secretName: resource.resourceArn });
       const rawSecret = secretResponse.SecretString ?? 'unknown';
@@ -136,8 +138,12 @@ export const ResourceDetailsDialog = ({
         const parsedSecret = JSON.parse(rawSecret);
         setTableColumns(kvColumns);
         const jsonKeys = Object.keys(parsedSecret).sort((a, b) => {
-          if (a < b) { return -1; }
-          if (a > b) { return 1; }
+          if (a < b) {
+            return -1;
+          }
+          if (a > b) {
+            return 1;
+          }
           return 0;
         });
         const secretTableData = jsonKeys.map((key, i) => {
@@ -156,7 +162,7 @@ export const ResourceDetailsDialog = ({
       }
     } else if (resource.resourceTypeId == 'AWS::SSM::Parameter') {
       const ssmParamResponse = await api.getSSMParameter({
-        ssmParamName: resource.resourceName
+        ssmParamName: resource.resourceName,
       });
       // SSM Parameters are single-value and will only be displayed in a single column table
       setTableColumns(singleColumn);
@@ -208,4 +214,3 @@ export const ResourceDetailsDialog = ({
     </Dialog>
   );
 };
-

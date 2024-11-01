@@ -3,19 +3,19 @@
 
 import React from 'react';
 import { EntityAboutCard } from '@backstage/plugin-catalog';
-import { EntityAppLinksCard, EntityAppStateCardCloudFormation, EntityGeneralInfoCard, EntityInfrastructureInfoCard } from '../../plugin';
-import { Grid } from '@material-ui/core';
 import {
-  EntityCatalogGraphCard
-} from '@backstage/plugin-catalog-graph';
+  EntityAppLinksCard,
+  EntityAppStateCardCloudFormation,
+  EntityGeneralInfoCard,
+  EntityInfrastructureInfoCard,
+} from '../../plugin';
+import { Grid } from '@material-ui/core';
+import { EntityCatalogGraphCard } from '@backstage/plugin-catalog-graph';
 
-interface AwsServerlessAppPageProps {
-
-}
+interface AwsServerlessAppPageProps {}
 
 /** @public */
 export function AwsServerlessAppPage(_props: AwsServerlessAppPageProps) {
-
   const awsServerlessRestApiAppViewContent = (
     <Grid container spacing={3} alignItems="stretch">
       <Grid item md={6}>
@@ -39,9 +39,5 @@ export function AwsServerlessAppPage(_props: AwsServerlessAppPageProps) {
     </Grid>
   );
 
-  return (
-    <>
-      {awsServerlessRestApiAppViewContent}
-    </>
-  );
+  return <>{awsServerlessRestApiAppViewContent}</>;
 }

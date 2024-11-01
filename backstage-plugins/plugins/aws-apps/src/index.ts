@@ -26,5 +26,5 @@ export {
   EntityAppConfigCard,
   EntityAuditTable,
   EntityEnvironmentSelector,
-  EntityAwsEnvironmentProviderSelectorCard
+  EntityAwsEnvironmentProviderSelectorCard,
 } from './plugin';

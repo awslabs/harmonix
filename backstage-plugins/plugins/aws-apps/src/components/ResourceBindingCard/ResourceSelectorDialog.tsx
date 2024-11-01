@@ -8,8 +8,16 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle, Grid,
-  IconButton, makeStyles, Radio, Table, TableBody, TableCell, TableHead, TableRow
+  DialogTitle,
+  Grid,
+  IconButton,
+  makeStyles,
+  Radio,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
 } from '@material-ui/core';
 import { Close } from '@mui/icons-material';
 import React, { useEffect, useState } from 'react';
@@ -46,7 +54,7 @@ const useStyles = makeStyles(theme => ({
  */
 const ResourceSelectorTable = ({
   tableData,
-  selectedRowCallback
+  selectedRowCallback,
 }: {
   tableData: ResourceBinding[];
   selectedRowCallback: (item: ResourceBinding) => void;
@@ -55,9 +63,9 @@ const ResourceSelectorTable = ({
   const [selectedRadio, setSelectedRadio] = useState<number>();
 
   const selectedRow = (item: ResourceBinding, index: number) => {
-    selectedRowCallback(item)
-    setSelectedRadio(index)
-  }
+    selectedRowCallback(item);
+    setSelectedRadio(index);
+  };
 
   return (
     <Table>
@@ -71,11 +79,15 @@ const ResourceSelectorTable = ({
         </TableRow>
       </TableHead>
       <TableBody>
-
         {tableData.map((row, index) => (
           <TableRow key={index}>
             <TableCell scope="row">
-              <Radio value={index} checked={index != selectedRadio ? false : true} radioGroup='resourceGroup' onChange={() => selectedRow(row, index)} />
+              <Radio
+                value={index}
+                checked={index != selectedRadio ? false : true}
+                radioGroup="resourceGroup"
+                onChange={() => selectedRow(row, index)}
+              />
             </TableCell>
             <TableCell>{row.resourceName}</TableCell>
             <TableCell>{row.resourceType}</TableCell>
@@ -83,7 +95,6 @@ const ResourceSelectorTable = ({
             <TableCell>{row.resourceArn}</TableCell>
           </TableRow>
         ))}
-
       </TableBody>
     </Table>
   );
@@ -102,7 +113,7 @@ export const ResourceSelectorDialog = ({
   selectHandler,
   catalog,
   currentEnvironment,
-  associatedResources
+  associatedResources,
 }: {
   isOpen: boolean;
   closeDialogHandler: () => void;
@@ -111,8 +122,6 @@ export const ResourceSelectorDialog = ({
   currentEnvironment: string;
   associatedResources: ResourceBinding[];
 }) => {
-
-
   const classes = useStyles();
   // @ts-ignore
   const [loading, setLoading] = useState(true);
@@ -127,98 +136,91 @@ export const ResourceSelectorDialog = ({
       selectHandler(selectedResource);
     }
     closeDialogHandler();
-  }
+  };
 
   const rowSelectedHandler = (item: ResourceBinding) => {
-    setSelectedResource(item)
-  }
+    setSelectedResource(item);
+  };
 
   const isResourceAlreadyBind = (resourceArn: string, associatedResources: ResourceBinding[]) => {
-    let result: boolean = false
+    let result: boolean = false;
     associatedResources.forEach(r => {
       if (r.resourceArn === resourceArn) {
         result = true;
       }
-    })
-    return result
-  }
+    });
+    return result;
+  };
 
   async function getData() {
-    const tableData: ResourceBinding[] = []
+    const tableData: ResourceBinding[] = [];
 
     // search the catalog for resources within the same environment and provider
-    const allResources = await catalog.getEntities({ filter: { 'kind': "resource", 'spec.type': 'aws-resource' } });
+    const allResources = await catalog.getEntities({ filter: { kind: 'resource', 'spec.type': 'aws-resource' } });
     const matchedResources = allResources.items.filter(entity => {
-      const appData = entity.metadata["appData"] as any;
-      return appData && appData[currentEnvironment] && entity.metadata.name
-    })
+      const appData = entity.metadata['appData'] as any;
+      return appData && appData[currentEnvironment] && entity.metadata.name;
+    });
 
     matchedResources.forEach(et => {
       const etNamespace = et.metadata.namespace || 'default';
       const etName = et.metadata.name;
       const id = `resource:${etNamespace}/${etName}`;
 
-      const appData = et.metadata["appData"] as any;
+      const appData = et.metadata['appData'] as any;
       const envAppData = appData[currentEnvironment] as any;
       // find all providers - for multi providers
-      const providers = Object.keys(envAppData)
+      const providers = Object.keys(envAppData);
       providers.forEach(p => {
         const providerAppData = envAppData[p] as any;
         if (isResourceAlreadyBind(providerAppData['Arn'], associatedResources)) {
           return;
         }
-        if (et.metadata['resourceType'] === "aws-rds") {
+        if (et.metadata['resourceType'] === 'aws-rds') {
           //Handler for aws-rds with associated resources
-          const associatedRDSResources: AssociatedResources =
-          {
+          const associatedRDSResources: AssociatedResources = {
             resourceArn: providerAppData['DbAdminSecretArn'],
-            resourceType: "aws-db-secret",
-            resourceName: `${etName}-secret`
-          }
+            resourceType: 'aws-db-secret',
+            resourceName: `${etName}-secret`,
+          };
 
-          tableData.push(
-            {
-              resourceName: etName,
-              resourceType: et.metadata['resourceType']?.toString() || "",
-              provider: p,
-              resourceArn: providerAppData['Arn'],
-              id,
-              associatedResources: [associatedRDSResources]
-            })
-        }
-        else if (et.metadata['resourceType'] === "aws-s3") {
-          // Custom S3 bucket resource handler - add resource policy 
-          const associatedS3Resources: AssociatedResources =
-          {
+          tableData.push({
+            resourceName: etName,
+            resourceType: et.metadata['resourceType']?.toString() || '',
+            provider: p,
             resourceArn: providerAppData['Arn'],
-            resourceType: "aws-s3",
-            resourceName: `${etName}-secret`
-          }
+            id,
+            associatedResources: [associatedRDSResources],
+          });
+        } else if (et.metadata['resourceType'] === 'aws-s3') {
+          // Custom S3 bucket resource handler - add resource policy
+          const associatedS3Resources: AssociatedResources = {
+            resourceArn: providerAppData['Arn'],
+            resourceType: 'aws-s3',
+            resourceName: `${etName}-secret`,
+          };
 
-          tableData.push(
-            {
-              resourceName: etName,
-              resourceType: et.metadata['resourceType']?.toString() || "",
-              provider: p,
-              resourceArn: providerAppData['Arn'],
-              id,
-              associatedResources: [associatedS3Resources]
-            })
-        }
-        else {
+          tableData.push({
+            resourceName: etName,
+            resourceType: et.metadata['resourceType']?.toString() || '',
+            provider: p,
+            resourceArn: providerAppData['Arn'],
+            id,
+            associatedResources: [associatedS3Resources],
+          });
+        } else {
           // General AWS resource handler
-          tableData.push(
-            {
-              resourceName: etName,
-              resourceType: et.metadata['resourceType']?.toString() || "",
-              provider: p,
-              resourceArn: providerAppData['Arn'],
-              id,
-            })
+          tableData.push({
+            resourceName: etName,
+            resourceType: et.metadata['resourceType']?.toString() || '',
+            provider: p,
+            resourceArn: providerAppData['Arn'],
+            id,
+          });
         }
-      })
-    })
-    setTableData(tableData)
+      });
+    });
+    setTableData(tableData);
   }
 
   useEffect(() => {
@@ -255,4 +257,3 @@ export const ResourceSelectorDialog = ({
     </Dialog>
   );
 };
-

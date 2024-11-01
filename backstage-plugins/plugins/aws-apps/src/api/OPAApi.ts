@@ -6,26 +6,31 @@ import {
   DeleteStackCommandOutput,
   DescribeStackEventsCommandOutput,
   Stack,
-  UpdateStackCommandOutput
-} from "@aws-sdk/client-cloudformation";
+  UpdateStackCommandOutput,
+} from '@aws-sdk/client-cloudformation';
 import { LogStream } from '@aws-sdk/client-cloudwatch-logs';
 import { ScanCommandOutput } from '@aws-sdk/client-dynamodb';
 import { Service, Task, TaskDefinition } from '@aws-sdk/client-ecs';
 import { HeadObjectCommandOutput } from '@aws-sdk/client-s3';
 import { DeleteSecretCommandOutput, GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
 import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
-import { AWSProviderParams, AWSServiceResources, BackendParams, BindResourceParams, AWSEnvironmentProviderRecord } from '@aws/plugin-aws-apps-common-for-backstage';
+import {
+  AWSProviderParams,
+  AWSServiceResources,
+  BackendParams,
+  BindResourceParams,
+  AWSEnvironmentProviderRecord,
+} from '@aws/plugin-aws-apps-common-for-backstage';
 import { createApiRef } from '@backstage/core-plugin-api';
 import { ContainerDetailsType } from '../types';
-import { InvokeCommandOutput } from "@aws-sdk/client-lambda";
-import { IRepositoryInfo } from "@aws/plugin-aws-apps-common-for-backstage";
+import { InvokeCommandOutput } from '@aws-sdk/client-lambda';
+import { IRepositoryInfo } from '@aws/plugin-aws-apps-common-for-backstage';
 
 export const opaApiRef = createApiRef<OPAApi>({
   id: 'plugin.opa.app',
 });
 
 export interface OPAApi {
-
   setPlatformParams(appName: string, region: string): void;
   setBackendParams(backendParams: BackendParams): void;
 
@@ -38,7 +43,7 @@ export interface OPAApi {
   }: {
     service: string;
     cluster: string;
-    backendParamsOverrides?: BackendParams
+    backendParamsOverrides?: BackendParams;
   }): Promise<Task>;
 
   updateService({
@@ -65,17 +70,9 @@ export interface OPAApi {
     backendParamsOverrides?: BackendParams;
   }): Promise<GetSecretValueCommandOutput>;
 
-  getPlatformSecret({
-    secretName,
-  }: {
-    secretName: string;
-  }): Promise<GetSecretValueCommandOutput>;
+  getPlatformSecret({ secretName }: { secretName: string }): Promise<GetSecretValueCommandOutput>;
 
-  getPlatformSSMParam({
-    paramName,
-  }: {
-    paramName: string;
-  }): Promise<GetParameterCommandOutput>;
+  getPlatformSSMParam({ paramName }: { paramName: string }): Promise<GetParameterCommandOutput>;
 
   bindResource({
     repoInfo,
@@ -129,11 +126,7 @@ export interface OPAApi {
     envName: string;
   }): Promise<any>;
 
-  deletePlatformSecret({
-    secretName
-  }: {
-    secretName: string;
-  }): Promise<DeleteSecretCommandOutput>;
+  deletePlatformSecret({ secretName }: { secretName: string }): Promise<DeleteSecretCommandOutput>;
 
   deleteRepository({
     repoInfo,
@@ -291,7 +284,7 @@ export interface OPAApi {
     functionName,
     actionDescription,
     body,
-    backendParamsOverrides
+    backendParamsOverrides,
   }: {
     functionName: string;
     actionDescription: string;
@@ -303,13 +296,13 @@ export interface OPAApi {
     envName,
     gitAdminSecret,
     repoInfo,
-    backendParamsOverrides
+    backendParamsOverrides,
   }: {
     envName: string;
     gitAdminSecret: string;
     repoInfo: IRepositoryInfo;
     backendParamsOverrides?: BackendParams;
-  }): Promise<any>
+  }): Promise<any>;
 
   updateEKSApp({
     actionDescription,
@@ -321,7 +314,7 @@ export interface OPAApi {
     lambdaRoleArn,
     gitAdminSecret,
     repoInfo,
-    backendParamsOverrides
+    backendParamsOverrides,
   }: {
     actionDescription: string;
     envName: string;

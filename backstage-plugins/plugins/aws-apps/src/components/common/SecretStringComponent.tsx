@@ -1,9 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  IconButton
-} from '@material-ui/core';
+import { IconButton } from '@material-ui/core';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import React, { useState } from 'react';
 

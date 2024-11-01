@@ -82,9 +82,7 @@ const baseTheme = createTheme({
   defaultPageTheme: 'home',
 });
 
-const createCustomThemeOverrides = (
-  theme: BackstageTheme,
-): BackstageOverrides & CatalogReactOverrides => {
+const createCustomThemeOverrides = (theme: BackstageTheme): BackstageOverrides & CatalogReactOverrides => {
   return {
     BackstageHeader: {
       header: {
@@ -109,7 +107,7 @@ const createCustomThemeOverrides = (
       },
       value: {
         color: 'rgba(0, 0, 0, 0.54)',
-      }
+      },
     },
     BackstageHeaderTabs: {
       defaultTab: {

@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useEntity, } from '@backstage/plugin-catalog-react';
+import { useEntity } from '@backstage/plugin-catalog-react';
 import React from 'react';
 import { InfoCard, Table, TableColumn } from '@backstage/core-components';
 import { Entity } from '@backstage/catalog-model';
@@ -35,46 +35,46 @@ const EnvironmentInfo = (props: ProviderInfoProps) => {
     },
   ];
 
-  let items: KeyValue[] = []
+  let items: KeyValue[] = [];
 
   items.push({
-    key: "Name",
-    value: metadata.name.toString() || ""
-  });
-
-  items.push({
-    key: "Short Name",
-    value: metadata['shortName']?.toString() || ""
+    key: 'Name',
+    value: metadata.name.toString() || '',
   });
 
   items.push({
-    key: "Environment Type",
-    value: metadata['environmentType']?.toString() || ""
+    key: 'Short Name',
+    value: metadata['shortName']?.toString() || '',
   });
 
   items.push({
-    key: "Account Type",
-    value: metadata['envTypeAccount']?.toString() || ""
+    key: 'Environment Type',
+    value: metadata['environmentType']?.toString() || '',
+  });
+
+  items.push({
+    key: 'Account Type',
+    value: metadata['envTypeAccount']?.toString() || '',
   });
   items.push({
-    key: "Region Type",
-    value: metadata['envTypeRegion']?.toString() || ""
+    key: 'Region Type',
+    value: metadata['envTypeRegion']?.toString() || '',
   });
   items.push({
-    key: "Category",
-    value: metadata['category']?.toString() || ""
+    key: 'Category',
+    value: metadata['category']?.toString() || '',
   });
   items.push({
-    key: "Classification",
-    value: metadata['classification']?.toString() || ""
+    key: 'Classification',
+    value: metadata['classification']?.toString() || '',
   });
   items.push({
-    key: "Level",
-    value: metadata['level']?.toString() || ""
+    key: 'Level',
+    value: metadata['level']?.toString() || '',
   });
   items.push({
-    key: "System",
-    value: spec['system']?.toString() || ""
+    key: 'System',
+    value: spec['system']?.toString() || '',
   });
 
   return (
@@ -87,7 +87,7 @@ const EnvironmentInfo = (props: ProviderInfoProps) => {
           showTitle: false,
           header: false,
           filtering: false,
-          toolbar: false
+          toolbar: false,
         }}
         data={items}
         columns={columns}

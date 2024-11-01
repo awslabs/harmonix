@@ -7,8 +7,6 @@
 
 export { catalogModuleAwsAppsEntitiesProcessor as default } from './module';
 
-
 export { AWSEnvironmentEntitiesProcessor } from './processor/AWSEnvironmentEntitiesProcessor';
 
 export { AWSEnvironmentProviderEntitiesProcessor } from './processor/AWSEnvironmentProviderEntitiesProcessor';
-

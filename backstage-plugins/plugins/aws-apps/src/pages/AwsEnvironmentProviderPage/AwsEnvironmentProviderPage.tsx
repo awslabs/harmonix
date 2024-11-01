@@ -11,14 +11,14 @@ import { ProviderType } from '../../helpers/constants';
 import { AwsEKSEnvironmentProviderPage } from '../AwsEKSEnvironmentProviderPage/AwsEKSEnvironmentProviderPage';
 
 export interface AwsEnvironmentProviderPageProps {
-  children?: ReactNode
+  children?: ReactNode;
 }
 
 export function isProviderType(providerType: string, entity: Entity): (entity: Entity) => boolean {
   return (): boolean => {
-    return entity.metadata["envType"]?.toString().toLowerCase() === providerType;
+    return entity.metadata['envType']?.toString().toLowerCase() === providerType;
   };
-};
+}
 
 /** @public */
 export function AwsEnvironmentProviderPage(/* {children}: AwsEnvironmentProviderPageProps */) {
@@ -39,7 +39,7 @@ export function AwsEnvironmentProviderPage(/* {children}: AwsEnvironmentProvider
         <AwsServerlessEnvironmentProviderPage />
       </EntitySwitch.Case>
       <EntitySwitch.Case>
-        <h1>Environment Provider Type "{entity.metadata["envType"]?.toString()}" Is Not Supported At This Time</h1>
+        <h1>Environment Provider Type "{entity.metadata['envType']?.toString()}" Is Not Supported At This Time</h1>
       </EntitySwitch.Case>
     </EntitySwitch>
   );

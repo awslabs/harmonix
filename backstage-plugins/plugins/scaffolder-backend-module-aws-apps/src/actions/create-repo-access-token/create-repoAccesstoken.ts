@@ -7,9 +7,10 @@ import { parseRepoUrl } from '../../helpers/util';
 import { InputError } from '@backstage/errors';
 import { validate as validateArn } from '@aws-sdk/util-arn-parser';
 import { putSecret } from '../../helpers/action-context';
-import { Config } from '@backstage/config'
+import { Config } from '@backstage/config';
 
-export function createRepoAccessTokenAction(options: { integrations: ScmIntegrationRegistry, envConfig: Config }) {
+/** @public */
+export function createRepoAccessTokenAction(options: { integrations: ScmIntegrationRegistry; envConfig: Config }) {
   const { integrations, envConfig } = options;
   return createTemplateAction<{
     repoUrl: string;
@@ -44,9 +45,11 @@ export function createRepoAccessTokenAction(options: { integrations: ScmIntegrat
       },
     },
     async handler(ctx) {
-      let { repoUrl, projectId, secretArn, region } = ctx.input;
+      const { repoUrl, projectId, secretArn } = ctx.input;
+      let { region } = ctx.input;
+
       if (!region) {
-        region = envConfig.getString('backend.platformRegion')
+        region = envConfig.getString('backend.platformRegion');
       }
       const { repo, host } = parseRepoUrl(repoUrl, integrations);
       ctx.logger.info(`Project Id: ${projectId}`);
@@ -55,7 +58,6 @@ export function createRepoAccessTokenAction(options: { integrations: ScmIntegrat
       const repoToken = await createRepoToken();
       await putSecret(secretArn, repoToken, region, ctx.logger);
 
-
       /**
        * helper function to create a repo token for Gitlab
        * @returns token for the repo
@@ -63,7 +65,7 @@ export function createRepoAccessTokenAction(options: { integrations: ScmIntegrat
       async function createRepoToken(): Promise<string> {
         if (!integrationConfig) {
           throw new InputError(
-            `No matching integration configuration for host ${host}, please check your integrations config`
+            `No matching integration configuration for host ${host}, please check your integrations config`,
           );
         }
         if (!integrationConfig.config.token) {
@@ -72,7 +74,7 @@ export function createRepoAccessTokenAction(options: { integrations: ScmIntegrat
         const token = integrationConfig.config.token!;
 
         // get the apiBaseUrl
-        let apiBaseUrl = integrationConfig.config.apiBaseUrl ?? `https://${host}/api/v4`;
+        const apiBaseUrl = integrationConfig.config.apiBaseUrl ?? `https://${host}/api/v4`;
 
         if (!validateArn(secretArn)) {
           throw new Error(`Invalid ARN provided for Secret: ${secretArn}`);
@@ -99,12 +101,10 @@ export function createRepoAccessTokenAction(options: { integrations: ScmIntegrat
           // We have a successful response, so return the token from the response data
           const data = await res.json();
           return data.token as string;
-        } else {
-          const message = `Failed to create repo access token: ${res.status}: ${res.statusText}`
-          ctx.logger.info(message);
-          throw new Error(message);
         }
-
+        const message = `Failed to create repo access token: ${res.status}: ${res.statusText}`;
+        ctx.logger.info(message);
+        throw new Error(message);
       }
 
       /**
@@ -112,7 +112,7 @@ export function createRepoAccessTokenAction(options: { integrations: ScmIntegrat
        * so that it is (almost) the maximum date for a Gitlab personal access token.
        * The maximum time is 365 days, but we're being conservative to account for
        * locales, timezones, and leap years which may interfere with exact calculations.
-       * 
+       *
        * Returned string will be in YYYY-MM-DD format
        */
       function getExpiryDate(): string {
@@ -120,7 +120,6 @@ export function createRepoAccessTokenAction(options: { integrations: ScmIntegrat
         date.setDate(date.getDate() + 364);
         return date.toISOString().split('T')[0];
       }
-
     },
   });
 }

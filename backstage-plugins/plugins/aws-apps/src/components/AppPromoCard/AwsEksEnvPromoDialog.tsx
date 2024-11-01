@@ -6,8 +6,14 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle, Grid,
-  IconButton, InputLabel, MenuItem, Select, TextField, makeStyles
+  DialogTitle,
+  Grid,
+  IconButton,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  makeStyles,
 } from '@material-ui/core';
 import { Close } from '@mui/icons-material';
 import React, { useState } from 'react';
@@ -40,7 +46,9 @@ const useStyles = makeStyles(theme => ({
  * @param isOpen Boolean describing whether the dialog is displayed (open) or not (closed)
  * @param closeDialogHandler the handler callback when the dialog is dismissed/cancelled
  * @param submitHandler the handler callback when the dialog is submitted
- * @param environmentName the name of the environment that will be added to the app's CICD pipeline
+ * @param environmentName the name of the environment that will be added to the app's CI/CD pipeline
+ * @param namespaceDefault
+ * @param iamRoleArnDefault
  * @namespaceDefault suggestions on what the user could enter for a namespace
  * @iamRoleArnDefault suggestions on what the user could enter for the IAM role ARN
  * @returns
@@ -55,61 +63,91 @@ export const AwsEksEnvPromoDialog = ({
 }: {
   isOpen: boolean;
   closeDialogHandler: () => void;
-  submitHandler: (namespace: string, iamRoleArn: string, roleBehavior: string) => void;
+  submitHandler: (
+    namespace: string,
+    iamRoleArn: string,
+    roleBehavior: string,
+  ) => void;
   environmentName: string;
   namespaceDefault: string;
   iamRoleArnDefault: string;
 }) => {
-
   const classes = useStyles();
 
-  const [namespace, setNamespace] = useState<string>("");
+  const [namespace, setNamespace] = useState<string>('');
   const [namespaceIsInvalid, setNamespaceIsInvalid] = useState(false);
-  const [namespaceDescription, setNamespaceDescription] = useState<string>(`The k8s namespace to assign to application resources for the ${environmentName} environment`);
+  const [namespaceDescription, setNamespaceDescription] = useState<string>(
+    `The k8s namespace to assign to application resources for the ${environmentName} environment`,
+  );
 
-  const [iamRoleArn, setIamRoleArn] = useState<string>("");
+  const [iamRoleArn, setIamRoleArn] = useState<string>('');
   const [iamRoleArnIsInvalid, setIamRoleArnIsInvalid] = useState(false);
-  const [iamRoleArnDescription, setIamRoleArnDescription] = useState<string>("Existing IAM role to grant namespace privileges to");
+  const [iamRoleArnDescription, setIamRoleArnDescription] = useState<string>(
+    'Existing IAM role to grant namespace privileges to',
+  );
 
-  const [roleBehavior, setRoleBehavior] = useState<string>("create_new_k8s_namespace_admin_iam_role");
-
-  const submitNewEnvironmentHandler = () => {
-    if (roleBehavior === 'existing_new_k8s_namespace_admin_iam_role' && !iamRoleArn) {
-      checkIamRoleArn();
-      return;
-    }
-    if (namespaceIsInvalid || (iamRoleArnIsInvalid && roleBehavior === 'existing_new_k8s_namespace_admin_iam_role')) {
-      return;
-    }
-    closeDialogHandler();
-    submitHandler(namespace as string, iamRoleArn as string, roleBehavior as string);
-  };
-
-  const checkNamespace = () => {
-    if (!namespace) {
-      setNamespaceDescription("Cannot be Empty");
-      setNamespaceIsInvalid(true);
-    } else {
-      setNamespaceDescription(`The k8s namespace to assign to application resources for the ${environmentName} environment`);
-      setNamespaceIsInvalid(false);
-    }
-  };
+  const [roleBehavior, setRoleBehavior] = useState<string>(
+    'create_new_k8s_namespace_admin_iam_role',
+  );
 
   const checkIamRoleArn = () => {
     if (!iamRoleArn) {
-      setIamRoleArnDescription("Cannot be Empty");
+      setIamRoleArnDescription('Cannot be Empty');
       setIamRoleArnIsInvalid(true);
     } else {
-      setIamRoleArnDescription("Existing IAM role to grant namespace privileges to");
+      setIamRoleArnDescription(
+        'Existing IAM role to grant namespace privileges to',
+      );
       setIamRoleArnIsInvalid(false);
     }
   };
 
+  const submitNewEnvironmentHandler = () => {
+    if (
+      roleBehavior === 'existing_new_k8s_namespace_admin_iam_role' &&
+      !iamRoleArn
+    ) {
+      checkIamRoleArn();
+      return;
+    }
+    if (
+      namespaceIsInvalid ||
+      (iamRoleArnIsInvalid &&
+        roleBehavior === 'existing_new_k8s_namespace_admin_iam_role')
+    ) {
+      return;
+    }
+    closeDialogHandler();
+    submitHandler(namespace, iamRoleArn, roleBehavior);
+  };
+
+  const checkNamespace = () => {
+    if (!namespace) {
+      setNamespaceDescription('Cannot be Empty');
+      setNamespaceIsInvalid(true);
+    } else {
+      setNamespaceDescription(
+        `The k8s namespace to assign to application resources for the ${environmentName} environment`,
+      );
+      setNamespaceIsInvalid(false);
+    }
+  };
+
   return (
-    <Dialog className={classes.container} open={isOpen} onClose={closeDialogHandler} fullWidth maxWidth='md' disableEnforceFocus>
+    <Dialog
+      className={classes.container}
+      open={isOpen}
+      onClose={closeDialogHandler}
+      fullWidth
+      maxWidth="md"
+      disableEnforceFocus
+    >
       <DialogTitle id="dialog-title">
         Add Environment: {environmentName}
-        <IconButton className={classes.closeButton} onClick={closeDialogHandler}>
+        <IconButton
+          className={classes.closeButton}
+          onClick={closeDialogHandler}
+        >
           <Close />
         </IconButton>
       </DialogTitle>
@@ -118,57 +156,68 @@ export const AwsEksEnvPromoDialog = ({
           <FormControl fullWidth sx={{ m: 2 }}>
             <InputLabel id="lbl-namespace-entry">K8s Namespace</InputLabel>
             <TextField
-              id={`namespace-entry`}
+              id="namespace-entry"
               size="medium"
               fullWidth
               value={namespace}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNamespace(e.target.value)}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                setNamespace(e.target.value)
+              }
               onBlur={() => checkNamespace()}
               error={namespaceIsInvalid}
               helperText={namespaceDescription}
               placeholder={namespaceDefault}
               required
-              autoFocus
-            ></TextField>
+            />
           </FormControl>
         </Grid>
         <Grid container>
           <FormControl fullWidth sx={{ m: 2 }}>
-            <InputLabel id="select-role-behavior-label">Namespace-bound Kubectl Admin Access</InputLabel>
+            <InputLabel id="select-role-behavior-label">
+              Namespace-bound Kubectl Admin Access
+            </InputLabel>
             <Select
               labelId="select-role-behavior-label"
               id="select-role-behavior"
               value={roleBehavior}
               label="Role Behavior"
-              onChange={(e: React.ChangeEvent<{
-                name?: string | undefined;
-                value: unknown;
-              }>) => setRoleBehavior(e.target.value as string)}
+              onChange={(
+                e: React.ChangeEvent<{
+                  name?: string | undefined;
+                  value: unknown;
+                }>,
+              ) => setRoleBehavior(e.target.value as string)}
             >
-              <MenuItem value="create_new_k8s_namespace_admin_iam_role">Create a separate role for the K8s namespace</MenuItem>
-              <MenuItem value="existing_new_k8s_namespace_admin_iam_role">Import existing role and grant it access to the K8s namespace</MenuItem>
+              <MenuItem value="create_new_k8s_namespace_admin_iam_role">
+                Create a separate role for the K8s namespace
+              </MenuItem>
+              <MenuItem value="existing_new_k8s_namespace_admin_iam_role">
+                Import existing role and grant it access to the K8s namespace
+              </MenuItem>
             </Select>
           </FormControl>
         </Grid>
-        {roleBehavior === 'existing_new_k8s_namespace_admin_iam_role' &&
+        {roleBehavior === 'existing_new_k8s_namespace_admin_iam_role' && (
           <Grid container>
             <FormControl fullWidth sx={{ m: 2 }}>
               <InputLabel id="lbl-iam-role-arn-entry">IAM Role</InputLabel>
               <TextField
-                id={`iam-role-arn-entry`}
+                id="iam-role-arn-entry"
                 size="medium"
                 fullWidth
                 value={iamRoleArn}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setIamRoleArn(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setIamRoleArn(e.target.value)
+                }
                 onBlur={() => checkIamRoleArn()}
                 error={iamRoleArnIsInvalid}
                 helperText={iamRoleArnDescription}
                 placeholder={iamRoleArnDefault}
                 required
-              ></TextField>
+              />
             </FormControl>
           </Grid>
-        }
+        )}
       </DialogContent>
       <DialogActions>
         <Button color="primary" onClick={submitNewEnvironmentHandler}>
@@ -181,4 +230,3 @@ export const AwsEksEnvPromoDialog = ({
     </Dialog>
   );
 };
-

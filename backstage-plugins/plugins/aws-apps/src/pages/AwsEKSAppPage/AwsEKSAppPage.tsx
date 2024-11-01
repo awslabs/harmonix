@@ -1,14 +1,15 @@
 import React from 'react';
 import { Grid } from '@material-ui/core';
 import { EntityAboutCard } from '@backstage/plugin-catalog';
-import { EntityGeneralInfoCard, EntityAppLinksCard, EntityInfrastructureInfoCard, EntityK8sAppStateCard } from '../../plugin';
 import {
-  EntityCatalogGraphCard
-} from '@backstage/plugin-catalog-graph';
+  EntityGeneralInfoCard,
+  EntityAppLinksCard,
+  EntityInfrastructureInfoCard,
+  EntityK8sAppStateCard,
+} from '../../plugin';
+import { EntityCatalogGraphCard } from '@backstage/plugin-catalog-graph';
 
-interface AwsEKSAppPageProps {
-
-}
+interface AwsEKSAppPageProps {}
 
 /** @public */
 export function AwsEKSAppPage(_props: AwsEKSAppPageProps) {
@@ -18,7 +19,11 @@ export function AwsEKSAppPage(_props: AwsEKSAppPageProps) {
         <EntityAboutCard variant="gridItem" />
       </Grid>
       <Grid item md={6} xs={12}>
-        <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
+        <EntityCatalogGraphCard
+          variant="gridItem"
+          height={400}
+          showArrowHeads
+        />
       </Grid>
       <Grid item md={6} xs={12}>
         <EntityAppLinksCard />
@@ -35,9 +40,5 @@ export function AwsEKSAppPage(_props: AwsEKSAppPageProps) {
     </Grid>
   );
 
-  return (
-    <>
-      {awsEKSAppViewContent}
-    </>
-  );
+  return <>{awsEKSAppViewContent}</>;
 }

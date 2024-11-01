@@ -9,14 +9,19 @@ import { useAnnotationsFromEntity } from '../../hooks/custom-hooks';
 import { isAnnotationsAvailable } from '../../plugin';
 import { Entity } from '@backstage/catalog-model';
 
-const AnnotationTypeTable = ({ entity, type }: { entity: Entity; type: string }) => {
+const AnnotationTypeTable = ({
+  entity,
+  type,
+}: {
+  entity: Entity;
+  type: string;
+}) => {
   const initAnnotations = { ...useAnnotationsFromEntity(entity) };
 
   Object.keys(initAnnotations).forEach(key => {
-    // If annotation is of the correct keep it
+    // If the annotation is of the correct type, keep it
     if (key.includes(type)) {
-      console.log(key);
-      // Seperate out Annotation
+      // Separate out Annotation
       let newKey = key.replace(`${type}/`, '').replace(/-/g, ' ');
       // Capital case the annotation
       newKey = newKey
@@ -28,13 +33,22 @@ const AnnotationTypeTable = ({ entity, type }: { entity: Entity; type: string })
     delete initAnnotations[key];
   });
 
-  return <GenericTable title={`Annotations Table (${type})`} object={initAnnotations} />;
+  return (
+    <GenericTable
+      title={`Annotations Table (${type})`}
+      object={initAnnotations}
+    />
+  );
 };
 
 export const AnnotationWidget = ({ type }: { type: string }) => {
   const { entity } = useEntity();
   return !isAnnotationsAvailable(entity) ? (
-    <EmptyState missing="data" title="No Annotations to show" description="Annotations would show here" />
+    <EmptyState
+      missing="data"
+      title="No Annotations to show"
+      description="Annotations would show here"
+    />
   ) : (
     <AnnotationTypeTable type={type} entity={entity} />
   );

@@ -23,7 +23,7 @@ export function useDynamicColumns(
     useMediaQuery((theme: Theme) => theme.breakpoints.up('xs')) ? 'xs' : null,
   ];
 
-  let numOfCols = 1;
+  let numOfCols: number;
 
   if (typeof cols === 'number') {
     numOfCols = cols;

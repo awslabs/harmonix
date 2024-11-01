@@ -4,55 +4,66 @@
 import { InfoCard, EmptyState } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { LinearProgress } from '@material-ui/core';
-import { Button, CardContent, Divider, Grid, Typography } from '@mui/material';
+import Button from '@mui/material/Button';
+import CardContent from '@mui/material/CardContent';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 import React, { useState, useEffect, useRef } from 'react';
-import { DescribeStackEventsCommandOutput, UpdateStackCommandOutput, CreateStackCommandOutput, DeleteStackCommandOutput, } from "@aws-sdk/client-cloudformation";
+import {
+  DescribeStackEventsCommandOutput,
+  UpdateStackCommandOutput,
+  CreateStackCommandOutput,
+  DeleteStackCommandOutput,
+} from '@aws-sdk/client-cloudformation';
 import { opaApiRef } from '../../api';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { formatWithTime } from '../../helpers/date-utils';
 import { useCancellablePromise } from '../../hooks/useCancellablePromise';
-import { AWSComponent, AWSServerlessAppDeploymentEnvironment, CloudFormationStack, getGitCredentailsSecret } from '@aws/plugin-aws-apps-common-for-backstage';
+import {
+  AWSComponent,
+  AWSServerlessAppDeploymentEnvironment,
+  CloudFormationStack,
+  getGitCredentailsSecret,
+} from '@aws/plugin-aws-apps-common-for-backstage';
 
 type stackEvent = {
   action: string | undefined;
   resourceType: string | undefined;
   logicalResourceId: string | undefined;
-}
+};
 
-const eventStyle = { paddingRight: "15px" };
+const eventStyle = { paddingRight: '15px' };
 
 const OpaAppStateOverview = ({
-  input: { awsComponent, stack, s3BucketName, refresh }
-}: { input: { awsComponent: AWSComponent, stack: CloudFormationStack, s3BucketName: string, refresh: VoidFunction } }) => {
-  const api = useApi(opaApiRef)
+  input: { awsComponent, stack, s3BucketName, refresh },
+}: {
+  input: {
+    awsComponent: AWSComponent;
+    stack: CloudFormationStack;
+    s3BucketName: string;
+    refresh: VoidFunction;
+  };
+}) => {
+  const api = useApi(opaApiRef);
 
   const [polling, setPolling] = useState(false);
   const [pollingEnabled, setPollingEnabled] = useState(true);
   const [events, setEvents] = useState<stackEvent[]>([]);
-  const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
+  const [error, setError] = useState<{
+    isError: boolean;
+    errorMsg: string | null;
+  }>({ isError: false, errorMsg: null });
   const timerRef = useRef<any>(null);
-  const { cancellablePromise } = useCancellablePromise({ rejectOnCancel: true });
+  const { cancellablePromise } = useCancellablePromise({
+    rejectOnCancel: true,
+  });
   const repoInfo = awsComponent.getRepoInfo();
-
-  useEffect(() => {
-
-    if (pollingEnabled && stack.stackDeployStatus.endsWith('PROGRESS')) {
-      getStackEvents().then(_ => { });
-    }
-
-    return () => {
-      setPollingEnabled(false);
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-      }
-
-    }
-
-  }, []);
 
   /*
   Gets the stack event details
   */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   async function getStackEvents() {
     setPolling(true);
 
@@ -64,134 +75,164 @@ const OpaAppStateOverview = ({
       }
       count++;
       try {
-        const stackEvents = await cancellablePromise<DescribeStackEventsCommandOutput>(api.getStackEvents({
-          stackName: stack.stackName,
-        }));
+        const stackEvents =
+          await cancellablePromise<DescribeStackEventsCommandOutput>(
+            api.getStackEvents({
+              stackName: stack.stackName,
+            }),
+          );
 
         if (!stackEvents.StackEvents) {
           break;
         }
 
         const mostRecentEvent = stackEvents.StackEvents[0];
-        const isDone = mostRecentEvent.ResourceType === 'AWS::CloudFormation::Stack'
-          && !!mostRecentEvent.ResourceStatus
-          && (mostRecentEvent.ResourceStatus!.endsWith('COMPLETE') || mostRecentEvent.ResourceStatus!.endsWith('FAILED'))
+        const isDone =
+          mostRecentEvent.ResourceType === 'AWS::CloudFormation::Stack' &&
+          !!mostRecentEvent.ResourceStatus &&
+          (mostRecentEvent.ResourceStatus.endsWith('COMPLETE') ||
+            mostRecentEvent.ResourceStatus.endsWith('FAILED'));
 
         if (isDone) {
           break;
         }
 
         if (stack.lastUpdatedTime && stackEvents.StackEvents[0].Timestamp) {
-          let eventsLastUpdated = formatWithTime(new Date(stackEvents.StackEvents[0].Timestamp));
-          eventsLastUpdated = eventsLastUpdated.substring(0, eventsLastUpdated.indexOf('('));
+          let eventsLastUpdated = formatWithTime(
+            new Date(stackEvents.StackEvents[0].Timestamp),
+          );
+          eventsLastUpdated = eventsLastUpdated.substring(
+            0,
+            eventsLastUpdated.indexOf('('),
+          );
           let stackLastUpdated = stack.lastUpdatedTime;
-          stackLastUpdated = stackLastUpdated.substring(0, stackLastUpdated.indexOf('('));
+          stackLastUpdated = stackLastUpdated.substring(
+            0,
+            stackLastUpdated.indexOf('('),
+          );
         }
 
         let maxEventsShown = 5;
-        if (stackEvents.StackEvents.length < (maxEventsShown)) {
+        if (stackEvents.StackEvents.length < maxEventsShown) {
           maxEventsShown = stackEvents.StackEvents.length;
         }
 
         // truncate the events list using slice and only show the most recent events
-        const visibleEvents: stackEvent[] = stackEvents.StackEvents.slice(0, maxEventsShown).map(ev => {
+        const visibleEvents: stackEvent[] = stackEvents.StackEvents.slice(
+          0,
+          maxEventsShown,
+        ).map(ev => {
           return {
             action: ev.ResourceStatus,
             resourceType: ev.ResourceType,
-            logicalResourceId: ev.LogicalResourceId
+            logicalResourceId: ev.LogicalResourceId,
           };
         });
 
         setEvents(visibleEvents);
-
-      } catch (e) {
-        if ((e as any).isCanceled) {
+      } catch (e: any) {
+        if (e.isCanceled) {
           isCanceled = true;
         } else {
-          console.error(e);
-          setError({ isError: true, errorMsg: `Unexpected error occurred while retrieving event data: ${e}` });
+          setError({
+            isError: true,
+            errorMsg: `Unexpected error occurred while retrieving event data: ${e}`,
+          });
         }
         break;
       }
-
     }
 
     if (!isCanceled) {
       setPolling(false);
       refresh();
     }
-
   }
+
+  useEffect(() => {
+    if (pollingEnabled && stack.stackDeployStatus.endsWith('PROGRESS')) {
+      getStackEvents().then(_ => {});
+    }
+
+    return () => {
+      setPollingEnabled(false);
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [getStackEvents, pollingEnabled, stack.stackDeployStatus]);
 
   function sleep(ms: number) {
     return new Promise(resolve => {
-
       const resolveHandler = () => {
         clearTimeout(timerRef.current);
         resolve(null);
-      }
+      };
       timerRef.current = setTimeout(resolveHandler, ms);
     });
   }
 
-  const handleStartDeployment = async () => {
-    if (stack.stackDeployStatus.includes('STAGED')) {
-      return handleCreateDeployment();
-    } else {
-      return handleUpdateDeployment();
-    }
-  }
-
   const handleUpdateDeployment = async () => {
-
     setEvents([]);
     setPolling(true);
 
     try {
-      await cancellablePromise<UpdateStackCommandOutput>(api.updateStack({
-        componentName: awsComponent.componentName,
-        stackName: stack.stackName,
-        s3BucketName,
-        cfFileName: "packaged.yaml",
-        environmentName: awsComponent.currentEnvironment.environment.name,
-        repoInfo,
-        gitAdminSecret: getGitCredentailsSecret(repoInfo),
-      }));
+      await cancellablePromise<UpdateStackCommandOutput>(
+        api.updateStack({
+          componentName: awsComponent.componentName,
+          stackName: stack.stackName,
+          s3BucketName,
+          cfFileName: 'packaged.yaml',
+          environmentName: awsComponent.currentEnvironment.environment.name,
+          repoInfo,
+          gitAdminSecret: getGitCredentailsSecret(repoInfo),
+        }),
+      );
 
-      getStackEvents();
-    } catch (e) {
-      if (!(e as any).isCanceled) {
-        console.error(e);
-        setError({ isError: true, errorMsg: `Unexpected error occurred while updating the deployment: ${e}` });
+      await getStackEvents();
+    } catch (e: any) {
+      if (!e.isCanceled) {
+        setError({
+          isError: true,
+          errorMsg: `Unexpected error occurred while updating the deployment: ${e}`,
+        });
       }
     }
-
   };
 
   const handleCreateDeployment = async () => {
-
     setEvents([]);
     setPolling(true);
 
     try {
-      await cancellablePromise<CreateStackCommandOutput>(api.createStack({
-        componentName: awsComponent.componentName,
-        stackName: stack.stackName,
-        s3BucketName,
-        cfFileName: "packaged.yaml",
-        environmentName: awsComponent.currentEnvironment.environment.name,
-        repoInfo,
-        gitAdminSecret: getGitCredentailsSecret(repoInfo),
-      }));
+      await cancellablePromise<CreateStackCommandOutput>(
+        api.createStack({
+          componentName: awsComponent.componentName,
+          stackName: stack.stackName,
+          s3BucketName,
+          cfFileName: 'packaged.yaml',
+          environmentName: awsComponent.currentEnvironment.environment.name,
+          repoInfo,
+          gitAdminSecret: getGitCredentailsSecret(repoInfo),
+        }),
+      );
 
-      getStackEvents();
-    } catch (e) {
-      if (!(e as any).isCanceled) {
-        console.error(e);
-        setError({ isError: true, errorMsg: `Unexpected error occurred while creating the deployment: ${e}` });
+      await getStackEvents();
+    } catch (e: any) {
+      if (!e.isCanceled) {
+        setError({
+          isError: true,
+          errorMsg: `Unexpected error occurred while creating the deployment: ${e}`,
+        });
       }
     }
+  };
 
+  const handleStartDeployment = async () => {
+    if (stack.stackDeployStatus.includes('STAGED')) {
+      return handleCreateDeployment();
+    }
+    return handleUpdateDeployment();
   };
 
   const handleStopApp = async () => {
@@ -199,16 +240,20 @@ const OpaAppStateOverview = ({
     setPolling(true);
 
     try {
-      await cancellablePromise<DeleteStackCommandOutput>(api.deleteStack({
-        componentName: awsComponent.componentName,
-        stackName: stack.stackName,
-      }));
+      await cancellablePromise<DeleteStackCommandOutput>(
+        api.deleteStack({
+          componentName: awsComponent.componentName,
+          stackName: stack.stackName,
+        }),
+      );
 
-      getStackEvents();
-    } catch (e) {
-      if (!(e as any).isCanceled) {
-        console.error(e);
-        setError({ isError: true, errorMsg: `Unexpected error occurred while deleting the deployment: ${e}` });
+      await getStackEvents();
+    } catch (e: any) {
+      if (!e.isCanceled) {
+        setError({
+          isError: true,
+          errorMsg: `Unexpected error occurred while deleting the deployment: ${e}`,
+        });
       }
     }
   };
@@ -223,11 +268,14 @@ const OpaAppStateOverview = ({
   };
 
   const getStatus = (stackStatus: string): string => {
-    if (stackStatus === 'CREATE_COMPLETE' || stackStatus === 'UPDATE_COMPLETE') {
-      return "LIVE";
+    if (
+      stackStatus === 'CREATE_COMPLETE' ||
+      stackStatus === 'UPDATE_COMPLETE'
+    ) {
+      return 'LIVE';
     }
     return stackStatus;
-  }
+  };
 
   if (error.isError) {
     return <InfoCard title="Application State">{error.errorMsg}</InfoCard>;
@@ -236,29 +284,38 @@ const OpaAppStateOverview = ({
   return (
     <InfoCard title="Application State">
       <CardContent>
-        {polling &&
+        {polling && (
           <>
-            {events.length > 0 &&
+            {events.length > 0 && (
               <>
                 Latest events as of {formatWithTime(new Date())}...
-                <br /><br />
+                <br />
+                <br />
                 <table>
                   <tbody>
                     <tr>
-                      <td style={eventStyle}><b>Action</b></td>
-                      <td style={eventStyle}><b>Resource Type</b></td>
-                      <td><b>Resource ID</b></td>
+                      <td style={eventStyle}>
+                        <b>Action</b>
+                      </td>
+                      <td style={eventStyle}>
+                        <b>Resource Type</b>
+                      </td>
+                      <td>
+                        <b>Resource ID</b>
+                      </td>
                     </tr>
-                    {events.map((stackEvent, i) => <tr key={i}>
-                      <td style={eventStyle}>{stackEvent.action}</td>
-                      <td style={eventStyle}>{stackEvent.resourceType}</td>
-                      <td>{stackEvent.logicalResourceId}</td>
-                    </tr>)}
+                    {events.map((stackEvent, i) => (
+                      <tr key={i}>
+                        <td style={eventStyle}>{stackEvent.action}</td>
+                        <td style={eventStyle}>{stackEvent.resourceType}</td>
+                        <td>{stackEvent.logicalResourceId}</td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
                 <br />
               </>
-            }
+            )}
             <>Polling for updates...</>
             <br />
             <Button
@@ -271,26 +328,40 @@ const OpaAppStateOverview = ({
               Stop Polling
             </Button>
           </>
-        }
-        {!polling &&
+        )}
+        {!polling && (
           <Grid container direction="column" rowSpacing={2}>
             <Grid container>
               <Grid item xs={4}>
-                <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Status</Typography>
-                <Typography sx={{ mt: 1 }}>{getStatus(stack.stackDeployStatus)}</Typography>
+                <Typography
+                  sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
+                >
+                  Status
+                </Typography>
+                <Typography sx={{ mt: 1 }}>
+                  {getStatus(stack.stackDeployStatus)}
+                </Typography>
               </Grid>
               <Divider orientation="vertical" flexItem sx={{ mr: '-1px' }} />
               <Grid item zeroMinWidth xs={4} sx={{ pl: 1, pr: 1 }}>
-                <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Created At</Typography>
+                <Typography
+                  sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
+                >
+                  Created At
+                </Typography>
                 <Typography sx={{ mt: 1 }}>
-                  {stack.creationTime || ''}
+                  {stack.creationTime ?? ''}
                 </Typography>
               </Grid>
               <Divider orientation="vertical" flexItem sx={{ mr: '-1px' }} />
               <Grid item xs={4} sx={{ pl: 1 }}>
-                <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Last Updated</Typography>
+                <Typography
+                  sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
+                >
+                  Last Updated
+                </Typography>
                 <Typography sx={{ mt: 1 }}>
-                  {stack.lastUpdatedTime || ''}
+                  {stack.lastUpdatedTime ?? ''}
                 </Typography>
               </Grid>
             </Grid>
@@ -311,7 +382,10 @@ const OpaAppStateOverview = ({
                 disabled={stack.stackDeployStatus === 'UNSTAGED'}
                 onClick={handleStartDeployment}
               >
-                {stack.stackDeployStatus.includes('STAGED') ? 'Deploy' : 'Update'} App
+                {stack.stackDeployStatus.includes('STAGED')
+                  ? 'Deploy'
+                  : 'Update'}{' '}
+                App
               </Button>
               <Button
                 sx={{ mr: 2 }}
@@ -324,8 +398,7 @@ const OpaAppStateOverview = ({
               </Button>
             </Grid>
           </Grid>
-        }
-
+        )}
       </CardContent>
     </InfoCard>
   );
@@ -335,9 +408,10 @@ export const AppStateCard = () => {
   const awsAppLoadingStatus = useAsyncAwsApp();
 
   if (awsAppLoadingStatus.loading) {
-    return <LinearProgress />
+    return <LinearProgress />;
   } else if (awsAppLoadingStatus.component) {
-    const env = awsAppLoadingStatus.component.currentEnvironment as AWSServerlessAppDeploymentEnvironment;
+    const env = awsAppLoadingStatus.component
+      .currentEnvironment as AWSServerlessAppDeploymentEnvironment;
     const input = {
       awsComponent: awsAppLoadingStatus.component,
       s3BucketName: env.app.s3BucketName!,
@@ -345,8 +419,13 @@ export const AppStateCard = () => {
       refresh: awsAppLoadingStatus.refresh!,
     };
 
-    return <OpaAppStateOverview input={input} />
-  } else {
-    return <EmptyState missing="data" title="No state data to show" description="State data would show here" />
+    return <OpaAppStateOverview input={input} />;
   }
+  return (
+    <EmptyState
+      missing="data"
+      title="No state data to show"
+      description="State data would show here"
+    />
+  );
 };

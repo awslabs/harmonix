@@ -1,9 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  IconButton
-} from '@material-ui/core';
+import { IconButton } from '@material-ui/core';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import React, { useState } from 'react';
 
@@ -22,7 +20,9 @@ export const SecretStringComponent = ({ secret }: { secret: string }) => {
     <>
       {/* <Typography noWrap> */}
       {hidden ? secret.replaceAll(/./g, '●') : secret}
-      <IconButton onClick={toggleVisibility}>{hidden ? <VisibilityOff /> : <Visibility />}</IconButton>
+      <IconButton onClick={toggleVisibility}>
+        {hidden ? <VisibilityOff /> : <Visibility />}
+      </IconButton>
       {/* </Typography> */}
     </>
   );

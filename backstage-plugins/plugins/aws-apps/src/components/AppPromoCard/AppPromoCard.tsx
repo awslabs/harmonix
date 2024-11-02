@@ -3,14 +3,23 @@
 
 import {
   AWSComponent,
-  AWSProviderParams,
   AwsDeploymentEnvironments,
+  AWSProviderParams,
   getGitCredentailsSecret,
 } from '@aws/plugin-aws-apps-common-for-backstage';
-import { CompoundEntityRef, Entity, EntityRelation, parseEntityRef } from '@backstage/catalog-model';
+import {
+  CompoundEntityRef,
+  Entity,
+  EntityRelation,
+  parseEntityRef,
+} from '@backstage/catalog-model';
 import { EmptyState, InfoCard } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { CatalogApi, catalogApiRef, useEntity } from '@backstage/plugin-catalog-react';
+import {
+  CatalogApi,
+  catalogApiRef,
+  useEntity,
+} from '@backstage/plugin-catalog-react';
 import {
   Button,
   CardContent,
@@ -23,7 +32,9 @@ import {
   Select,
 } from '@material-ui/core';
 import InfoIcon from '@mui/icons-material/Info';
-import { Alert, AlertTitle, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Typography from '@mui/material/Typography';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
@@ -37,7 +48,11 @@ import { AwsEksEnvPromoDialog } from './AwsEksEnvPromoDialog';
 const AppPromoCard = ({
   input: { awsComponent, catalogApi, appEntity },
 }: {
-  input: { awsComponent: AWSComponent; catalogApi: CatalogApi; appEntity: Entity };
+  input: {
+    awsComponent: AWSComponent;
+    catalogApi: CatalogApi;
+    appEntity: Entity;
+  };
 }) => {
   const [envChoices, setEnvChoices] = useState<Entity[]>([]);
   const [selectedItem, setSelectedItem] = useState('');
@@ -52,7 +67,9 @@ const AppPromoCard = ({
 
   const api = useApi(opaApiRef);
 
-  function getHighestLevelEnvironment(currentEnvironments: AwsDeploymentEnvironments) {
+  function getHighestLevelEnvironment(
+    currentEnvironments: AwsDeploymentEnvironments,
+  ) {
     let highestLevel = 1;
     Object.keys(currentEnvironments).forEach(env => {
       if (highestLevel <= currentEnvironments[env].environment.level) {
@@ -62,36 +79,41 @@ const AppPromoCard = ({
     return highestLevel;
   }
 
-  function getApplicableEnvironments(
-    catalogEntities: Entity[],
-    envType: string,
-    currentEnvironments: AwsDeploymentEnvironments,
-  ): Entity[] {
-    // by now, we got applicable environments for the same runtime and that we have yet to deploy on.
-    const lowestEnvironmentLevel = getHighestLevelEnvironment(currentEnvironments);
-
-    const currentEnvKeys = Object.keys(currentEnvironments);
-
-    return catalogEntities
-      .filter(en => {
-        return (
-          en.metadata['environmentType'] === envType &&
-          !currentEnvKeys.includes(en.metadata.name) &&
-          Number.parseInt(en.metadata['level']?.toString()!) >= lowestEnvironmentLevel
-        );
-      })
-      .sort(
-        (a, b) => Number.parseInt(a.metadata['level']?.toString()!) - Number.parseInt(b.metadata['level']?.toString()!),
-      );
-  }
-
-  const filterExpression = {
-    kind: 'awsenvironment',
-    'metadata.environmentType': awsComponent.currentEnvironment.environment.envType,
-    // 'spec.system': component.currentEnvironment.environment.system, TODO: when system is implemented filter on similar system.
-  };
-
   useEffect(() => {
+    const filterExpression = {
+      kind: 'awsenvironment',
+      'metadata.environmentType':
+        awsComponent.currentEnvironment.environment.envType,
+      // 'spec.system': component.currentEnvironment.environment.system, TODO: when system is implemented filter on similar system.
+    };
+
+    function getApplicableEnvironments(
+      catalogEntities: Entity[],
+      envType: string,
+      currentEnvironments: AwsDeploymentEnvironments,
+    ): Entity[] {
+      // by now, we got applicable environments for the same runtime and that we have yet to deploy on.
+      const lowestEnvironmentLevel =
+        getHighestLevelEnvironment(currentEnvironments);
+
+      const currentEnvKeys = Object.keys(currentEnvironments);
+
+      return catalogEntities
+        .filter(en => {
+          return (
+            en.metadata.environmentType === envType &&
+            !currentEnvKeys.includes(en.metadata.name) &&
+            Number.parseInt(en.metadata.level?.toString()!, 10) >=
+              lowestEnvironmentLevel
+          );
+        })
+        .sort(
+          (a, b) =>
+            Number.parseInt(a.metadata.level?.toString()!, 10) -
+            Number.parseInt(b.metadata.level?.toString()!, 10),
+        );
+    }
+
     catalogApi.getEntities({ filter: filterExpression }).then(entities => {
       const data = getApplicableEnvironments(
         entities.items,
@@ -105,24 +127,34 @@ const AppPromoCard = ({
         setDisabled(true);
       }
     });
-  }, []);
+  }, [
+    awsComponent.currentEnvironment.environment.envType,
+    awsComponent.environments,
+    catalogApi,
+  ]);
 
-  const handleChange = (event: ChangeEvent<{ name?: string; value: unknown }>) => {
+  const handleChange = (
+    event: ChangeEvent<{ name?: string; value: unknown }>,
+  ) => {
     setSelectedItem(event.target.value as string);
   };
 
-  async function getParameters(envProviderEntity: Entity): Promise<{ [key: string]: string }> {
-    //For the current provider - set the API to the appropriate provider target
+  async function getParameters(
+    envProviderEntity: Entity,
+  ): Promise<{ [key: string]: string }> {
+    // For the current provider - set the API to the appropriate provider target
 
     const backendParamsOverrides = {
       appName: awsComponent.componentName,
-      awsAccount: envProviderEntity.metadata['awsAccount']?.toString() || '',
-      awsRegion: envProviderEntity.metadata['awsRegion']?.toString() || '',
-      prefix: envProviderEntity.metadata['prefix']?.toString() || '',
+      awsAccount: envProviderEntity.metadata.awsAccount?.toString() || '',
+      awsRegion: envProviderEntity.metadata.awsRegion?.toString() || '',
+      prefix: envProviderEntity.metadata.prefix?.toString() || '',
       providerName: envProviderEntity.metadata.name,
     };
 
-    const envType = envProviderEntity.metadata['envType']?.toString().toLowerCase();
+    const envType = envProviderEntity.metadata.envType
+      ?.toString()
+      .toLowerCase();
     if (envType === ProviderType.ECS) {
       const metaVpc = 'vpc';
       const metaRole = 'provisioningRole';
@@ -131,20 +163,25 @@ const AppPromoCard = ({
 
       const ssmValues = await Promise.all(
         metadataKeys.map(async metaKey => {
-          const paramKey = envProviderEntity.metadata[metaKey]?.toString() || metaKey;
-          const value =
-            (await api.getSSMParameter({ ssmParamName: paramKey, backendParamsOverrides })).Parameter?.Value || '';
-          return value;
+          const paramKey =
+            envProviderEntity.metadata[metaKey]?.toString() || metaKey;
+          return (
+            (
+              await api.getSSMParameter({
+                ssmParamName: paramKey,
+                backendParamsOverrides,
+              })
+            ).Parameter?.Value || ''
+          );
         }),
       );
 
-      let parametersMap = {
+      return {
         TARGET_VPCID: ssmValues[metadataKeys.indexOf(metaVpc)],
         TARGET_ECS_CLUSTER_ARN: ssmValues[metadataKeys.indexOf(metaCluster)],
         ENV_ROLE_ARN: ssmValues[metadataKeys.indexOf(metaRole)],
         // 'TARGET_ENV_AUDIT': auditTable
       };
-      return parametersMap;
     } else if (envType === ProviderType.EKS) {
       const metaVpc = 'vpc';
       const metaRole = 'provisioningRole';
@@ -153,21 +190,28 @@ const AppPromoCard = ({
 
       const ssmValues = await Promise.all(
         metadataKeys.map(async metaKey => {
-          const paramKey = envProviderEntity.metadata[metaKey]?.toString() || metaKey;
-          const value =
-            (await api.getSSMParameter({ ssmParamName: paramKey, backendParamsOverrides })).Parameter?.Value || '';
-          return value;
+          const paramKey =
+            envProviderEntity.metadata[metaKey]?.toString() || metaKey;
+          return (
+            (
+              await api.getSSMParameter({
+                ssmParamName: paramKey,
+                backendParamsOverrides,
+              })
+            ).Parameter?.Value || ''
+          );
         }),
       );
 
-      let parametersMap = {
+      return {
         TARGET_VPCID: ssmValues[metadataKeys.indexOf(metaVpc)],
         TARGET_EKS_CLUSTER_ARN: ssmValues[metadataKeys.indexOf(metaCluster)],
         ENV_ROLE_ARN: ssmValues[metadataKeys.indexOf(metaRole)],
-        TARGET_KUBECTL_LAMBDA_ARN: envProviderEntity.metadata.kubectlLambdaArn as string,
-        TARGET_KUBECTL_LAMBDA_ROLE_ARN: envProviderEntity.metadata.clusterAdminRole as string,
+        TARGET_KUBECTL_LAMBDA_ARN: envProviderEntity.metadata
+          .kubectlLambdaArn as string,
+        TARGET_KUBECTL_LAMBDA_ROLE_ARN: envProviderEntity.metadata
+          .clusterAdminRole as string,
       };
-      return parametersMap;
     } else if (envType === ProviderType.SERVERLESS) {
       const metaVpc = 'vpc';
       const metaRole = 'provisioningRole';
@@ -178,24 +222,28 @@ const AppPromoCard = ({
 
       const ssmValues = await Promise.all(
         metadataKeys.map(async metaKey => {
-          const paramKey = envProviderEntity.metadata[metaKey]?.toString() || metaKey;
-          const value =
-            (await api.getSSMParameter({ ssmParamName: paramKey, backendParamsOverrides })).Parameter?.Value || '';
-          return value;
+          const paramKey =
+            envProviderEntity.metadata[metaKey]?.toString() || metaKey;
+          return (
+            (
+              await api.getSSMParameter({
+                ssmParamName: paramKey,
+                backendParamsOverrides,
+              })
+            ).Parameter?.Value || ''
+          );
         }),
       );
 
-      let parametersMap = {
+      return {
         TARGET_VPCID: ssmValues[metadataKeys.indexOf(metaVpc)],
         ENV_ROLE_ARN: ssmValues[metadataKeys.indexOf(metaRole)],
         TARGET_PRIVATE_SUBNETS: ssmValues[metadataKeys.indexOf(metaPrivNet)],
         TARGET_PUBLIC_SUBNETS: ssmValues[metadataKeys.indexOf(metaPubNet)],
         // TARGET_ENV_AUDIT: auditTable
       };
-      return parametersMap;
-    } else {
-      throw new Error(`UNKNOWN PROVIDER TYPE" ${envType}`);
     }
+    throw new Error(`UNKNOWN PROVIDER TYPE" ${envType}`);
   }
 
   type EnvironmentProviders = {
@@ -203,24 +251,28 @@ const AppPromoCard = ({
   };
 
   async function getEnvProviders(): Promise<EnvironmentProviders> {
-    let envProviders: EnvironmentProviders = { providers: [] };
+    const envProviders: EnvironmentProviders = { providers: [] };
 
     const selectedEnv = await catalogApi.getEntities({
       filter: { kind: 'awsenvironment', 'metadata.name': selectedItem },
     });
     const envEntity = selectedEnv.items[0];
 
-    const envRequiresManualApproval = !!envEntity.metadata['deploymentRequiresApproval'];
+    const envRequiresManualApproval =
+      !!envEntity.metadata.deploymentRequiresApproval;
 
-    const envProviderRefs: EntityRelation[] | undefined = envEntity.relations?.filter(
-      relation => parseEntityRef(relation?.targetRef).kind === 'awsenvironmentprovider',
-    )!;
+    const envProviderRefs: EntityRelation[] | undefined =
+      envEntity.relations?.filter(
+        relation =>
+          parseEntityRef(relation?.targetRef).kind === 'awsenvironmentprovider',
+      )!;
 
     const providerEntities = await Promise.all(
-      envProviderRefs.map(async (entityRef: { targetRef: string | CompoundEntityRef }) => {
-        const entity = await catalogApi.getEntityByRef(entityRef.targetRef);
-        return entity;
-      }),
+      envProviderRefs.map(
+        async (entityRef: { targetRef: string | CompoundEntityRef }) => {
+          return await catalogApi.getEntityByRef(entityRef.targetRef);
+        },
+      ),
     );
 
     await Promise.all(
@@ -230,10 +282,10 @@ const AppPromoCard = ({
           environmentName: envEntity.metadata.name,
           envRequiresManualApproval,
           providerName: et?.metadata.name || '',
-          awsAccount: et?.metadata['awsAccount']?.toString() || '',
-          awsRegion: et?.metadata['awsRegion']?.toString() || '',
-          prefix: et?.metadata['prefix']?.toString() || '',
-          assumedRoleArn: et?.metadata['provisioningRole']?.toString() || '',
+          awsAccount: et?.metadata.awsAccount?.toString() || '',
+          awsRegion: et?.metadata.awsRegion?.toString() || '',
+          prefix: et?.metadata.prefix?.toString() || '',
+          assumedRoleArn: et?.metadata.provisioningRole?.toString() || '',
           parameters: providerResolvedData,
         });
       }),
@@ -248,26 +300,20 @@ const AppPromoCard = ({
 
   const closeEksDialog = () => setOpenEksDialog(false);
 
-  const submitNewEksEnvironmentHandler = (namespace: string, iamRoleArn: string, roleBehavior: string) => {
-    // console.log(`CREATE ENV - namespace=${namespace}  roleBehavior=${roleBehavior} iamRoleArn=${iamRoleArn}`);
-    createNewEnvironment({
-      ['NAMESPACE']: namespace,
-      ['APP_ADMIN_ROLE_ARN']: iamRoleArn,
-      ['K8S_IAM_ROLE_BINDING_TYPE']: roleBehavior,
-    });
-  };
-
-  const createNewEnvironment = (extraParameters?: { [key: string]: string }) => {
+  const createNewEnvironment = (extraParameters?: {
+    [key: string]: string;
+  }) => {
     setSpinning(true);
     setPromotedEnvName('');
 
     // Build a list of environment variables required to invoke a job to promote the app
-    let repoInfo = awsComponent.getRepoInfo();
+    const repoInfo = awsComponent.getRepoInfo();
     repoInfo.gitJobID = 'create-subsequent-environment-ci-config';
     getEnvProviders().then(envProviders => {
       const promoBody = {
         envName: selectedItem,
-        envRequiresManualApproval: envProviders.providers[0].envRequiresManualApproval,
+        envRequiresManualApproval:
+          envProviders.providers[0].envRequiresManualApproval,
         repoInfo,
         gitAdminSecret: getGitCredentailsSecret(repoInfo),
         providersData: envProviders.providers,
@@ -293,7 +339,7 @@ const AppPromoCard = ({
 
           if (results.status === 'SUCCESS') {
             // Remove promoted environment from dropdown
-            const newEnvChoices = [...envChoices].filter(function (item) {
+            const newEnvChoices = [...envChoices].filter(item => {
               return item.metadata.name !== selectedItem;
             });
 
@@ -309,8 +355,7 @@ const AppPromoCard = ({
             setIsPromotionSuccessful(false);
           }
         })
-        .catch(err => {
-          console.log(err);
+        .catch(() => {
           setSpinning(false);
           setPromotedEnvName(selectedItem);
           setIsPromotionSuccessful(false);
@@ -318,23 +363,46 @@ const AppPromoCard = ({
     });
   };
 
+  const submitNewEksEnvironmentHandler = (
+    namespace: string,
+    iamRoleArn: string,
+    roleBehavior: string,
+  ) => {
+    // console.log(`CREATE ENV - namespace=${namespace}  roleBehavior=${roleBehavior} iamRoleArn=${iamRoleArn}`);
+    createNewEnvironment({
+      ['NAMESPACE']: namespace,
+      ['APP_ADMIN_ROLE_ARN']: iamRoleArn,
+      ['K8S_IAM_ROLE_BINDING_TYPE']: roleBehavior,
+    });
+  };
+
   const handleClick = () => {
     if (!selectedItem) {
+      // eslint-disable-next-line no-alert
       alert('Select an Environment');
       return;
     }
 
-    const envType = awsComponent.currentEnvironment.environment.envType.toLowerCase();
+    const envType =
+      awsComponent.currentEnvironment.environment.envType.toLowerCase();
 
     // Show dialog asking user for additional EKS input
     if (envType === ProviderType.EKS) {
-      if (appEntity.metadata.appData && Object.keys(appEntity.metadata.appData).length) {
+      if (
+        appEntity.metadata.appData &&
+        Object.keys(appEntity.metadata.appData).length
+      ) {
         const firstEnv = Object.values(appEntity.metadata.appData)[0];
-        const firstEnvProvider = Object.values(firstEnv)[0] as { Namespace: string; AppAdminRoleArn: string };
+        const firstEnvProvider = Object.values(firstEnv)[0] as {
+          Namespace: string;
+          AppAdminRoleArn: string;
+        };
         setSuggestedEksNamespace(
           `suggestions: "${appEntity.metadata.name}", "${appEntity.metadata.name}-${selectedItem}", "${firstEnvProvider.Namespace}"`,
         );
-        setSuggestedIamRoleArn(`suggestions: "${firstEnvProvider.AppAdminRoleArn}"`);
+        setSuggestedIamRoleArn(
+          `suggestions: "${firstEnvProvider.AppAdminRoleArn}"`,
+        );
       }
 
       setOpenEksDialog(true);
@@ -351,9 +419,14 @@ const AppPromoCard = ({
           <Grid container spacing={2}>
             <Grid item zeroMinWidth xs={12}>
               {isPromotionSuccessful && !!promotedEnvName && (
-                <Alert sx={{ mb: 2 }} severity="success" onClose={handleCloseAlert}>
+                <Alert
+                  sx={{ mb: 2 }}
+                  severity="success"
+                  onClose={handleCloseAlert}
+                >
                   <AlertTitle>Success</AlertTitle>
-                  <strong>{promotedEnvName}</strong> was successfully scheduled for deployment!
+                  <strong>{promotedEnvName}</strong> was successfully scheduled
+                  for deployment!
                   {!!promoteResultMessage && (
                     <>
                       <br />
@@ -364,9 +437,14 @@ const AppPromoCard = ({
                 </Alert>
               )}
               {!isPromotionSuccessful && !!promotedEnvName && (
-                <Alert sx={{ mb: 2 }} severity="error" onClose={handleCloseAlert}>
+                <Alert
+                  sx={{ mb: 2 }}
+                  severity="error"
+                  onClose={handleCloseAlert}
+                >
                   <AlertTitle>Error</AlertTitle>
-                  Failed to schedule <strong>{promotedEnvName}</strong> deployment.
+                  Failed to schedule <strong>{promotedEnvName}</strong>{' '}
+                  deployment.
                   {!!promoteResultMessage && (
                     <>
                       <br />
@@ -390,7 +468,9 @@ const AppPromoCard = ({
             </Grid>
             <Grid item zeroMinWidth xs={12}>
               <FormControl>
-                <InputLabel id="demo-simple-select-helper-label">Environments</InputLabel>
+                <InputLabel id="demo-simple-select-helper-label">
+                  Environments
+                </InputLabel>
                 <Select
                   labelId="demo-simple-select-helper-label"
                   id="demo-simple-select-helper"
@@ -402,25 +482,31 @@ const AppPromoCard = ({
                   {envChoices.map(entity => {
                     const env = entity.metadata.name;
                     return (
-                      <MenuItem key={'ID' + env} value={env}>
+                      <MenuItem key={`ID${env}`} value={env}>
                         {env}
                       </MenuItem>
                     );
                   })}
                 </Select>
-                <FormHelperText>Select the environment you wish to start deploying to.</FormHelperText>
+                <FormHelperText>
+                  Select the environment you wish to start deploying to.
+                </FormHelperText>
               </FormControl>
             </Grid>
             <Grid item zeroMinWidth xs={12}>
               <Typography noWrap>
-                <Button variant="contained" onClick={handleClick} disabled={disabled}>
+                <Button
+                  variant="contained"
+                  onClick={handleClick}
+                  disabled={disabled}
+                >
                   Add
                 </Button>
               </Typography>
             </Grid>
           </Grid>
         </Grid>
-        <Typography margin={'10px'}>
+        <Typography margin="10px">
           <AwsEksEnvPromoDialog
             isOpen={openEksDialog}
             submitHandler={submitNewEksEnvironmentHandler}
@@ -430,7 +516,10 @@ const AppPromoCard = ({
             iamRoleArnDefault={suggestedIamRoleArn}
           />
         </Typography>
-        <Backdrop sx={{ color: '#fff', zIndex: theme => theme.zIndex.drawer + 1 }} open={spinning}>
+        <Backdrop
+          sx={{ color: '#fff', zIndex: theme => theme.zIndex.drawer + 1 }}
+          open={spinning}
+        >
           <CircularProgress color="inherit" />
         </Backdrop>
       </CardContent>
@@ -454,7 +543,12 @@ export const AppPromoWidget = () => {
     };
 
     return <AppPromoCard input={input} />;
-  } else {
-    return <EmptyState missing="data" title="Failed to load App Promo Card" description="Can't fetch data" />;
   }
+  return (
+    <EmptyState
+      missing="data"
+      title="Failed to load App Promo Card"
+      description="Can't fetch data"
+    />
+  );
 };

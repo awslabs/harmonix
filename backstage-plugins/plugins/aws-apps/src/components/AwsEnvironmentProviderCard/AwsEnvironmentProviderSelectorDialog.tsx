@@ -59,23 +59,24 @@ export const AwsEnvironmentProviderSelectorDialog = ({
   providersInput: AWSEnvironmentProviderRecord[];
 }) => {
   const classes = useStyles();
-  const [selectedProvider, setSelectedProvider] = useState<AWSEnvironmentProviderRecord>();
+  const [selectedProvider, setSelectedProvider] =
+    useState<AWSEnvironmentProviderRecord>();
 
   const handleChangeSelectedProvider = (event: SelectChangeEvent) => {
-    const selectedProvider = event.target.value as string;
+    const newProvider = event.target.value as string;
     const matchingProviders = providersInput.filter(providerRecord => {
-      return selectedProvider === `${providerRecord.prefix}:${providerRecord.name}`;
+      return newProvider === `${providerRecord.prefix}:${providerRecord.name}`;
     });
 
-    if (matchingProviders.length != 1) {
-      console.error(`Failed to find provider matching ${selectedProvider}`);
+    if (matchingProviders.length !== 1) {
+      // console.error(`Failed to find provider matching ${newProvider}`);
     } else {
       setSelectedProvider(matchingProviders[0]);
     }
   };
 
   const localSelectHandler = () => {
-    // if there's a selected value - rely the item to the external caller
+    // if there's a selected value - relay the item to the external caller
     if (selectedProvider) {
       selectHandler(selectedProvider);
     }
@@ -99,18 +100,25 @@ export const AwsEnvironmentProviderSelectorDialog = ({
   const getSelectedProvider = () => {
     if (selectedProvider) {
       return `${selectedProvider?.prefix}:${selectedProvider?.name}`;
-    } else {
-      return;
     }
+    return undefined;
   };
 
   useEffect(() => {}, []);
 
   return (
-    <Dialog className={classes.container} open={isOpen} onClose={closeDialogHandler} disableEnforceFocus>
+    <Dialog
+      className={classes.container}
+      open={isOpen}
+      onClose={closeDialogHandler}
+      disableEnforceFocus
+    >
       <DialogTitle id="dialog-title">
         Available Providers
-        <IconButton className={classes.closeButton} onClick={closeDialogHandler}>
+        <IconButton
+          className={classes.closeButton}
+          onClick={closeDialogHandler}
+        >
           <Close />
         </IconButton>
       </DialogTitle>

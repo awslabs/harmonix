@@ -1,7 +1,10 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { AssociatedResources, ResourceBinding } from '@aws/plugin-aws-apps-common-for-backstage';
+import {
+  AssociatedResources,
+  ResourceBinding,
+} from '@aws/plugin-aws-apps-common-for-backstage';
 import { CatalogApi } from '@backstage/plugin-catalog-react';
 import {
   Button,
@@ -49,7 +52,6 @@ const useStyles = makeStyles(theme => ({
  * with corresponding table data
  * @param columns An array of Column descriptors.  See material-table.com/#/docs/all-props for available fields
  * @param tableData An array of data objects to display in the table
- * @param resource The AWS resource type to display its details.  Only SSM Parameters and SecretsManager secrets are supported
  * @returns
  */
 const ResourceSelectorTable = ({
@@ -59,7 +61,7 @@ const ResourceSelectorTable = ({
   tableData: ResourceBinding[];
   selectedRowCallback: (item: ResourceBinding) => void;
 }) => {
-  /*const classes = */ useStyles();
+  /* const classes = */ useStyles();
   const [selectedRadio, setSelectedRadio] = useState<number>();
 
   const selectedRow = (item: ResourceBinding, index: number) => {
@@ -84,7 +86,7 @@ const ResourceSelectorTable = ({
             <TableCell scope="row">
               <Radio
                 value={index}
-                checked={index != selectedRadio ? false : true}
+                checked={index === selectedRadio}
                 radioGroup="resourceGroup"
                 onChange={() => selectedRow(row, index)}
               />
@@ -123,15 +125,13 @@ export const ResourceSelectorDialog = ({
   associatedResources: ResourceBinding[];
 }) => {
   const classes = useStyles();
-  // @ts-ignore
-  const [loading, setLoading] = useState(true);
-  // @ts-ignore
-  const [error, setError] = useState(false);
+  const [, setLoading] = useState(true);
+  const [, setError] = useState(false);
   const [tableData, setTableData] = useState<ResourceBinding[]>([]);
   const [selectedResource, setSelectedResource] = useState<ResourceBinding>();
 
   const localSelectHandler = () => {
-    // if there's a selected value - rely the item to the external caller
+    // if there's a selected value - relay the item to the external caller
     if (selectedResource) {
       selectHandler(selectedResource);
     }
@@ -142,9 +142,12 @@ export const ResourceSelectorDialog = ({
     setSelectedResource(item);
   };
 
-  const isResourceAlreadyBind = (resourceArn: string, associatedResources: ResourceBinding[]) => {
+  const isResourceAlreadyBind = (
+    resourceArn: string,
+    resourceBindings: ResourceBinding[],
+  ) => {
     let result: boolean = false;
-    associatedResources.forEach(r => {
+    resourceBindings.forEach(r => {
       if (r.resourceArn === resourceArn) {
         result = true;
       }
@@ -152,98 +155,111 @@ export const ResourceSelectorDialog = ({
     return result;
   };
 
-  async function getData() {
-    const tableData: ResourceBinding[] = [];
-
-    // search the catalog for resources within the same environment and provider
-    const allResources = await catalog.getEntities({ filter: { kind: 'resource', 'spec.type': 'aws-resource' } });
-    const matchedResources = allResources.items.filter(entity => {
-      const appData = entity.metadata['appData'] as any;
-      return appData && appData[currentEnvironment] && entity.metadata.name;
-    });
-
-    matchedResources.forEach(et => {
-      const etNamespace = et.metadata.namespace || 'default';
-      const etName = et.metadata.name;
-      const id = `resource:${etNamespace}/${etName}`;
-
-      const appData = et.metadata['appData'] as any;
-      const envAppData = appData[currentEnvironment] as any;
-      // find all providers - for multi providers
-      const providers = Object.keys(envAppData);
-      providers.forEach(p => {
-        const providerAppData = envAppData[p] as any;
-        if (isResourceAlreadyBind(providerAppData['Arn'], associatedResources)) {
-          return;
-        }
-        if (et.metadata['resourceType'] === 'aws-rds') {
-          //Handler for aws-rds with associated resources
-          const associatedRDSResources: AssociatedResources = {
-            resourceArn: providerAppData['DbAdminSecretArn'],
-            resourceType: 'aws-db-secret',
-            resourceName: `${etName}-secret`,
-          };
-
-          tableData.push({
-            resourceName: etName,
-            resourceType: et.metadata['resourceType']?.toString() || '',
-            provider: p,
-            resourceArn: providerAppData['Arn'],
-            id,
-            associatedResources: [associatedRDSResources],
-          });
-        } else if (et.metadata['resourceType'] === 'aws-s3') {
-          // Custom S3 bucket resource handler - add resource policy
-          const associatedS3Resources: AssociatedResources = {
-            resourceArn: providerAppData['Arn'],
-            resourceType: 'aws-s3',
-            resourceName: `${etName}-secret`,
-          };
-
-          tableData.push({
-            resourceName: etName,
-            resourceType: et.metadata['resourceType']?.toString() || '',
-            provider: p,
-            resourceArn: providerAppData['Arn'],
-            id,
-            associatedResources: [associatedS3Resources],
-          });
-        } else {
-          // General AWS resource handler
-          tableData.push({
-            resourceName: etName,
-            resourceType: et.metadata['resourceType']?.toString() || '',
-            provider: p,
-            resourceArn: providerAppData['Arn'],
-            id,
-          });
-        }
-      });
-    });
-    setTableData(tableData);
-  }
-
   useEffect(() => {
+    async function getData() {
+      const resourceBindings: ResourceBinding[] = [];
+
+      // search the catalog for resources within the same environment and provider
+      const allResources = await catalog.getEntities({
+        filter: { kind: 'resource', 'spec.type': 'aws-resource' },
+      });
+      const matchedResources = allResources.items.filter(entity => {
+        const appData = entity.metadata.appData as any;
+        return appData && appData[currentEnvironment] && entity.metadata.name;
+      });
+
+      matchedResources.forEach(et => {
+        const etNamespace = et.metadata.namespace || 'default';
+        const etName = et.metadata.name;
+        const id = `resource:${etNamespace}/${etName}`;
+
+        const appData = et.metadata.appData as any;
+        const envAppData = appData[currentEnvironment] as any;
+        // find all providers - for multi providers
+        const providers = Object.keys(envAppData);
+        providers.forEach(p => {
+          const providerAppData = envAppData[p] as any;
+          if (isResourceAlreadyBind(providerAppData.Arn, associatedResources)) {
+            return;
+          }
+          if (et.metadata.resourceType === 'aws-rds') {
+            // Handler for aws-rds with associated resources
+            const associatedRDSResources: AssociatedResources = {
+              resourceArn: providerAppData.DbAdminSecretArn,
+              resourceType: 'aws-db-secret',
+              resourceName: `${etName}-secret`,
+            };
+
+            resourceBindings.push({
+              resourceName: etName,
+              resourceType: et.metadata.resourceType?.toString() || '',
+              provider: p,
+              resourceArn: providerAppData.Arn,
+              id,
+              associatedResources: [associatedRDSResources],
+            });
+          } else if (et.metadata.resourceType === 'aws-s3') {
+            // Custom S3 bucket resource handler - add resource policy
+            const associatedS3Resources: AssociatedResources = {
+              resourceArn: providerAppData.Arn,
+              resourceType: 'aws-s3',
+              resourceName: `${etName}-secret`,
+            };
+
+            resourceBindings.push({
+              resourceName: etName,
+              resourceType: et.metadata.resourceType?.toString() || '',
+              provider: p,
+              resourceArn: providerAppData.Arn,
+              id,
+              associatedResources: [associatedS3Resources],
+            });
+          } else {
+            // General AWS resource handler
+            resourceBindings.push({
+              resourceName: etName,
+              resourceType: et.metadata.resourceType?.toString() || '',
+              provider: p,
+              resourceArn: providerAppData.Arn,
+              id,
+            });
+          }
+        });
+      });
+      setTableData(resourceBindings);
+    }
+
     getData()
       .then(() => setLoading(false))
       .catch(() => {
         setError(true);
         setLoading(false);
       });
-  }, [associatedResources]);
+  }, [associatedResources, catalog, currentEnvironment]);
 
   // return the JSXElement for the details dialog box
   return (
-    <Dialog className={classes.container} open={isOpen} onClose={closeDialogHandler} maxWidth="lg">
+    <Dialog
+      className={classes.container}
+      open={isOpen}
+      onClose={closeDialogHandler}
+      maxWidth="lg"
+    >
       <DialogTitle id="dialog-title">
         Available Resources
-        <IconButton className={classes.closeButton} onClick={closeDialogHandler}>
+        <IconButton
+          className={classes.closeButton}
+          onClick={closeDialogHandler}
+        >
           <Close />
         </IconButton>
       </DialogTitle>
       <DialogContent>
         <Grid container>
-          <ResourceSelectorTable selectedRowCallback={rowSelectedHandler} tableData={tableData} />
+          <ResourceSelectorTable
+            selectedRowCallback={rowSelectedHandler}
+            tableData={tableData}
+          />
         </Grid>
       </DialogContent>
       <DialogActions>

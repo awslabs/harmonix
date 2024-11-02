@@ -8,7 +8,11 @@ import { ColumnBreakpoints } from '@backstage/plugin-catalog';
 import { AppLinksEmptyState } from './AppLinksEmptyState';
 import { AppLinksGridList } from './AppLinksGridList';
 import { IconComponent, useApp } from '@backstage/core-plugin-api';
-import { EmptyState, InfoCard, InfoCardVariants } from '@backstage/core-components';
+import {
+  EmptyState,
+  InfoCard,
+  InfoCardVariants,
+} from '@backstage/core-components';
 import { LinearProgress } from '@material-ui/core';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { AWSComponent } from '@aws/plugin-aws-apps-common-for-backstage';
@@ -57,7 +61,12 @@ export const AppLinksCard = () => {
     return <LinearProgress />;
   } else if (awsAppLoadingStatus.component) {
     return <AppLinks awsComponent={awsAppLoadingStatus.component} />;
-  } else {
-    return <EmptyState missing="data" title="Failed to load App Links" description="Can't fetch data" />;
   }
+  return (
+    <EmptyState
+      missing="data"
+      title="Failed to load App Links"
+      description="Can't fetch data"
+    />
+  );
 };

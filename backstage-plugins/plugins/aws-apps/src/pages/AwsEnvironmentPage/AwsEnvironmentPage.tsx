@@ -1,7 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { EntityAboutCard, EntityLinksCard, EntityLayout } from '@backstage/plugin-catalog';
+import {
+  EntityAboutCard,
+  EntityLinksCard,
+  EntityLayout,
+} from '@backstage/plugin-catalog';
 import { Grid } from '@material-ui/core';
 import React, { ReactNode } from 'react';
 import { EntityCatalogGraphCard } from '@backstage/plugin-catalog-graph';
@@ -19,7 +23,7 @@ import {
 } from '../../plugin';
 
 /** @public */
-export function AwsEnvironmentPage(/*{children}: AwsEnvironmentPageProps */) {
+export function AwsEnvironmentPage(/* {children}: AwsEnvironmentPageProps */) {
   const managementContent = (
     <Grid container spacing={1} alignItems="stretch">
       <Grid item md={6} xs={6}>
@@ -36,7 +40,11 @@ export function AwsEnvironmentPage(/*{children}: AwsEnvironmentPageProps */) {
             <EntityAboutCard variant="gridItem" />
           </Grid>
           <Grid item md={6} xs={12}>
-            <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
+            <EntityCatalogGraphCard
+              variant="gridItem"
+              height={400}
+              showArrowHeads
+            />
           </Grid>
           <Grid item md={6}>
             <EntityEnvironmentInfoCard />

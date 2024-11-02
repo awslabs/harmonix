@@ -24,7 +24,11 @@ export function AwsECSAppPage(_props: AwsECSAppPageProps) {
         <EntityAboutCard variant="gridItem" />
       </Grid>
       <Grid item md={6} xs={12}>
-        <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
+        <EntityCatalogGraphCard
+          variant="gridItem"
+          height={400}
+          showArrowHeads
+        />
       </Grid>
       <Grid item md={6} xs={12}>
         <EntityAppLinksCard />
@@ -36,7 +40,7 @@ export function AwsECSAppPage(_props: AwsECSAppPageProps) {
         <EntityAppStateCard />
       </Grid>
       <Grid item md={6} xs={12}>
-        <EntityAppConfigCard></EntityAppConfigCard>
+        <EntityAppConfigCard />
       </Grid>
       <Grid item md={12} xs={12}>
         <EntityInfrastructureInfoCard />

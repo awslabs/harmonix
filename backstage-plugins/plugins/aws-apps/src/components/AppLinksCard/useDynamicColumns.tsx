@@ -21,7 +21,7 @@ export function useDynamicColumns(cols: ColumnBreakpoints | number | undefined):
     useMediaQuery((theme: Theme) => theme.breakpoints.up('xs')) ? 'xs' : null,
   ];
 
-  let numOfCols = 1;
+  let numOfCols: number;
 
   if (typeof cols === 'number') {
     numOfCols = cols;

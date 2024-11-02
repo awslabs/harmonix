@@ -12,14 +12,20 @@ interface AwsSecretsManagerResourcePageProps {
 }
 
 /** @public */
-export function AwsSecretsManagerResourcePage(_props: AwsSecretsManagerResourcePageProps) {
+export function AwsSecretsManagerResourcePage(
+  _props: AwsSecretsManagerResourcePageProps,
+) {
   const rdsContent = (
     <Grid container spacing={3} alignItems="stretch">
       <Grid item md={6}>
         <EntityAboutCard variant="gridItem" />
       </Grid>
       <Grid item md={6} xs={12}>
-        <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
+        <EntityCatalogGraphCard
+          variant="gridItem"
+          height={400}
+          showArrowHeads
+        />
       </Grid>
       <Grid item md={6} xs={12}>
         <EntityLinksCard />

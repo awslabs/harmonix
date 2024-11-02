@@ -18,7 +18,7 @@ export interface ProviderInfoProps {
 }
 
 const ProviderInfo = (props: ProviderInfoProps) => {
-  let metadata = props.entity?.metadata || {};
+  const metadata = props.entity?.metadata || {};
 
   const columns: TableColumn[] = [
     {
@@ -35,10 +35,10 @@ const ProviderInfo = (props: ProviderInfoProps) => {
     },
   ];
 
-  let items: KeyValue[] = [];
+  const items: KeyValue[] = [];
   items.push({
     key: 'Prefix',
-    value: metadata['prefix']?.toString() || '',
+    value: metadata.prefix?.toString() || '',
   });
   items.push({
     key: 'Name',
@@ -47,62 +47,62 @@ const ProviderInfo = (props: ProviderInfoProps) => {
 
   items.push({
     key: 'AWS Account',
-    value: metadata['awsAccount']?.toString() || '',
+    value: metadata.awsAccount?.toString() || '',
   });
 
   items.push({
     key: 'AWS Region',
-    value: metadata['awsRegion']?.toString() || '',
+    value: metadata.awsRegion?.toString() || '',
   });
   items.push({
     key: 'Runtime',
-    value: metadata['envType']?.toString() || '',
+    value: metadata.envType?.toString() || '',
   });
   items.push({
     key: 'Audit Table',
-    value: metadata['auditTable']?.toString() || '',
+    value: metadata.auditTable?.toString() || '',
   });
   items.push({
     key: 'VPC',
-    value: metadata['vpc']?.toString() || '',
+    value: metadata.vpc?.toString() || '',
   });
-  const envType = metadata['envType']?.toString() || '';
+  const envType = metadata.envType?.toString() || '';
   if (envType === ProviderType.ECS || envType === ProviderType.EKS) {
     items.push({
       key: 'Cluster Name',
-      value: metadata['clusterName']?.toString() || '',
+      value: metadata.clusterName?.toString() || '',
     });
   }
   if (envType === ProviderType.EKS) {
     items.push({
       key: 'Node Type',
-      value: metadata['nodeType']?.toString() || '',
+      value: metadata.nodeType?.toString() || '',
     });
   }
   items.push({
     key: 'Operation Role',
-    value: metadata['operationRole']?.toString() || '',
+    value: metadata.operationRole?.toString() || '',
   });
   items.push({
     key: 'Provisioning Role',
-    value: metadata['provisioningRole']?.toString() || '',
+    value: metadata.provisioningRole?.toString() || '',
   });
   if (envType === ProviderType.EKS) {
     items.push({
       key: 'Cluster Admin Role ARN',
-      value: metadata['clusterAdminRole']?.toString() || '',
+      value: metadata.clusterAdminRole?.toString() || '',
     });
     items.push({
       key: 'API Endpoint Access',
-      value: metadata['apiAccess']?.toString() || '',
+      value: metadata.apiAccess?.toString() || '',
     });
     items.push({
       key: 'Kubectl / Helm Lambda ARN',
-      value: metadata['kubectlLambdaArn']?.toString() || '',
+      value: metadata.kubectlLambdaArn?.toString() || '',
     });
     items.push({
       key: 'Kubectl / Helm Lambda Role ARN',
-      value: metadata['kubectlLambdaAssumeRoleArn']?.toString() || '',
+      value: metadata.kubectlLambdaAssumeRoleArn?.toString() || '',
     });
   }
 

@@ -56,7 +56,7 @@ const ResourceDetailsTable = ({
   tableData,
   resource,
 }: {
-  columns: TableColumn<{}>[];
+  columns: TableColumn[];
   tableData: {}[];
   resource: AWSResource;
 }) => {
@@ -65,7 +65,14 @@ const ResourceDetailsTable = ({
   return (
     <div className={classes.container}>
       <Table
-        options={{ paging: false, padding: 'dense', search: false, showTitle: true, header: false, toolbar: false }}
+        options={{
+          paging: false,
+          padding: 'dense',
+          search: false,
+          showTitle: true,
+          header: false,
+          toolbar: false,
+        }}
         data={tableData}
         columns={columns}
         title={resource.resourceName}
@@ -94,93 +101,107 @@ export const ResourceDetailsDialog = ({
   prefix: string;
   providerName: string;
 }) => {
-  // Table column definition used for displaying basic key/value pairs
-  const kvColumns: TableColumn[] = [
-    {
-      title: 'Key',
-      field: 'key',
-      highlight: true,
-      type: 'string',
-      width: '35%',
-    },
-    {
-      title: 'Value',
-      field: 'value',
-      type: 'string',
-    },
-  ];
-
-  // Table column definition for single-values
-  const singleColumn: TableColumn[] = [
-    {
-      title: 'Value',
-      field: 'value',
-      highlight: false,
-      type: 'string',
-    },
-  ];
-
   const classes = useStyles();
   const api = useApi(opaApiRef);
   const [loading, setLoading] = useState(true);
   const [_, setError] = useState(false);
-  const [tableColumns, setTableColumns] = useState<TableColumn<{}>[]>([{}]);
+  const [tableColumns, setTableColumns] = useState<TableColumn[]>([{}]);
   const [tableData, setTableData] = useState<{}[]>([{}]);
 
-  // Get the secret details
-  async function getData() {
-    if (resource.resourceTypeId == 'AWS::SecretsManager::Secret') {
-      const secretResponse = await api.getSecret({ secretName: resource.resourceArn });
-      const rawSecret = secretResponse.SecretString ?? 'unknown';
-
-      // Process the string differently depending on whether it's a JSON string or not
-      try {
-        const parsedSecret = JSON.parse(rawSecret);
-        setTableColumns(kvColumns);
-        const jsonKeys = Object.keys(parsedSecret).sort((a, b) => {
-          if (a < b) {
-            return -1;
-          }
-          if (a > b) {
-            return 1;
-          }
-          return 0;
-        });
-        const secretTableData = jsonKeys.map((key, i) => {
-          const value = /.*password.*/i.test(key) ? (
-            <SecretStringComponent secret={parsedSecret[key]} />
-          ) : (
-            parsedSecret[key]
-          );
-          return { id: i, key, value };
-        });
-        setTableData(secretTableData);
-      } catch {
-        // not a JSON string, so just use the value as-is
-        setTableColumns(singleColumn);
-        setTableData([{ value: <SecretStringComponent secret={rawSecret} />, id: '1' }]);
-      }
-    } else if (resource.resourceTypeId == 'AWS::SSM::Parameter') {
-      const ssmParamResponse = await api.getSSMParameter({
-        ssmParamName: resource.resourceName,
-      });
-      // SSM Parameters are single-value and will only be displayed in a single column table
-      setTableColumns(singleColumn);
-      const paramValue = ssmParamResponse.Parameter?.Value ?? 'unknown';
-      const secretType = ssmParamResponse.Parameter?.Type;
-      const secret = secretType == 'SecureString' ? <SecretStringComponent secret={paramValue} /> : paramValue;
-      setTableData([{ value: secret, id: '1' }]);
-    }
-  }
-
   useEffect(() => {
+    // Table column definition used for displaying basic key/value pairs
+    const kvColumns: TableColumn[] = [
+      {
+        title: 'Key',
+        field: 'key',
+        highlight: true,
+        type: 'string',
+        width: '35%',
+      },
+      {
+        title: 'Value',
+        field: 'value',
+        type: 'string',
+      },
+    ];
+
+    // Table column definition for single-values
+    const singleColumn: TableColumn[] = [
+      {
+        title: 'Value',
+        field: 'value',
+        highlight: false,
+        type: 'string',
+      },
+    ];
+
+    // Get the secret details
+    async function getData() {
+      if (resource.resourceTypeId === 'AWS::SecretsManager::Secret') {
+        const secretResponse = await api.getSecret({
+          secretName: resource.resourceArn,
+        });
+        const rawSecret = secretResponse.SecretString ?? 'unknown';
+
+        // Process the string differently depending on whether it's a JSON string or not
+        try {
+          const parsedSecret = JSON.parse(rawSecret);
+          setTableColumns(kvColumns);
+          const jsonKeys = Object.keys(parsedSecret).sort((a, b) => {
+            if (a < b) {
+              return -1;
+            }
+            if (a > b) {
+              return 1;
+            }
+            return 0;
+          });
+          const secretTableData = jsonKeys.map((key, i) => {
+            const value = /.*password.*/i.test(key) ? (
+              <SecretStringComponent secret={parsedSecret[key]} />
+            ) : (
+              parsedSecret[key]
+            );
+            return { id: i, key, value };
+          });
+          setTableData(secretTableData);
+        } catch {
+          // not a JSON string, so use the value as-is
+          setTableColumns(singleColumn);
+          setTableData([
+            { value: <SecretStringComponent secret={rawSecret} />, id: '1' },
+          ]);
+        }
+      } else if (resource.resourceTypeId === 'AWS::SSM::Parameter') {
+        const ssmParamResponse = await api.getSSMParameter({
+          ssmParamName: resource.resourceName,
+        });
+        // SSM Parameters are single-value and will only be displayed in a single column table
+        setTableColumns(singleColumn);
+        const paramValue = ssmParamResponse.Parameter?.Value ?? 'unknown';
+        const secretType = ssmParamResponse.Parameter?.Type;
+        const secret =
+          secretType === 'SecureString' ? (
+            <SecretStringComponent secret={paramValue} />
+          ) : (
+            paramValue
+          );
+        setTableData([{ value: secret, id: '1' }]);
+      }
+    }
+
     getData()
       .then(() => setLoading(false))
       .catch(() => {
         setError(true);
         setLoading(false);
       });
-  }, []);
+  }, [
+    api,
+    resource.resourceArn,
+    resource.resourceName,
+    resource.resourceTypeId,
+  ]);
 
   if (loading) {
     return <LinearProgress />;
@@ -188,10 +209,17 @@ export const ResourceDetailsDialog = ({
 
   // return the JSXElement for the details dialog box
   return (
-    <Dialog className={classes.container} open={isOpen} onClose={closeDialogHandler}>
+    <Dialog
+      className={classes.container}
+      open={isOpen}
+      onClose={closeDialogHandler}
+    >
       <DialogTitle id="dialog-title">
         Resource Details
-        <IconButton className={classes.closeButton} onClick={closeDialogHandler}>
+        <IconButton
+          className={classes.closeButton}
+          onClick={closeDialogHandler}
+        >
           <Close />
         </IconButton>
       </DialogTitle>
@@ -204,7 +232,11 @@ export const ResourceDetailsDialog = ({
             <Typography>{resource.resourceName}</Typography>
           </Grid>
         </Grid>
-        <ResourceDetailsTable resource={resource} columns={tableColumns} tableData={tableData} />
+        <ResourceDetailsTable
+          resource={resource}
+          columns={tableColumns}
+          tableData={tableData}
+        />
       </DialogContent>
       <DialogActions>
         <Button color="primary" onClick={closeDialogHandler}>

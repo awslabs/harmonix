@@ -4,16 +4,25 @@
 import { Entity } from '@backstage/catalog-model';
 import { InfoCard } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
-import { CatalogApi, catalogApiRef, useEntity } from '@backstage/plugin-catalog-react';
+import {
+  CatalogApi,
+  catalogApiRef,
+  useEntity,
+} from '@backstage/plugin-catalog-react';
 import { Button, CardContent, Grid } from '@material-ui/core';
-import { Alert, AlertTitle, Typography } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
+import Typography from '@mui/material/Typography';
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { OPAApi, opaApiRef } from '../../api';
 import { sleep } from '../../helpers/util';
-import { getGitCredentailsSecret, getRepoInfo } from '@aws/plugin-aws-apps-common-for-backstage';
+import {
+  getGitCredentailsSecret,
+  getRepoInfo,
+} from '@aws/plugin-aws-apps-common-for-backstage';
 
 const DeleteEnvironmentPanel = ({
   input: { entity, catalogApi, api },
@@ -31,7 +40,7 @@ const DeleteEnvironmentPanel = ({
   };
 
   const [disabled, setDisabled] = useState(false);
-  let repoInfo = getRepoInfo(entity);
+  const repoInfo = getRepoInfo(entity);
   repoInfo.gitProjectGroup = 'aws-environments';
 
   const deleteRepo = () => {
@@ -40,13 +49,11 @@ const DeleteEnvironmentPanel = ({
         repoInfo,
         gitAdminSecret: getGitCredentailsSecret(repoInfo),
       })
-      .then(results => {
-        console.log(results);
+      .then(() => {
         setDeleteResultMessage('Gitlab Repository deleted.');
         setIsDeleteSuccessful(true);
       })
       .catch(error => {
-        console.log(error);
         setDeleteResultMessage(`Error deleting Repository ${error}.`);
         setSpinning(false);
         setIsDeleteSuccessful(false);
@@ -54,18 +61,18 @@ const DeleteEnvironmentPanel = ({
   };
 
   const deleteFromCatalog = async () => {
-    console.log('Deleting entity from backstage catalog');
     setDeleteResultMessage('Deleting entity from backstage catalog');
     // The entity will be removed from the catalog along with the auto-generated Location kind entity
     // which references the catalog entity
-    const uid = entity.metadata.uid || '';
+    const uid = entity.metadata.uid ?? '';
     const entityAnnotations = entity.metadata.annotations || {};
-    const entityLocation = entityAnnotations['backstage.io/managed-by-location'] || '';
+    const entityLocation =
+      entityAnnotations['backstage.io/managed-by-location'] || '';
     const entityLocationRef = await catalogApi.getLocationByRef(entityLocation);
     if (entityLocationRef) {
-      catalogApi.removeLocationById(entityLocationRef.id);
+      await catalogApi.removeLocationById(entityLocationRef.id);
     }
-    catalogApi.removeEntityByUid(uid);
+    await catalogApi.removeEntityByUid(uid);
   };
 
   const isExistingComponents = () => {
@@ -83,6 +90,7 @@ const DeleteEnvironmentPanel = ({
   };
 
   const handleClickDelete = async () => {
+    // eslint-disable-next-line no-alert
     if (confirm('Are you sure you want to delete this environment?')) {
       setSpinning(true);
       if (isExistingComponents()) {
@@ -92,23 +100,20 @@ const DeleteEnvironmentPanel = ({
         setIsDeleteSuccessful(false);
         setSpinning(false);
         return;
-      } else {
-        // Delete the repo
-        setIsDeleteSuccessful(true);
-        setDeleteResultMessage('Deleting Repository ....');
-        deleteRepo();
-        await sleep(3000);
-        setDeleteResultMessage('Deleting from catalog ....');
-        await sleep(3000);
-        deleteFromCatalog();
-        setSpinning(false);
-        setDeleteResultMessage('Redirect to home ....');
-        navigate('/');
-        setIsDeleteSuccessful(true);
-        setDisabled(false);
       }
-    } else {
-      // Do nothing!
+      // Delete the repo
+      setIsDeleteSuccessful(true);
+      setDeleteResultMessage('Deleting Repository ....');
+      deleteRepo();
+      await sleep(3000);
+      setDeleteResultMessage('Deleting from catalog ....');
+      await sleep(3000);
+      await deleteFromCatalog();
+      setSpinning(false);
+      setDeleteResultMessage('Redirect to home ....');
+      navigate('/');
+      setIsDeleteSuccessful(true);
+      setDisabled(false);
     }
   };
 
@@ -117,7 +122,9 @@ const DeleteEnvironmentPanel = ({
       <CardContent>
         <Grid container spacing={2}>
           <Grid item zeroMinWidth xs={8}>
-            <Typography sx={{ fontWeight: 'bold' }}>Delete this Environment</Typography>
+            <Typography sx={{ fontWeight: 'bold' }}>
+              Delete this Environment
+            </Typography>
           </Grid>
           <Grid item zeroMinWidth xs={12}>
             <Typography noWrap>
@@ -134,9 +141,15 @@ const DeleteEnvironmentPanel = ({
           </Grid>
           <Grid item zeroMinWidth xs={12}>
             {isDeleteSuccessful && deleteResultMessage && (
-              <Alert id="alertGood" sx={{ mb: 2 }} severity="success" onClose={handleCloseAlert}>
+              <Alert
+                id="alertGood"
+                sx={{ mb: 2 }}
+                severity="success"
+                onClose={handleCloseAlert}
+              >
                 <AlertTitle>Success</AlertTitle>
-                <strong>{entity.metadata.name}</strong> was successfully deleted!
+                <strong>{entity.metadata.name}</strong> was successfully
+                deleted!
                 {!!deleteResultMessage && (
                   <>
                     <br />
@@ -147,7 +160,12 @@ const DeleteEnvironmentPanel = ({
               </Alert>
             )}
             {!isDeleteSuccessful && deleteResultMessage && (
-              <Alert id="alertBad" sx={{ mb: 2 }} severity="error" onClose={handleCloseAlert}>
+              <Alert
+                id="alertBad"
+                sx={{ mb: 2 }}
+                severity="error"
+                onClose={handleCloseAlert}
+              >
                 <AlertTitle>Error</AlertTitle>
                 Failed to delete <strong>{entity.metadata.name}</strong>.
                 {!!deleteResultMessage && (
@@ -161,7 +179,10 @@ const DeleteEnvironmentPanel = ({
             )}
           </Grid>
         </Grid>
-        <Backdrop sx={{ color: '#fff', zIndex: theme => theme.zIndex.drawer + 1 }} open={spinning}>
+        <Backdrop
+          sx={{ color: '#fff', zIndex: theme => theme.zIndex.drawer + 1 }}
+          open={spinning}
+        >
           <CircularProgress color="inherit" />
         </Backdrop>
       </CardContent>

@@ -3,7 +3,7 @@
 
 import { Entity } from '@backstage/catalog-model';
 import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
-import { isGithubActionsAvailable } from '@backstage/plugin-github-actions';
+import { isGithubActionsAvailable } from '@backstage-community/plugin-github-actions';
 import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 import { Grid } from '@material-ui/core';
 import React, { ReactNode } from 'react';
@@ -17,11 +17,14 @@ interface AwsResourcePageProps {
   children: ReactNode;
 }
 
-export function isResourceType(resourceType: string): (entity: Entity) => boolean {
+export function isResourceType(
+  resourceType: string,
+): (entity: Entity) => boolean {
   return (entity: Entity): boolean => {
     let subType = 'N/A';
-    if (entity?.metadata?.['resourceType']) subType = entity?.metadata?.['resourceType'].toString();
-    return subType == resourceType;
+    if (entity?.metadata?.resourceType)
+      subType = entity?.metadata?.resourceType.toString();
+    return subType === resourceType;
   };
 }
 
@@ -44,7 +47,7 @@ export function AwsResourcePage(_props: AwsResourcePageProps) {
       {_props.children}
       <EntityLayout>
         <EntityLayout.Route path="/" title="Overview">
-          <AwsRDSResourcePage></AwsRDSResourcePage>
+          <AwsRDSResourcePage />
         </EntityLayout.Route>
         <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
           <CICDContent />
@@ -61,7 +64,7 @@ export function AwsResourcePage(_props: AwsResourcePageProps) {
       {_props.children}
       <EntityLayout>
         <EntityLayout.Route path="/" title="Overview">
-          <AwsS3ResourcePage></AwsS3ResourcePage>
+          <AwsS3ResourcePage />
         </EntityLayout.Route>
         <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
           <CICDContent />
@@ -92,9 +95,15 @@ export function AwsResourcePage(_props: AwsResourcePageProps) {
 
   return (
     <EntitySwitch>
-      <EntitySwitch.Case if={isResourceType('aws-rds')}>{AwsRDSResourceEntityPage}</EntitySwitch.Case>
-      <EntitySwitch.Case if={isResourceType('aws-s3')}>{AwsS3ResourceEntityPage}</EntitySwitch.Case>
-      <EntitySwitch.Case if={isResourceType('aws-secretsmanager')}>{AwsSecretsResourceEntityPage}</EntitySwitch.Case>
+      <EntitySwitch.Case if={isResourceType('aws-rds')}>
+        {AwsRDSResourceEntityPage}
+      </EntitySwitch.Case>
+      <EntitySwitch.Case if={isResourceType('aws-s3')}>
+        {AwsS3ResourceEntityPage}
+      </EntitySwitch.Case>
+      <EntitySwitch.Case if={isResourceType('aws-secretsmanager')}>
+        {AwsSecretsResourceEntityPage}
+      </EntitySwitch.Case>
       {/*
       <EntitySwitch.Case if={isResourceType('aws-sqs')}>
         {AwsSQSEntityPage}

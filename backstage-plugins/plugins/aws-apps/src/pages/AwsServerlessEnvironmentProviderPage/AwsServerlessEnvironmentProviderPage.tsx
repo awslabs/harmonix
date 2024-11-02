@@ -2,9 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Entity } from '@backstage/catalog-model';
-import { EntityAboutCard, EntityLayout, EntityLinksCard } from '@backstage/plugin-catalog';
+import {
+  EntityAboutCard,
+  EntityLayout,
+  EntityLinksCard,
+} from '@backstage/plugin-catalog';
 import { EntityCatalogGraphCard } from '@backstage/plugin-catalog-graph';
-import { isGithubActionsAvailable } from '@backstage/plugin-github-actions';
+import { isGithubActionsAvailable } from '@backstage-community/plugin-github-actions';
 import { EntityTechdocsContent } from '@backstage/plugin-techdocs';
 import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
@@ -32,7 +36,11 @@ export function AwsServerlessEnvironmentProviderPage(/* {children}: AwsEnvironme
             <EntityAboutCard variant="gridItem" />
           </Grid>
           <Grid item md={6} xs={12}>
-            <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
+            <EntityCatalogGraphCard
+              variant="gridItem"
+              height={400}
+              showArrowHeads
+            />
           </Grid>
           <Grid item md={6}>
             <EntityProviderInfoCard />

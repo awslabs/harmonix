@@ -4,7 +4,11 @@
 import { InfoCard, EmptyState } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { LinearProgress } from '@material-ui/core';
-import { Button, CardContent, Divider, Grid, Typography } from '@mui/material';
+import Button from '@mui/material/Button';
+import CardContent from '@mui/material/CardContent';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import Typography from '@mui/material/Typography';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   DescribeStackEventsCommandOutput,
@@ -34,17 +38,116 @@ const eventStyle = { paddingRight: '15px' };
 const OpaAppStateOverview = ({
   input: { awsComponent, stack, s3BucketName, refresh },
 }: {
-  input: { awsComponent: AWSComponent; stack: CloudFormationStack; s3BucketName: string; refresh: VoidFunction };
+  input: {
+    awsComponent: AWSComponent;
+    stack: CloudFormationStack;
+    s3BucketName: string;
+    refresh: VoidFunction;
+  };
 }) => {
   const api = useApi(opaApiRef);
 
   const [polling, setPolling] = useState(false);
   const [pollingEnabled, setPollingEnabled] = useState(true);
   const [events, setEvents] = useState<stackEvent[]>([]);
-  const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
+  const [error, setError] = useState<{
+    isError: boolean;
+    errorMsg: string | null;
+  }>({ isError: false, errorMsg: null });
   const timerRef = useRef<any>(null);
-  const { cancellablePromise } = useCancellablePromise({ rejectOnCancel: true });
+  const { cancellablePromise } = useCancellablePromise({
+    rejectOnCancel: true,
+  });
   const repoInfo = awsComponent.getRepoInfo();
+
+  /*
+  Gets the stack event details
+  */
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  async function getStackEvents() {
+    setPolling(true);
+
+    let isCanceled = false;
+    let count = 0;
+    while (pollingEnabled && count < 720) {
+      if (count > 0) {
+        await sleep(5000);
+      }
+      count++;
+      try {
+        const stackEvents =
+          await cancellablePromise<DescribeStackEventsCommandOutput>(
+            api.getStackEvents({
+              stackName: stack.stackName,
+            }),
+          );
+
+        if (!stackEvents.StackEvents) {
+          break;
+        }
+
+        const mostRecentEvent = stackEvents.StackEvents[0];
+        const isDone =
+          mostRecentEvent.ResourceType === 'AWS::CloudFormation::Stack' &&
+          !!mostRecentEvent.ResourceStatus &&
+          (mostRecentEvent.ResourceStatus.endsWith('COMPLETE') ||
+            mostRecentEvent.ResourceStatus.endsWith('FAILED'));
+
+        if (isDone) {
+          break;
+        }
+
+        if (stack.lastUpdatedTime && stackEvents.StackEvents[0].Timestamp) {
+          let eventsLastUpdated = formatWithTime(
+            new Date(stackEvents.StackEvents[0].Timestamp),
+          );
+          eventsLastUpdated = eventsLastUpdated.substring(
+            0,
+            eventsLastUpdated.indexOf('('),
+          );
+          let stackLastUpdated = stack.lastUpdatedTime;
+          stackLastUpdated = stackLastUpdated.substring(
+            0,
+            stackLastUpdated.indexOf('('),
+          );
+        }
+
+        let maxEventsShown = 5;
+        if (stackEvents.StackEvents.length < maxEventsShown) {
+          maxEventsShown = stackEvents.StackEvents.length;
+        }
+
+        // truncate the events list using slice and only show the most recent events
+        const visibleEvents: stackEvent[] = stackEvents.StackEvents.slice(
+          0,
+          maxEventsShown,
+        ).map(ev => {
+          return {
+            action: ev.ResourceStatus,
+            resourceType: ev.ResourceType,
+            logicalResourceId: ev.LogicalResourceId,
+          };
+        });
+
+        setEvents(visibleEvents);
+      } catch (e: any) {
+        if (e.isCanceled) {
+          isCanceled = true;
+        } else {
+          setError({
+            isError: true,
+            errorMsg: `Unexpected error occurred while retrieving event data: ${e}`,
+          });
+        }
+        break;
+      }
+    }
+
+    if (!isCanceled) {
+      setPolling(false);
+      refresh();
+    }
+  }
 
   useEffect(() => {
     if (pollingEnabled && stack.stackDeployStatus.endsWith('PROGRESS')) {
@@ -57,80 +160,7 @@ const OpaAppStateOverview = ({
         clearTimeout(timerRef.current);
       }
     };
-  }, []);
-
-  /*
-  Gets the stack event details
-  */
-  async function getStackEvents() {
-    setPolling(true);
-
-    let isCanceled = false;
-    let count = 0;
-    while (pollingEnabled && count < 720) {
-      if (count > 0) {
-        await sleep(5000);
-      }
-      count++;
-      try {
-        const stackEvents = await cancellablePromise<DescribeStackEventsCommandOutput>(
-          api.getStackEvents({
-            stackName: stack.stackName,
-          }),
-        );
-
-        if (!stackEvents.StackEvents) {
-          break;
-        }
-
-        const mostRecentEvent = stackEvents.StackEvents[0];
-        const isDone =
-          mostRecentEvent.ResourceType === 'AWS::CloudFormation::Stack' &&
-          !!mostRecentEvent.ResourceStatus &&
-          (mostRecentEvent.ResourceStatus!.endsWith('COMPLETE') || mostRecentEvent.ResourceStatus!.endsWith('FAILED'));
-
-        if (isDone) {
-          break;
-        }
-
-        if (stack.lastUpdatedTime && stackEvents.StackEvents[0].Timestamp) {
-          let eventsLastUpdated = formatWithTime(new Date(stackEvents.StackEvents[0].Timestamp));
-          eventsLastUpdated = eventsLastUpdated.substring(0, eventsLastUpdated.indexOf('('));
-          let stackLastUpdated = stack.lastUpdatedTime;
-          stackLastUpdated = stackLastUpdated.substring(0, stackLastUpdated.indexOf('('));
-        }
-
-        let maxEventsShown = 5;
-        if (stackEvents.StackEvents.length < maxEventsShown) {
-          maxEventsShown = stackEvents.StackEvents.length;
-        }
-
-        // truncate the events list using slice and only show the most recent events
-        const visibleEvents: stackEvent[] = stackEvents.StackEvents.slice(0, maxEventsShown).map(ev => {
-          return {
-            action: ev.ResourceStatus,
-            resourceType: ev.ResourceType,
-            logicalResourceId: ev.LogicalResourceId,
-          };
-        });
-
-        setEvents(visibleEvents);
-      } catch (e) {
-        if ((e as any).isCanceled) {
-          isCanceled = true;
-        } else {
-          console.error(e);
-          setError({ isError: true, errorMsg: `Unexpected error occurred while retrieving event data: ${e}` });
-        }
-        break;
-      }
-    }
-
-    if (!isCanceled) {
-      setPolling(false);
-      refresh();
-    }
-  }
+  }, [getStackEvents, pollingEnabled, stack.stackDeployStatus]);
 
   function sleep(ms: number) {
     return new Promise(resolve => {
@@ -141,14 +171,6 @@ const OpaAppStateOverview = ({
       timerRef.current = setTimeout(resolveHandler, ms);
     });
   }
-
-  const handleStartDeployment = async () => {
-    if (stack.stackDeployStatus.includes('STAGED')) {
-      return handleCreateDeployment();
-    } else {
-      return handleUpdateDeployment();
-    }
-  };
 
   const handleUpdateDeployment = async () => {
     setEvents([]);
@@ -167,11 +189,13 @@ const OpaAppStateOverview = ({
         }),
       );
 
-      getStackEvents();
-    } catch (e) {
-      if (!(e as any).isCanceled) {
-        console.error(e);
-        setError({ isError: true, errorMsg: `Unexpected error occurred while updating the deployment: ${e}` });
+      await getStackEvents();
+    } catch (e: any) {
+      if (!e.isCanceled) {
+        setError({
+          isError: true,
+          errorMsg: `Unexpected error occurred while updating the deployment: ${e}`,
+        });
       }
     }
   };
@@ -193,13 +217,22 @@ const OpaAppStateOverview = ({
         }),
       );
 
-      getStackEvents();
-    } catch (e) {
-      if (!(e as any).isCanceled) {
-        console.error(e);
-        setError({ isError: true, errorMsg: `Unexpected error occurred while creating the deployment: ${e}` });
+      await getStackEvents();
+    } catch (e: any) {
+      if (!e.isCanceled) {
+        setError({
+          isError: true,
+          errorMsg: `Unexpected error occurred while creating the deployment: ${e}`,
+        });
       }
     }
+  };
+
+  const handleStartDeployment = async () => {
+    if (stack.stackDeployStatus.includes('STAGED')) {
+      return handleCreateDeployment();
+    }
+    return handleUpdateDeployment();
   };
 
   const handleStopApp = async () => {
@@ -214,11 +247,13 @@ const OpaAppStateOverview = ({
         }),
       );
 
-      getStackEvents();
-    } catch (e) {
-      if (!(e as any).isCanceled) {
-        console.error(e);
-        setError({ isError: true, errorMsg: `Unexpected error occurred while deleting the deployment: ${e}` });
+      await getStackEvents();
+    } catch (e: any) {
+      if (!e.isCanceled) {
+        setError({
+          isError: true,
+          errorMsg: `Unexpected error occurred while deleting the deployment: ${e}`,
+        });
       }
     }
   };
@@ -233,7 +268,10 @@ const OpaAppStateOverview = ({
   };
 
   const getStatus = (stackStatus: string): string => {
-    if (stackStatus === 'CREATE_COMPLETE' || stackStatus === 'UPDATE_COMPLETE') {
+    if (
+      stackStatus === 'CREATE_COMPLETE' ||
+      stackStatus === 'UPDATE_COMPLETE'
+    ) {
       return 'LIVE';
     }
     return stackStatus;
@@ -289,18 +327,36 @@ const OpaAppStateOverview = ({
           <Grid container direction="column" rowSpacing={2}>
             <Grid container>
               <Grid item xs={4}>
-                <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Status</Typography>
-                <Typography sx={{ mt: 1 }}>{getStatus(stack.stackDeployStatus)}</Typography>
+                <Typography
+                  sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
+                >
+                  Status
+                </Typography>
+                <Typography sx={{ mt: 1 }}>
+                  {getStatus(stack.stackDeployStatus)}
+                </Typography>
               </Grid>
               <Divider orientation="vertical" flexItem sx={{ mr: '-1px' }} />
               <Grid item zeroMinWidth xs={4} sx={{ pl: 1, pr: 1 }}>
-                <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Created At</Typography>
-                <Typography sx={{ mt: 1 }}>{stack.creationTime || ''}</Typography>
+                <Typography
+                  sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
+                >
+                  Created At
+                </Typography>
+                <Typography sx={{ mt: 1 }}>
+                  {stack.creationTime ?? ''}
+                </Typography>
               </Grid>
               <Divider orientation="vertical" flexItem sx={{ mr: '-1px' }} />
               <Grid item xs={4} sx={{ pl: 1 }}>
-                <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Last Updated</Typography>
-                <Typography sx={{ mt: 1 }}>{stack.lastUpdatedTime || ''}</Typography>
+                <Typography
+                  sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}
+                >
+                  Last Updated
+                </Typography>
+                <Typography sx={{ mt: 1 }}>
+                  {stack.lastUpdatedTime ?? ''}
+                </Typography>
               </Grid>
             </Grid>
             <Grid item>
@@ -314,7 +370,10 @@ const OpaAppStateOverview = ({
                 disabled={stack.stackDeployStatus === 'UNSTAGED'}
                 onClick={handleStartDeployment}
               >
-                {stack.stackDeployStatus.includes('STAGED') ? 'Deploy' : 'Update'} App
+                {stack.stackDeployStatus.includes('STAGED')
+                  ? 'Deploy'
+                  : 'Update'}{' '}
+                App
               </Button>
               <Button
                 sx={{ mr: 2 }}
@@ -339,7 +398,8 @@ export const AppStateCard = () => {
   if (awsAppLoadingStatus.loading) {
     return <LinearProgress />;
   } else if (awsAppLoadingStatus.component) {
-    const env = awsAppLoadingStatus.component.currentEnvironment as AWSServerlessAppDeploymentEnvironment;
+    const env = awsAppLoadingStatus.component
+      .currentEnvironment as AWSServerlessAppDeploymentEnvironment;
     const input = {
       awsComponent: awsAppLoadingStatus.component,
       s3BucketName: env.app.s3BucketName!,
@@ -348,7 +408,12 @@ export const AppStateCard = () => {
     };
 
     return <OpaAppStateOverview input={input} />;
-  } else {
-    return <EmptyState missing="data" title="No state data to show" description="State data would show here" />;
   }
+  return (
+    <EmptyState
+      missing="data"
+      title="No state data to show"
+      description="State data would show here"
+    />
+  );
 };

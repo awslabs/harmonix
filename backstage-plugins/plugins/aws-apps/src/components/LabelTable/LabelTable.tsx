@@ -18,7 +18,11 @@ const LabelTable = ({ entity }: { entity: Entity }) => {
 export const LabelWidget = () => {
   const { entity } = useEntity();
   return !isLabelsAvailable(entity) ? (
-    <EmptyState missing="data" title="No Labels to show" description="Labels would show here" />
+    <EmptyState
+      missing="data"
+      title="No Labels to show"
+      description="Labels would show here"
+    />
   ) : (
     <LabelTable entity={entity} />
   );

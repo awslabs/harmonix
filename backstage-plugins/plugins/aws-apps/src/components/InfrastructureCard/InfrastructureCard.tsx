@@ -26,7 +26,10 @@ const OpaAppInfraInfo = ({
 
   const [rscGroupData, setRscGroupData] = useState<AWSServiceResources>({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
+  const [error, setError] = useState<{
+    isError: boolean;
+    errorMsg: string | null;
+  }>({ isError: false, errorMsg: null });
 
   // The default set of AWS services to show on the Infrastructure card
   // TODO: this should be externalized to configuration
@@ -43,27 +46,30 @@ const OpaAppInfraInfo = ({
     'SSM',
   ];
 
-  if (ProviderType.EKS === awsComponent.currentEnvironment.providerData.providerType) {
+  if (
+    ProviderType.EKS ===
+    awsComponent.currentEnvironment.providerData.providerType
+  ) {
     defaultServiceFilter.push('ElasticLoadBalancingV2');
     defaultServiceFilter.push('ECR');
   }
 
-  async function getData() {
-    // Validate the resource group annotation and extract the resource group name
-    // so that we can build a deepLink to the resource group page in the AWS console
-    if (!resourceGroupArn) {
-      throw new Error('Missing resource group arn');
+  useEffect(() => {
+    async function getData() {
+      // Validate the resource group annotation and extract the resource group name
+      // so that we can build a deepLink to the resource group page in the AWS console
+      if (!resourceGroupArn) {
+        throw new Error('Missing resource group arn');
+      }
+
+      const rscGroupResources = await api.getResourceGroupResources({
+        rscGroupArn: resourceGroupArn,
+      });
+
+      const data = rscGroupResources ?? {};
+      setRscGroupData(data);
     }
 
-    const rscGroupResources = await api.getResourceGroupResources({
-      rscGroupArn: resourceGroupArn,
-    });
-
-    const data = rscGroupResources ?? {};
-    setRscGroupData(data);
-  }
-
-  useEffect(() => {
     getData()
       .then(() => {
         setLoading(false);
@@ -78,7 +84,7 @@ const OpaAppInfraInfo = ({
         setError({ isError: true, errorMsg });
         setLoading(false);
       });
-  }, []);
+  }, [api, resourceGroupArn]);
 
   const title = 'AWS Infrastructure Resources';
   if (loading) {
@@ -119,14 +125,21 @@ export const InfrastructureCard = () => {
     return <LinearProgress />;
   } else if (awsAppLoadingStatus.component) {
     let input = undefined;
-    if (awsAppLoadingStatus.component.componentType === AWSComponentType.AWSApp) {
-      const env = awsAppLoadingStatus.component.currentEnvironment as AWSECSAppDeploymentEnvironment;
+    if (
+      awsAppLoadingStatus.component.componentType === AWSComponentType.AWSApp
+    ) {
+      const env = awsAppLoadingStatus.component
+        .currentEnvironment as AWSECSAppDeploymentEnvironment;
       input = {
         resourceGroupArn: env.app.resourceGroupArn,
         awsComponent: awsAppLoadingStatus.component,
       };
-    } else if (awsAppLoadingStatus.component.componentType === AWSComponentType.AWSResource) {
-      const env = awsAppLoadingStatus.component.currentEnvironment as AWSResourceDeploymentEnvironment;
+    } else if (
+      awsAppLoadingStatus.component.componentType ===
+      AWSComponentType.AWSResource
+    ) {
+      const env = awsAppLoadingStatus.component
+        .currentEnvironment as AWSResourceDeploymentEnvironment;
       input = {
         resourceGroupArn: env.resource.resourceGroupArn,
         awsComponent: awsAppLoadingStatus.component,
@@ -135,13 +148,12 @@ export const InfrastructureCard = () => {
       throw new Error('Infrastructure Card Not yet implemented!');
     }
     return <OpaAppInfraInfo input={input} />;
-  } else {
-    return (
-      <EmptyState
-        missing="data"
-        title="No infrastructure data to show"
-        description="Infrastructure data would show here"
-      />
-    );
   }
+  return (
+    <EmptyState
+      missing="data"
+      title="No infrastructure data to show"
+      description="Infrastructure data would show here"
+    />
+  );
 };

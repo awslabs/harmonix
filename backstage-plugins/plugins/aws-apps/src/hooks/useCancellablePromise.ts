@@ -59,7 +59,9 @@ export function makeCancellable(promise: Promise<any>): {
   let isCanceled = false;
   const wrappedPromise = new Promise((resolve, reject) => {
     // Suppress resolution and rejection if canceled
-    promise.then(val => !isCanceled && resolve(val)).catch(error => !isCanceled && reject(error));
+    promise
+      .then(val => !isCanceled && resolve(val))
+      .catch(error => !isCanceled && reject(error));
   });
   return {
     promise: wrappedPromise,
@@ -81,12 +83,16 @@ export function makeCancellable(promise: Promise<any>): {
 export function useCancellablePromise({ rejectOnCancel = false }): {
   cancellablePromise: <T>(p: Promise<T>) => Promise<T>;
 } {
-  const cancellable = rejectOnCancel ? makeCancellableWithErrors : makeCancellable;
+  const cancellable = rejectOnCancel
+    ? makeCancellableWithErrors
+    : makeCancellable;
   const emptyPromise = Promise.resolve(true);
 
   // test if the input argument is a cancelable promise generator
   if (cancellable(emptyPromise).cancel === undefined) {
-    throw new Error('promise wrapper argument must provide a cancel() function');
+    throw new Error(
+      'promise wrapper argument must provide a cancel() function',
+    );
   }
 
   const promises = useRef<any[]>();

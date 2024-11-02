@@ -17,8 +17,8 @@ export interface ProviderInfoProps {
 }
 
 const EnvironmentInfo = (props: ProviderInfoProps) => {
-  let metadata = props.entity?.metadata || {};
-  let spec = props.entity?.spec || {};
+  const metadata = props.entity?.metadata || {};
+  const spec = props.entity?.spec || {};
 
   const columns: TableColumn[] = [
     {
@@ -35,7 +35,7 @@ const EnvironmentInfo = (props: ProviderInfoProps) => {
     },
   ];
 
-  let items: KeyValue[] = [];
+  const items: KeyValue[] = [];
 
   items.push({
     key: 'Name',
@@ -44,37 +44,37 @@ const EnvironmentInfo = (props: ProviderInfoProps) => {
 
   items.push({
     key: 'Short Name',
-    value: metadata['shortName']?.toString() || '',
+    value: metadata.shortName?.toString() || '',
   });
 
   items.push({
     key: 'Environment Type',
-    value: metadata['environmentType']?.toString() || '',
+    value: metadata.environmentType?.toString() || '',
   });
 
   items.push({
     key: 'Account Type',
-    value: metadata['envTypeAccount']?.toString() || '',
+    value: metadata.envTypeAccount?.toString() || '',
   });
   items.push({
     key: 'Region Type',
-    value: metadata['envTypeRegion']?.toString() || '',
+    value: metadata.envTypeRegion?.toString() || '',
   });
   items.push({
     key: 'Category',
-    value: metadata['category']?.toString() || '',
+    value: metadata.category?.toString() || '',
   });
   items.push({
     key: 'Classification',
-    value: metadata['classification']?.toString() || '',
+    value: metadata.classification?.toString() || '',
   });
   items.push({
     key: 'Level',
-    value: metadata['level']?.toString() || '',
+    value: metadata.level?.toString() || '',
   });
   items.push({
     key: 'System',
-    value: spec['system']?.toString() || '',
+    value: spec.system?.toString() || '',
   });
 
   return (

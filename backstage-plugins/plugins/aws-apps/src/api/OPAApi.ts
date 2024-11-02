@@ -12,7 +12,10 @@ import { LogStream } from '@aws-sdk/client-cloudwatch-logs';
 import { ScanCommandOutput } from '@aws-sdk/client-dynamodb';
 import { Service, Task, TaskDefinition } from '@aws-sdk/client-ecs';
 import { HeadObjectCommandOutput } from '@aws-sdk/client-s3';
-import { DeleteSecretCommandOutput, GetSecretValueCommandOutput } from '@aws-sdk/client-secrets-manager';
+import {
+  DeleteSecretCommandOutput,
+  GetSecretValueCommandOutput,
+} from '@aws-sdk/client-secrets-manager';
 import { GetParameterCommandOutput } from '@aws-sdk/client-ssm';
 import {
   AWSProviderParams,
@@ -34,7 +37,9 @@ export interface OPAApi {
   setPlatformParams(appName: string, region: string): void;
   setBackendParams(backendParams: BackendParams): void;
 
-  getAuditDetails(backendParamsOverrides?: BackendParams): Promise<ScanCommandOutput>;
+  getAuditDetails(
+    backendParamsOverrides?: BackendParams,
+  ): Promise<ScanCommandOutput>;
 
   getTaskDetails({
     service,
@@ -126,7 +131,11 @@ export interface OPAApi {
     envName: string;
   }): Promise<any>;
 
-  deletePlatformSecret({ secretName }: { secretName: string }): Promise<DeleteSecretCommandOutput>;
+  deletePlatformSecret({
+    secretName,
+  }: {
+    secretName: string;
+  }): Promise<DeleteSecretCommandOutput>;
 
   deleteRepository({
     repoInfo,

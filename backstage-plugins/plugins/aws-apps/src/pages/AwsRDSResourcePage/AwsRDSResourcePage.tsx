@@ -19,7 +19,11 @@ export function AwsRDSResourcePage(_props: AwsRDSResourcePageProps) {
         <EntityAboutCard variant="gridItem" />
       </Grid>
       <Grid item md={6} xs={12}>
-        <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
+        <EntityCatalogGraphCard
+          variant="gridItem"
+          height={400}
+          showArrowHeads
+        />
       </Grid>
       <Grid item md={6} xs={12}>
         <EntityLinksCard />

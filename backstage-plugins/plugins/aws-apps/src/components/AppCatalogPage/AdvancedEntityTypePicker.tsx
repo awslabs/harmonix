@@ -7,9 +7,15 @@ import { Box } from '@material-ui/core';
 
 import { alertApiRef, useApi } from '@backstage/core-plugin-api';
 import { Select } from '@backstage/core-components';
-import { EntityTypePickerProps, useEntityTypeFilter } from '@backstage/plugin-catalog-react';
+import {
+  EntityTypePickerProps,
+  useEntityTypeFilter,
+} from '@backstage/plugin-catalog-react';
 
-function filterTypes(allTypes: string[], allowedTypes?: string[]): Record<string, string> {
+function filterTypes(
+  allTypes: string[],
+  allowedTypes?: string[],
+): Record<string, string> {
   // Before allTypes is loaded, or when a kind is entered manually in the URL, selectedKind may not
   // be present in allTypes. It should still be shown in the dropdown, but may not have the nice
   // enforced casing from the catalog-backend. This makes a key/value record for the Select options,
@@ -18,7 +24,9 @@ function filterTypes(allTypes: string[], allowedTypes?: string[]): Record<string
   let availableTypes = allTypes;
   if (allowedTypes) {
     availableTypes = availableTypes.filter(k =>
-      allowedTypes.some(a => a.toLocaleLowerCase('en-US') === k.toLocaleLowerCase('en-US')),
+      allowedTypes.some(
+        a => a.toLocaleLowerCase('en-US') === k.toLocaleLowerCase('en-US'),
+      ),
     );
   }
 
@@ -31,12 +39,10 @@ function filterTypes(allTypes: string[], allowedTypes?: string[]): Record<string
     }
     return 0;
   });
-  const typesMap = availableTypes.reduce((acc, kind) => {
+  return availableTypes.reduce((acc, kind) => {
     acc[kind.toLocaleLowerCase('en-US')] = kind;
     return acc;
   }, {} as Record<string, string>);
-
-  return typesMap;
 }
 
 /**
@@ -49,10 +55,13 @@ export interface AdvancedEntityTypePickerProps extends EntityTypePickerProps {
 }
 
 /** @public */
-export const AdvancedEntityTypePicker = (props: AdvancedEntityTypePickerProps) => {
+export const AdvancedEntityTypePicker = (
+  props: AdvancedEntityTypePickerProps,
+) => {
   const { allowedTypes, hidden, initialFilter } = props;
   const alertApi = useApi(alertApiRef);
-  const { error, availableTypes, selectedTypes, setSelectedTypes } = useEntityTypeFilter();
+  const { error, availableTypes, selectedTypes, setSelectedTypes } =
+    useEntityTypeFilter();
 
   useEffect(() => {
     if (error) {
@@ -84,7 +93,9 @@ export const AdvancedEntityTypePicker = (props: AdvancedEntityTypePickerProps) =
         label="Type"
         items={items}
         selected={(items.length > 1 ? selectedTypes[0] : undefined) ?? 'all'}
-        onChange={value => setSelectedTypes(value === 'all' ? [] : [String(value)])}
+        onChange={value =>
+          setSelectedTypes(value === 'all' ? [] : [String(value)])
+        }
       />
     </Box>
   );

@@ -41,7 +41,7 @@
           "properties": {
             "type": {
               "type": "string",
-              "description": "The type of the Environment",     
+              "description": "The type of the Environment",
               "minLength": 1
             },
             "lifecycle": {

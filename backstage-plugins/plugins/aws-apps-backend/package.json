@@ -25,7 +25,9 @@
   "backstage": {
     "role": "backend-plugin",
     "pluginId": "aws-apps-backend",
-    "pluginPackages": ["@backstage/plugin-catalog"]
+    "pluginPackages": [
+      "@aws/plugin-aws-apps-backend-for-backstage"
+    ]
   },
   "scripts": {
     "start": "backstage-cli package start",

@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { } from 'react';
+import React from 'react';
 import { EmptyState } from '@backstage/core-components';
 import { GenericTable } from '../GenericTable/GenericTable';
 import { useEntity } from '@backstage/plugin-catalog-react';
@@ -18,7 +18,11 @@ const LabelTable = ({ entity }: { entity: Entity }) => {
 export const LabelWidget = () => {
   const { entity } = useEntity();
   return !isLabelsAvailable(entity) ? (
-    <EmptyState missing="data" title="No Labels to show" description="Labels would show here" />
+    <EmptyState
+      missing="data"
+      title="No Labels to show"
+      description="Labels would show here"
+    />
   ) : (
     <LabelTable entity={entity} />
   );

@@ -4,14 +4,16 @@
 import React from 'react';
 import { Grid } from '@material-ui/core';
 import { EntityAboutCard } from '@backstage/plugin-catalog';
-import { EntityGeneralInfoCard, EntityAppStateCard, EntityInfrastructureInfoCard, EntityAppConfigCard, EntityAppLinksCard } from '../../plugin';
 import {
-  EntityCatalogGraphCard
-} from '@backstage/plugin-catalog-graph';
+  EntityGeneralInfoCard,
+  EntityAppStateCard,
+  EntityInfrastructureInfoCard,
+  EntityAppConfigCard,
+  EntityAppLinksCard,
+} from '../../plugin';
+import { EntityCatalogGraphCard } from '@backstage/plugin-catalog-graph';
 
-interface AwsECSAppPageProps {
-
-}
+interface AwsECSAppPageProps {}
 
 /** @public */
 export function AwsECSAppPage(_props: AwsECSAppPageProps) {
@@ -22,7 +24,11 @@ export function AwsECSAppPage(_props: AwsECSAppPageProps) {
         <EntityAboutCard variant="gridItem" />
       </Grid>
       <Grid item md={6} xs={12}>
-        <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
+        <EntityCatalogGraphCard
+          variant="gridItem"
+          height={400}
+          showArrowHeads
+        />
       </Grid>
       <Grid item md={6} xs={12}>
         <EntityAppLinksCard />
@@ -34,7 +40,7 @@ export function AwsECSAppPage(_props: AwsECSAppPageProps) {
         <EntityAppStateCard />
       </Grid>
       <Grid item md={6} xs={12}>
-        <EntityAppConfigCard></EntityAppConfigCard>
+        <EntityAppConfigCard />
       </Grid>
       <Grid item md={12} xs={12}>
         <EntityInfrastructureInfoCard />
@@ -42,10 +48,5 @@ export function AwsECSAppPage(_props: AwsECSAppPageProps) {
     </Grid>
   );
 
-
-  return (
-    <>
-      {awsEcsAppViewContent}
-    </>
-  );
+  return <>{awsEcsAppViewContent}</>;
 }

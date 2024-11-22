@@ -18,20 +18,14 @@ const useStyles = makeStyles({
   },
 });
 
-export function IconLink(props: {
-  href: string;
-  text?: string;
-  Icon?: IconComponent;
-}) {
+export function IconLink(props: { href: string; text?: string; Icon?: IconComponent }) {
   const { href, text, Icon } = props;
   const classes = useStyles();
 
   return (
     <Box display="flex">
       <Box mr={1} className={classes.svgIcon}>
-        <Typography component="div">
-          {Icon ? <Icon /> : <LanguageIcon />}
-        </Typography>
+        <Typography component="div">{Icon ? <Icon /> : <LanguageIcon />}</Typography>
       </Box>
       <Box flexGrow="1">
         <Link to={href} target="_blank" rel="noopener">

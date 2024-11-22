@@ -1,7 +1,8 @@
-<!-- 
+<!--
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-SPDX-License-Identifier: Apache-2.0 
+SPDX-License-Identifier: Apache-2.0
 -->
+
 # AWS Apps Demo
 
 AWS Apps Demo is a plugin to demonstrate branding options for a Backstage implementation.
@@ -19,17 +20,17 @@ yarn add --cwd packages/app @aws/plugin-aws-apps-demo-for-backstage@0.2.0
 
 ## Setup
 
-1. Configure `app-config.yaml`. See [Configuration](#configuration).  
+1. Configure `app-config.yaml`. See [Configuration](#configuration).
 
-2. Add the customer theme and sample home page route to the Backstage application.  When adding the "&lt;Route ...&gt;", ensure that the "/" root path doesn't conflict with existing routes.  If an existing route entry already uses "/", then update the route values across all routes to guarantee uniqueness.
-**Note**: Adding a custom theme will override the default themes.  If this is the first theme that you are adding to your Backstage configuration, there may be additional modifications required.  See https://backstage.io/docs/getting-started/app-custom-theme/#creating-a-custom-theme for more details on additional changes to preserve existing `lightTheme` and `darkTheme` values
+2. Add the customer theme and sample home page route to the Backstage application. When adding the "&lt;Route ...&gt;", ensure that the "/" root path doesn't conflict with existing routes. If an existing route entry already uses "/", then update the route values across all routes to guarantee uniqueness.
+   **Note**: Adding a custom theme will override the default themes. If this is the first theme that you are adding to your Backstage configuration, there may be additional modifications required. See https://backstage.io/docs/getting-started/app-custom-theme/#creating-a-custom-theme for more details on additional changes to preserve existing `lightTheme` and `darkTheme` values
 
 ```diff
 // packages/app/src/App.tsx
 + import { OPAHomePage, customerTheme } from '@aws/plugin-aws-apps-demo-for-backstage';
 + import { darkTheme, lightTheme } from '@backstage/theme';
 
-  
+
   const app = createApp({
     ...
     themes: [
@@ -67,7 +68,7 @@ yarn add --cwd packages/app @aws/plugin-aws-apps-demo-for-backstage@0.2.0
     ...
     ]
   })
-  
+
   const routes = (
     <FlatRoutes>
 -     <Route path="/" element={<Navigate to="catalog" />} />
@@ -130,10 +131,10 @@ yarn add --cwd packages/app @aws/plugin-aws-apps-demo-for-backstage@0.2.0
 
 ## Configuration
 
-AWS Apps Demo has two configuration fields.  Each of these fields are optional.  If they are not specified, then default values will be used.
+AWS Apps Demo has two configuration fields. Each of these fields are optional. If they are not specified, then default values will be used.
 
-- `logo` - a URL pointing to an image file to be used on the home page and in the SideBar when it is expanded.  The default value will point to an Amazon logo.
-- `logoIcon` - a URL pointing to an image file to be used in the SideBar when it is collapsed.  When the sidebar is collapsed, there is limited space, so this image should be a small image which is roughly square in shape.  The default value will point to a small Amazon logo.
+- `logo` - a URL pointing to an image file to be used on the home page and in the SideBar when it is expanded. The default value will point to an Amazon logo.
+- `logoIcon` - a URL pointing to an image file to be used in the SideBar when it is collapsed. When the sidebar is collapsed, there is limited space, so this image should be a small image which is roughly square in shape. The default value will point to a small Amazon logo.
 
 Note that you may also need to configure the **backend.csp.img-src** value to allow for loading images from a remote site.
 
@@ -156,7 +157,8 @@ backend:
 
 ## Next Steps
 
-The home page provided in this plugin is a simple demonstration page.  You can modify the `OPAHomePage.tsx` content to meet your needs.  See the Backstage documentation for home page setup and customization for more details on how you can customize your experience: https://backstage.io/docs/getting-started/homepage
+The home page provided in this plugin is a simple demonstration page. You can modify the `OPAHomePage.tsx` content to meet your needs. See the Backstage documentation for home page setup and customization for more details on how you can customize your experience: https://backstage.io/docs/getting-started/homepage
 
 <!-- link definitions -->
+
 [homepageImage]: docs/images/homePage.png 'AWS Apps Demo Home page'

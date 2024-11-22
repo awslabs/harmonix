@@ -2,9 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { SubvalueCell, Table, TableColumn } from '@backstage/core-components';
-import { AWSResource, AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
+import {
+  AWSResource,
+  AWSServiceResources,
+} from '@aws/plugin-aws-apps-common-for-backstage';
 import { makeStyles, Typography } from '@material-ui/core';
-import { Link } from '@mui/material';
+import Link from '@mui/material/Link';
 import React, { useState, useCallback } from 'react';
 import { ResourceDetailsDialog } from './ResourceDetailsDialog';
 
@@ -36,9 +39,19 @@ const useStyles = makeStyles(theme => ({
  * will open a dialog displaying details for the associated AWS Resource
  *
  * @param resource The AWS resource type requiring a link to display its details.
+ * @param prefix
+ * @param providerName
  * @returns JSXElement
  */
-const CustomDetailsLink = ({ resource, prefix, providerName }: { resource: AWSResource, prefix: string, providerName: string }) => {
+const CustomDetailsLink = ({
+  resource,
+  prefix,
+  providerName,
+}: {
+  resource: AWSResource;
+  prefix: string;
+  providerName: string;
+}) => {
   const [open, setOpen] = useState(false);
 
   const openDialog = () => {
@@ -51,22 +64,45 @@ const CustomDetailsLink = ({ resource, prefix, providerName }: { resource: AWSRe
       <Link component="button" underline="hover" onClick={openDialog}>
         details
       </Link>
-      <ResourceDetailsDialog resource={resource} isOpen={open} closeDialogHandler={closeDialog} prefix={prefix} providerName={providerName} />
+      <ResourceDetailsDialog
+        resource={resource}
+        isOpen={open}
+        closeDialogHandler={closeDialog}
+        prefix={prefix}
+        providerName={providerName}
+      />
     </>
   );
 };
 
 /**
- * A UI component to display an AWS service and a table of it's resources.
+ * A UI component to display an AWS service and a table of its resources.
  *
  * @param serviceName An optional short string describing the AWS service.  If the serviceName is provided, then it will be used in the header of the table; otherwise, it will not be displayed.
  * @param resources An array of AWS resource objects which below to the specified serviceName
+ * @param prefix
+ * @param providerName
  * @returns JSXElement rendering a table for an AWS service and its resources
  */
-export const DenseResourceTable = ({ serviceName, resources, prefix, providerName }: { serviceName?: string; resources: AWSResource[]; prefix: string; providerName: string; }) => {
+export const DenseResourceTable = ({
+  serviceName,
+  resources,
+  prefix,
+  providerName,
+}: {
+  serviceName?: string;
+  resources: AWSResource[];
+  prefix: string;
+  providerName: string;
+}) => {
   const classes = useStyles();
 
-  const preventRerender = useCallback((row: any): React.ReactNode => <SubvalueCell value={row.resourceName} subvalue={row.subvalue} />, []);
+  const preventRerender = useCallback(
+    (row: any): React.ReactNode => (
+      <SubvalueCell value={row.resourceName} subvalue={row.subvalue} />
+    ),
+    [],
+  );
 
   // Table column definition used for displaying key/value pairs of resource type and resource name
   const columns: TableColumn[] = [
@@ -86,13 +122,20 @@ export const DenseResourceTable = ({ serviceName, resources, prefix, providerNam
   ];
 
   const resourceItems = resources.map((r, i) => {
-    // Array of resource types which should include a 'details' subvalue
+    // Array of resource types which should include a 'details' sub-value
     // for the user to request details about the resource
     // TODO: this should be redesigned to make the specification of "detail" resources more dynamic.
     const detailTypes = ['AWS::SecretsManager::Secret', 'AWS::SSM::Parameter'];
 
-    // subvalue is a details link to be shown beneath a table cell value
-    const subvalue = detailTypes.includes(r.resourceTypeId) ? <CustomDetailsLink prefix={prefix} providerName={providerName} key={i} resource={r} /> : undefined;
+    // sub-value is a details link to be shown beneath a table cell value
+    const subvalue = detailTypes.includes(r.resourceTypeId) ? (
+      <CustomDetailsLink
+        prefix={prefix}
+        providerName={providerName}
+        key={i}
+        resource={r}
+      />
+    ) : undefined;
 
     return {
       id: i,
@@ -128,8 +171,20 @@ export const DenseResourceTable = ({ serviceName, resources, prefix, providerNam
  *
  * @param serviceName A short string describing the AWS service.
  * @param resources An array of AWS resource objects which below to the specified serviceName
+ * @param prefix
+ * @param providerName
  */
-const Service = ({ serviceName, resources, prefix, providerName }: { serviceName: string; resources: AWSResource[], prefix: string, providerName: string }) => {
+const Service = ({
+  serviceName,
+  resources,
+  prefix,
+  providerName,
+}: {
+  serviceName: string;
+  resources: AWSResource[];
+  prefix: string;
+  providerName: string;
+}) => {
   const classes = useStyles();
 
   if (!resources || resources.length === 0) {
@@ -138,8 +193,14 @@ const Service = ({ serviceName, resources, prefix, providerName }: { serviceName
 
   return (
     <>
-      <Typography className={classes.serviceTableIdentifier}>{serviceName}</Typography>
-      <DenseResourceTable resources={resources} prefix={prefix} providerName={providerName} />
+      <Typography className={classes.serviceTableIdentifier}>
+        {serviceName}
+      </Typography>
+      <DenseResourceTable
+        resources={resources}
+        prefix={prefix}
+        providerName={providerName}
+      />
     </>
   );
 };
@@ -149,13 +210,15 @@ const Service = ({ serviceName, resources, prefix, providerName }: { serviceName
  *
  * @param servicesObject an AWSServiceResources type providing a set of services and associated AWS resources to display
  * @param serviceFilter an optional array of service identifier strings which should be displayed.  Service strings should match the service name used in AWS Cloudformation syntax (e.g. "AWS::ServiceName::ResourceType"). If an empty array is provided or the parameter is not provided, then all available services will be displayed.
+ * @param prefix
+ * @param providerName
  * @returns
  */
 export const ServiceResourcesComponent = ({
   servicesObject,
   serviceFilter = [],
   prefix,
-  providerName
+  providerName,
 }: {
   servicesObject: AWSServiceResources;
   serviceFilter?: string[];
@@ -163,15 +226,32 @@ export const ServiceResourcesComponent = ({
   providerName: string;
 }) => {
   const svcKeys = Object.keys(servicesObject);
-  const filteredKeys = serviceFilter.length == 0 ? svcKeys : serviceFilter.filter(value => svcKeys.includes(value));
+  const filteredKeys =
+    serviceFilter.length === 0
+      ? svcKeys
+      : serviceFilter.filter(value => svcKeys.includes(value));
 
   filteredKeys.sort((a, b) => {
-    if (a < b) { return -1; }
-    if (a > b) { return 1; }
+    if (a < b) {
+      return -1;
+    }
+    if (a > b) {
+      return 1;
+    }
     return 0;
   });
   const serviceItems = filteredKeys.map((serviceName, i) => {
-    return <Service key={i} serviceName={serviceName} resources={servicesObject[serviceName].filter(resource => !resource.resourceName.includes('AutoDelete'))} prefix={prefix} providerName={providerName} />;
+    return (
+      <Service
+        key={i}
+        serviceName={serviceName}
+        resources={servicesObject[serviceName].filter(
+          resource => !resource.resourceName.includes('AutoDelete'),
+        )}
+        prefix={prefix}
+        providerName={providerName}
+      />
+    );
   });
 
   return <>{serviceItems}</>;

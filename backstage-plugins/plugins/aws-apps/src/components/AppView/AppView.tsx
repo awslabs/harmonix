@@ -1,17 +1,15 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-  Grid,
-  Typography,
-  IconButton,
-  Divider,
-  Card,
-  CardHeader,
-  CardContent,
-} from '@mui/material';
+import Card from '@mui/material/Card';
+import CardHeader from '@mui/material/CardHeader';
+import CardContent from '@mui/material/CardContent';
+import Divider from '@mui/material/Divider';
+import Grid from '@mui/material/Grid';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { OPAAppData } from '../../types';
 
 export const AboutField = ({
@@ -21,50 +19,39 @@ export const AboutField = ({
   children,
 }: {
   label: string;
-  value?: string | JSX.Element;
+  value?: string | ReactElement;
   gridSizes?: Record<string, number>;
   children?: React.ReactNode;
 }) => {
-
   // Content is either children or a string prop `value`
   const content = React.Children.count(children) ? (
     children
   ) : (
-    <Typography variant="body2" >
-      {value || `unknown`}
-    </Typography>
+    <Typography variant="body2">{value || `unknown`}</Typography>
   );
   return (
     <Grid item {...gridSizes}>
-      <Typography variant="subtitle2" >
-        {label}
-      </Typography>
+      <Typography variant="subtitle2">{label}</Typography>
       {content}
     </Grid>
   );
 };
 
-export const AppView = ({
-  appData,
-}: {
-  appData: OPAAppData;
-}): JSX.Element => {
+export const AppView = ({ appData }: { appData: OPAAppData }): ReactElement => {
   Object.keys(appData).forEach(key => {
-    const newkey = key.replace("opa/", "")
-    appData[newkey] = appData[key];
+    const newKey = key.replace('opa/', '');
+    appData[newKey] = appData[key];
     delete appData[key];
   });
-  const details = appData
-  console.log(appData)
+  const details = appData;
 
   return (
     <div>
       {appData && (
         <>
           <Card>
-            <CardHeader
-              title={<Typography variant="h5">OPA App</Typography>}
-            /><Divider />
+            <CardHeader title={<Typography variant="h5">OPA App</Typography>} />
+            <Divider />
             <CardContent>
               <Grid container columnSpacing={2}>
                 <Grid item xs={4}>
@@ -102,7 +89,11 @@ export const AppView = ({
                         Public
                       </Typography>
                       <Typography
-                        sx={details?.public ? { color: 'Green' } : { color: 'Red' }}
+                        sx={
+                          details?.public
+                            ? { color: 'Green' }
+                            : { color: 'Red' }
+                        }
                       >
                         {details?.public ? 'Yes' : 'No'}
                       </Typography>
@@ -126,7 +117,9 @@ export const AppView = ({
                       <Typography sx={{ pt: 3, color: '#645B59' }}>
                         Template
                       </Typography>
-                      <Typography sx={{ mt: 1 }}>{details?.template}</Typography>
+                      <Typography sx={{ mt: 1 }}>
+                        {details?.template}
+                      </Typography>
                       <Typography sx={{ pt: 3, color: '#645B59' }}>
                         Account
                       </Typography>
@@ -149,7 +142,9 @@ export const AppView = ({
                       <Typography sx={{ pt: 3, color: '#645B59' }}>
                         Environment
                       </Typography>
-                      <Typography sx={{ mt: 1 }}>{details?.environment}</Typography>
+                      <Typography sx={{ mt: 1 }}>
+                        {details?.environment}
+                      </Typography>
                       <Typography sx={{ pt: 3, color: '#645B59' }}>
                         Owner
                       </Typography>
@@ -157,7 +152,6 @@ export const AppView = ({
                     </Grid>
                   </Grid>
                 </Grid>
-
               </Grid>
             </CardContent>
           </Card>

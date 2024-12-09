@@ -12,9 +12,7 @@ const colDefaults: ColumnBreakpoints = {
   xl: 3,
 };
 
-export function useDynamicColumns(
-  cols: ColumnBreakpoints | number | undefined,
-): number {
+export function useDynamicColumns(cols: ColumnBreakpoints | number | undefined): number {
   const matches: (Breakpoint | null)[] = [
     useMediaQuery((theme: Theme) => theme.breakpoints.up('xl')) ? 'xl' : null,
     useMediaQuery((theme: Theme) => theme.breakpoints.up('lg')) ? 'lg' : null,
@@ -23,7 +21,7 @@ export function useDynamicColumns(
     useMediaQuery((theme: Theme) => theme.breakpoints.up('xs')) ? 'xs' : null,
   ];
 
-  let numOfCols = 1;
+  let numOfCols: number;
 
   if (typeof cols === 'number') {
     numOfCols = cols;

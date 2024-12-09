@@ -75,7 +75,7 @@ export const parseRepoUrl = (repoUrl: string, integrations: ScmIntegrationRegist
  * @public
  */
 function checkRequiredParams(repoUrl: URL, ...params: string[]) {
-  for (let param of params) {
+  for (const param of params) {
     if (!repoUrl.searchParams.get(param)) {
       throw new InputError(`Invalid repo URL passed to publisher: ${repoUrl.toString()}, missing ${param}`);
     }

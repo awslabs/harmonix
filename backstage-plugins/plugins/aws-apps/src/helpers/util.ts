@@ -3,10 +3,10 @@
 
 export const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
 
-export const base64PayloadConvert = (payload:Object) => {
-    let str = "";
-    Object.values(payload).forEach(k=> {
-      str+=String.fromCharCode(k)
-    })
-    return str;
-}
+export const base64PayloadConvert = (payload: Object) => {
+  let str = '';
+  Object.values(payload).forEach(k => {
+    str += String.fromCharCode(k);
+  });
+  return str;
+};

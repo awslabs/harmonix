@@ -1,11 +1,12 @@
-// Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
-// SPDX-License-Identifier: Apache-2.0
+import { DefaultAwsCredentialsManager } from '@backstage/integration-aws-node';
+import { Config } from '@backstage/config';
 
 import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import { getRootLogger } from '@backstage/backend-common';
-import { BackstageUserInfo } from '@backstage/backend-plugin-api';
+import { BackstageUserInfo, LoggerService } from '@backstage/backend-plugin-api';
 import { parseEntityRef, UserEntity } from '@backstage/catalog-model';
+
+/** @public */
 export interface AwsAuthResponse {
   credentials: AwsCredentialIdentity;
   requester: string;
@@ -27,34 +28,34 @@ function getMemberGroupFromUserEntity(user: UserEntity | undefined) {
     // if the user has no relations and isn't a member of any groups, then bail early
     throw new Error('User is not a member of any groups and cannot get mapped AWS credentials');
   }
-  const memberGroups = user.relations.reduce((groups, relation) => {
+  return user.relations.reduce((groups, relation) => {
     return parseEntityref(relation.targetRef, groups);
   }, new Array<string>());
-  return memberGroups;
 }
 function getMemberGroupFromUserIdentity(user: BackstageUserInfo | undefined) {
   if (user?.ownershipEntityRefs === undefined) {
     // if the user has no relations and isn't a member of any groups, then bail early
     throw new Error('User is not a member of any groups and cannot get mapped AWS credentials');
   }
-  const memberGroups = user.ownershipEntityRefs.reduce((groups, ownershipRefs) => {
+  return user.ownershipEntityRefs.reduce((groups, ownershipRefs) => {
     return parseEntityref(ownershipRefs, groups);
   }, new Array<string>());
-  return memberGroups;
 }
 async function fetchCreds(
+  config: Config,
+  logger: LoggerService,
   memberGroups: string[],
   region: string,
   accountId: string,
   userName: string,
   prefix: string,
-  providerName: string
+  providerName: string,
 ): Promise<AwsAuthResponse> {
-  const logger = getRootLogger();
   try {
-
     // TODO: remove this code once we reference memberGroups
-    if (memberGroups) { }
+    if (memberGroups) {
+      logger.debug(memberGroups.flat().toString());
+    }
 
     // Get the SSM Parameter pointing to the DynamoDB security mapping table
     // const ssmClient = new SSMClient({ region });
@@ -94,7 +95,15 @@ async function fetchCreds(
     }
     // Assume the mapped role with the STS service and return the credentials
     logger.debug(`Fetching credentials for mapped role: ${roleArn}`);
-    const stsClient = new STSClient({ region });
+
+    const awsCredentialsManager = DefaultAwsCredentialsManager.fromConfig(config);
+    const awsCredentialProvider = await awsCredentialsManager.getCredentialProvider({
+      accountId,
+    });
+    const stsClient = new STSClient({
+      region,
+      credentialDefaultProvider: () => awsCredentialProvider.sdkCredentialProvider,
+    });
     const stsResult = await stsClient.send(
       new AssumeRoleCommand({
         RoleArn: roleArn,
@@ -118,12 +127,15 @@ async function fetchCreds(
     // if we weren't able to return credentials, throw an error to be caught by callers
     throw new Error(`Assuming role ${roleArn} failed to return credentials`);
   } catch (error) {
-    logger.error(error);
+    logger.error(`${error}`);
     throw error;
   }
 }
 
+/** @public */
 export async function getAWScreds(
+  config: Config,
+  logger: LoggerService,
   accountId: string,
   region: string,
   prefix: string,
@@ -131,7 +143,6 @@ export async function getAWScreds(
   user?: UserEntity,
   userIdentity?: BackstageUserInfo,
 ): Promise<AwsAuthResponse> {
-  const logger = getRootLogger();
   let memberGroups: string[];
   if (!/\d{12}/.test(accountId)) {
     // must be a string of 12 digits
@@ -144,45 +155,60 @@ export async function getAWScreds(
   // !FIXME: Temporary workaround in place to always use the role running the Backstage app to assume the operations role
   const WORKAROUND = true;
   if (WORKAROUND) {
-    return getAWSCredsWorkaround(accountId, region, prefix, providerName, user);
-  } else {
-    if (user === undefined && userIdentity !== undefined) {
-      const userName = parseEntityRef(userIdentity?.userEntityRef).name;
-      logger.info(`Fetching credentials for user ${userName}`);
-      memberGroups = getMemberGroupFromUserIdentity(userIdentity);
-      return fetchCreds(memberGroups, region, accountId, userName, prefix, providerName);
-    } else {
-      const userName = user?.metadata.name;
-      logger.info(`Fetching credentials for user ${userName}`);
-      memberGroups = getMemberGroupFromUserEntity(user);
-      return fetchCreds(memberGroups, region, accountId, userName!, prefix, providerName);
-    }
+    return getAWSCredsWorkaround(config, logger, accountId, region, prefix, providerName, user);
   }
+  if (user === undefined && userIdentity !== undefined) {
+    const userName = parseEntityRef(userIdentity?.userEntityRef).name;
+    logger.info(`Fetching credentials for user ${userName}`);
+    memberGroups = getMemberGroupFromUserIdentity(userIdentity);
+    return fetchCreds(config, logger, memberGroups, region, accountId, userName, prefix, providerName);
+  }
+  const userName = user?.metadata.name;
+  logger.info(`Fetching credentials for user ${userName}`);
+  memberGroups = getMemberGroupFromUserEntity(user);
+  return fetchCreds(config, logger, memberGroups, region, accountId, userName!, prefix, providerName);
 }
 
-export async function getAWSCredsWorkaround(accountId: string, region: string, prefix: string, providerName: string, user?: UserEntity) {
-  const client = new STSClient({ region });
-  const userName = user?.metadata.name || "unknown";
+export async function getAWSCredsWorkaround(
+  config: Config,
+  logger: LoggerService,
+  accountId: string,
+  region: string,
+  prefix: string,
+  providerName: string,
+  user?: UserEntity,
+) {
+  const awsCredentialsManager = DefaultAwsCredentialsManager.fromConfig(config);
+  const awsCredentialProvider = await awsCredentialsManager.getCredentialProvider({
+    accountId,
+  });
+  const client = new STSClient({
+    region,
+    credentialDefaultProvider: () => awsCredentialProvider.sdkCredentialProvider,
+  });
+  const userName = user?.metadata.name ?? 'unknown';
 
-  //assemble the arn format to the desire destination environment
+  // assemble the arn format to the desire destination environment
   const roleArn = `arn:aws:iam::${accountId}:role/${prefix}-${providerName}-operations-role`;
-  console.log(roleArn)
+  logger.info(`Assuming role: ${roleArn}`);
 
-  const stsResult = await client.send(new AssumeRoleCommand({
-    RoleArn: roleArn,
-    RoleSessionName: `${userName}-backstage-session`,
-    DurationSeconds: 3600,
-  }));
+  const stsResult = await client.send(
+    new AssumeRoleCommand({
+      RoleArn: roleArn,
+      RoleSessionName: `${userName}-backstage-session`,
+      DurationSeconds: 3600,
+    }),
+  );
 
   return {
     roleArn,
     requester: userName,
     credentials: {
-      accessKeyId: stsResult!.Credentials!.AccessKeyId!,
-      secretAccessKey: stsResult!.Credentials!.SecretAccessKey!,
-      sessionToken: stsResult!.Credentials!.SessionToken,
+      accessKeyId: stsResult.Credentials!.AccessKeyId!,
+      secretAccessKey: stsResult.Credentials!.SecretAccessKey!,
+      sessionToken: stsResult.Credentials!.SessionToken,
     },
     account: accountId,
     region: region,
-  }
+  };
 }

@@ -43,6 +43,7 @@ import {
 } from '@aws/plugin-aws-apps-for-backstage';
 
 import { isGitlabAvailable, EntityGitlabContent } from '@immobiliarelabs/backstage-plugin-gitlab';
+import { isGithubActionsAvailable } from '@backstage/plugin-github-actions';
 
 [...]
 
@@ -106,7 +107,7 @@ const componentPage = (
 
 // Add support for aws resource, environment and environment provider specific entity pages
 // to the entityPage variable
-const resourceEntityPage = (
+const entityPage = (
   <EntitySwitch>
     ...
     <EntitySwitch.Case if={isKind('resource')} children={resourceEntityPage} />

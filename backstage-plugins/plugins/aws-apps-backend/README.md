@@ -147,3 +147,21 @@ export class permissionPolicy implements PermissionPolicy {
 ```
 
 Additional permission decisions and resources are planned for future releases.
+
+## Configuration (new backend system)
+
+### Configure the router
+
+With the new backend system, configure the router for the AWS Apps plugin like this :
+
+```typescript
+// packages/backend/index.ts
+backend.add(import('@aws/plugin-aws-apps-backend-for-backstage'));
+```
+
+### Configure the catalog
+
+To add Harmonix entity types to the catalog, you must now import the processor module from `@aws/backstage-plugin-catalog-backend-module-aws-apps-entities-processor`.
+See [the plugin's own README](../catalog-backend-module-aws-apps-entities-processor/README.md)
+
+

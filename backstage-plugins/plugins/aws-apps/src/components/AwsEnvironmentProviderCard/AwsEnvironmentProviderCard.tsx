@@ -117,7 +117,6 @@ const AwsEnvironmentProviderCard = ({
     };
 
     let repoInfo = getRepoInfo(entity);
-    repoInfo.gitProjectGroup = 'aws-environments'
 
     const params = {
       repoInfo,

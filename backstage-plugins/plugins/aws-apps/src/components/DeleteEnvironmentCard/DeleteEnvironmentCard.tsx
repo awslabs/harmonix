@@ -30,7 +30,6 @@ const DeleteEnvironmentPanel = ({
 
   const [disabled, setDisabled] = useState(false);
   let repoInfo = getRepoInfo(entity);
-  repoInfo.gitProjectGroup = 'aws-environments';
   
   const deleteRepo = () => {
     api.deleteRepository({

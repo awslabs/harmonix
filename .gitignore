@@ -141,3 +141,6 @@ lerna-debug.log*
 !environment/.environment-shared.json
 
 /backstage
+
+backstage-plugins/**/*.d.ts
+tsconfig.tsbuildinfo

@@ -50,15 +50,26 @@ export class NetworkConstruct extends Construct {
         vpcId: props.existingVpcId,
       });
 
-       // Retrieve the subnet IDs
-
-     // Retrieve the subnet IDs
+      // Retrieve the subnet IDs
       const publicsubnetIds = vpc.publicSubnets.length > 0 
           ? vpc.publicSubnets.map(subnet => subnet.subnetId) 
           : [' '];
       const privateSubnetIds = vpc.privateSubnets.length > 0 
           ? vpc.privateSubnets.map(subnet => subnet.subnetId) 
           : [' '];
+
+      // Retrieve Elastic IPs allocated to the existing public subnet
+      this.publicEIPref = [];
+      vpc.publicSubnets
+        .map((subnet) =>
+          (subnet as ec2.PublicSubnet).node.children
+            .filter((child) => child.node.id == "EIP")
+            .map((child) => child as ec2.CfnEIP),
+        )
+        .flat()
+        .forEach((eip) => {
+          this.publicEIPref.push(eip.ref);
+        });
 
       // Store the public subnet IDs in AWS Systems Manager Parameter Store
       new ssm.StringListParameter(this, `${envIdentifier}-pub-subnet-param`, {

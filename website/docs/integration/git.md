@@ -21,8 +21,8 @@ graph TD;
 ## Git provider interface
 
 Currently, Harmonix on AWS offers two git implementations:
-1. GitLabs
-2. GitGub
+1. GitLab
+2. GitHub
 
 However, you can implement additional git providers and customize the backend plugin: @aws/plugin-aws-apps-backend-for-backstage .
 The Git provider interface *ISCMBackendAPI* exposes five methods that are required to be implemented to enable a new git provider.

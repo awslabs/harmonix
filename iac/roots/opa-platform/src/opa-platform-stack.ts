@@ -189,7 +189,7 @@ export class OPAPlatformStack extends cdk.Stack {
         {
           id: "AwsSolutions-SMG4",
           reason:
-            "Rotation is not nessacry .",
+            "Rotation is not necessary.",
         },
       ]);
     }

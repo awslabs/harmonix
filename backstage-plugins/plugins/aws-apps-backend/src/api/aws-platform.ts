@@ -360,7 +360,7 @@ export class AwsAppsPlatformApi {
 
     const result = await this.git.getGitProvider().commitContent(change, repo, gitToken);
 
-    const resultBody = await result.value.json();
+    const resultBody = await result.value;
     if (!result.isSuccuess) {
       console.error(`ERROR: Failed to unbind ${input.envName}. Response: ${result}`);
       let message = '';

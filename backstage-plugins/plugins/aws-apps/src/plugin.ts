@@ -348,7 +348,7 @@ export const AwsServerlessAppPage = opaPlugin.provide(
 
 export const AwsServerlessEnvironmentProviderPage = opaPlugin.provide(
   createComponentExtension({
-    name: 'AwsServerlessAppPage',
+    name: 'AwsServerlessEnvironmentProviderPage',
     component: {
       lazy: () => import('./pages/AwsServerlessEnvironmentProviderPage/AwsServerlessEnvironmentProviderPage').then(m => m.AwsServerlessEnvironmentProviderPage),
     },

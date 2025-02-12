@@ -255,3 +255,102 @@ export const AwsEnvironmentProviderPage = opaPlugin.provide(
     },
   }),
 );
+
+export const AwsECSAppPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsECSAppPage',
+    component: {
+      lazy: () => import('./pages/AwsECSAppPage/AwsECSAppPage').then(m => m.AwsECSAppPage),
+    },
+  }),
+);
+
+export const AwsECSEnvironmentProviderPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsECSEnvironmentProviderPage',
+    component: {
+      lazy: () => import('./pages/AwsECSEnvironmentProviderPage/AwsECSEnvironmentProviderPage').then(m => m.AwsECSEnvironmentProviderPage),
+    },
+  }),
+);
+
+export const AwsEKSAppPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsEKSAppPage',
+    component: {
+      lazy: () => import('./pages/AwsEKSAppPage/AwsEKSAppPage').then(m => m.AwsEKSAppPage),
+    },
+  }),
+);
+
+export const AwsEKSEnvironmentProviderPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsEKSEnvironmentProviderPage',
+    component: {
+      lazy: () => import('./pages/AwsEKSEnvironmentProviderPage/AwsEKSEnvironmentProviderPage').then(m => m.AwsEKSEnvironmentProviderPage),
+    },
+  }),
+);
+
+export const AwsPendingPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsPendingPage',
+    component: {
+      lazy: () => import('./pages/AwsPendingPage/AwsPendingPage').then(m => m.AwsPendingPage),
+    },
+  }),
+);
+
+export const AwsRDSResourcePage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsRDSResourcePage',
+    component: {
+      lazy: () => import('./pages/AwsRDSResourcePage/AwsRDSResourcePage').then(m => m.AwsRDSResourcePage),
+    },
+  }),
+);
+
+export const AwsResourcePage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsResourcePage',
+    component: {
+      lazy: () => import('./pages/AwsResourcePage/AwsResourcePage').then(m => m.AwsResourcePage),
+    },
+  }),
+);
+
+export const AwsS3ResourcePage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsS3ResourcePage',
+    component: {
+      lazy: () => import('./pages/AwsS3ResourcePage/AwsS3ResourcePage').then(m => m.AwsS3ResourcePage),
+    },
+  }),
+);
+
+export const AwsSecretsManagerResourcePage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsSecretsManagerResourcePage',
+    component: {
+      lazy: () => import('./pages/AwsSecretsManagerResourcePage/AwsSecretsManagerResourcePage').then(m => m.AwsSecretsManagerResourcePage),
+    },
+  }),
+);
+
+export const AwsServerlessAppPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsServerlessAppPage',
+    component: {
+      lazy: () => import('./pages/AwsServerlessAppPage/AwsServerlessAppPage').then(m => m.AwsServerlessAppPage),
+    },
+  }),
+);
+
+export const AwsServerlessEnvironmentProviderPage = opaPlugin.provide(
+  createComponentExtension({
+    name: 'AwsServerlessAppPage',
+    component: {
+      lazy: () => import('./pages/AwsServerlessEnvironmentProviderPage/AwsServerlessEnvironmentProviderPage').then(m => m.AwsServerlessEnvironmentProviderPage),
+    },
+  }),
+);

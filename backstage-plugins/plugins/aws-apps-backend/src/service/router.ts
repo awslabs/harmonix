@@ -309,13 +309,15 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const resourceName = req.body.resourceName?.toString();
     const resourceEntityRef = req.body.resourceEntityRef?.toString();
     const policies = req.body.policies;
+    const securityGroupIds = req.body.securityGroupIds || [];
     const params: BindResourceParams = {
       envName,
       appName,
       providerName,
       resourceName,
       resourceEntityRef,
-      policies
+      policies,
+      securityGroupIds
     };
     // console.log(params)
     const results = await apiPlatformClient.bindResource(repoInfo,params, secretName);
@@ -337,12 +339,14 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     const resourceName = req.body.resourceName?.toString();
     const resourceEntityRef = req.body.resourceEntityRef?.toString();
     const policies = req.body.policies;
+    const securityGroupIds = req.body.securityGroupIds || [];
     const params: BindResourceParams = {
       envName,
       appName,
       providerName,
       resourceName,
       resourceEntityRef,
+      securityGroupIds,
       policies
     };
     // console.log(params)

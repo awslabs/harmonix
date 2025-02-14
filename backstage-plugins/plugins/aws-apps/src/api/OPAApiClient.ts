@@ -229,7 +229,8 @@ export class OPAApiClient implements OPAApi {
       envName: params.envName,
       policies: params.policies,
       resourceName: params.resourceName,
-      resourceEntityRef: params.resourceEntityRef
+      resourceEntityRef: params.resourceEntityRef,
+      securityGroupIds: params.securityGroupIds
     }
 
     const bindResponse = this.fetch<any>('/platform/bind-resource', HTTP.POST, postBody);
@@ -259,7 +260,8 @@ export class OPAApiClient implements OPAApi {
       envName: params.envName,
       policies: params.policies,
       resourceName: params.resourceName,
-      resourceEntityRef: params.resourceEntityRef
+      resourceEntityRef: params.resourceEntityRef,
+      securityGroupIds: params.securityGroupIds
     }
 
     const unBindResponse = this.fetch<any>('/platform/unbind-resource', HTTP.POST, postBody);

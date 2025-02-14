@@ -301,6 +301,12 @@ export class AwsAppsPlatformApi {
       content: resourceBindContent,
     });
 
+    input.securityGroupIds.forEach((securityGroupId) => actions.push({
+      action: 'create',
+      file_path: `.iac/security-groups/${input.envName}/${input.providerName}/${securityGroupId}`,
+      content: ''
+    }))
+
     const change:ICommitChange = {
       commitMessage: `Bind Resource`,
       branch: 'main',
@@ -351,6 +357,12 @@ export class AwsAppsPlatformApi {
       file_path: resourceBindFile,
       content: resourceBindContent,
     });
+
+    input.securityGroupIds.forEach((securityGroupId) => actions.push({
+      action: 'delete',
+      file_path: `.iac/security-groups/${input.envName}/${input.providerName}/${securityGroupId}`,
+      content: ''
+    }))
 
     const change:ICommitChange = {
       commitMessage: `UnBind Resource`,

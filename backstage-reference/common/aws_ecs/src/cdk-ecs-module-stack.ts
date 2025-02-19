@@ -1,5 +1,5 @@
 import { validate } from "@aws-sdk/util-arn-parser";
-import { CfnOutput, RemovalPolicy, Stack, StackProps, Tags } from "aws-cdk-lib";
+import { CfnOutput, Fn, RemovalPolicy, Stack, StackProps, Tags } from "aws-cdk-lib";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as efs from "aws-cdk-lib/aws-efs";
 import * as ecr from "aws-cdk-lib/aws-ecr";
@@ -11,8 +11,9 @@ import * as rg from "aws-cdk-lib/aws-resourcegroups";
 import * as secretsmanager from "aws-cdk-lib/aws-secretsmanager";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import { Construct } from "constructs";
-import * as fs from 'fs'
+import * as fs from 'fs';
 import { PolicyStatement } from "aws-cdk-lib/aws-iam";
+import {ISecurityGroup, Peer, Port, SecurityGroup} from "aws-cdk-lib/aws-ec2";
 
 interface PermissionList {
   [key: string]: string[] // adjusting require this in order to some json data type
@@ -31,6 +32,13 @@ export function DeclareJSONStatements(readPermissionsPath:string): PermissionLis
   }
   
   return list
+}
+
+export function DeclareSecurityGroupIds(readSecurityGroupIdsPath: string): string[] {
+  if (fs.existsSync(readSecurityGroupIdsPath)) {
+    return fs.readdirSync(readSecurityGroupIdsPath);
+  }
+  else return [];
 }
 
 // Environment variables that can be passed in and used in this stack
@@ -76,7 +84,7 @@ export class EcsResourcesStack extends Stack {
 
     // Search for the particular env/provider permissions to apply
     const readPermissionsPath = `./permissions/${envName}/${envProviderName}/`
-
+    const readSecurityGroupIdsPath = `./security-groups/${envName}/${envProviderName}/`
     // Add any tags passed as part of AWS_RESOURCE_TAGS input parameters
     const resourceTagsEnvVar = process.env.AWS_RESOURCE_TAGS;
     if (resourceTagsEnvVar) {
@@ -173,16 +181,27 @@ export class EcsResourcesStack extends Stack {
       }),
       portMappings: [{containerPort: +appPort}],
     });
-    
+
+    const applicationSecurityGroup = new ec2.SecurityGroup(this, `${appShortName}-securityGroup`, {
+      vpc
+    })
+
+    const securityGroups : ISecurityGroup[] = DeclareSecurityGroupIds(readSecurityGroupIdsPath).map((securityGroupId) => SecurityGroup.fromSecurityGroupId(this, securityGroupId, securityGroupId, {
+      mutable: false
+    }));
 
     // Create an ECS service with an application load balancer in front
     const loadBalancedEcsService = new ALBService(this, `${appShortName}-ecspattern`, {
         cluster,
         serviceName: `${appShortName}-${envProviderName}`,
         taskDefinition,
+        securityGroups: [applicationSecurityGroup, ...securityGroups]
         // enableExecuteCommand: true,  // Enable this for debugging and executing commands in the container
       }
     );
+
+    applicationSecurityGroup.addIngressRule(Peer.securityGroupId(Fn.select(0, loadBalancedEcsService.loadBalancer.loadBalancerSecurityGroups)), Port.tcp(+appPort));
+    applicationSecurityGroup.addEgressRule(Peer.anyIpv4(), Port.allTraffic());
     // L3 construct above does not allow desiredCount to be 0, so drop down to L2 constructs to set value
     const cfnEcsService = loadBalancedEcsService.service.node.defaultChild as ecs.CfnService;
     cfnEcsService.desiredCount = 0;

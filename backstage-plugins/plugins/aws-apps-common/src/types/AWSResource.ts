@@ -39,6 +39,7 @@ export interface ResourceBinding {
   provider: string;
   resourceArn: string;
   associatedResources?: AssociatedResources[]
+  securityGroupIds?: string[]
   entityRef?:string;
 }
 
@@ -55,6 +56,7 @@ export interface BindResourceParams {
   resourceName:string;
   resourceEntityRef:string;
   policies: ResourcePolicy[];
+  securityGroupIds: string[];
   appName: string;
 }
 

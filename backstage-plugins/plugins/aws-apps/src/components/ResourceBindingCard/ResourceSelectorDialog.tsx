@@ -183,6 +183,7 @@ export const ResourceSelectorDialog = ({
               provider: p,
               resourceArn: providerAppData['Arn'],
               id,
+              securityGroupIds: providerAppData['AccessSecurityGroupId'] ? [providerAppData['AccessSecurityGroupId']] : [],
               associatedResources: [associatedRDSResources]
             })
         }

@@ -98,6 +98,7 @@ const ResourceBindingCard = ({
               resourceArn: providerAppData['Arn'],
               id: providerAppData['Arn'],
               entityRef: "resource:default/" + et!.metadata.name,
+              securityGroupIds: providerAppData['AccessSecurityGroupId'] ? [providerAppData['AccessSecurityGroupId']] : [],
               associatedResources: [associatedRDSResources]
             })
         }
@@ -173,6 +174,7 @@ const ResourceBindingCard = ({
       appName: entity.metadata.name,
       resourceName: item.resourceName,
       resourceEntityRef: item.id,
+      securityGroupIds: item.securityGroupIds || [],
       policies
     };
 
@@ -214,6 +216,7 @@ const ResourceBindingCard = ({
       appName: entity.metadata.name,
       resourceName: item.resourceName,
       resourceEntityRef: item.entityRef!,
+      securityGroupIds: item.securityGroupIds || [],
       policies
     };
 

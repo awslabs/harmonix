@@ -27,10 +27,7 @@
     },
     "scripts": {
       "bootstrap": "lerna bootstrap",
-      "tsc": "tsc",
-      "build": "backstage-cli repo build --all",
       "clean": "backstage-cli repo clean",
-      "test": "backstage-cli test --watchAll=false",
       "lint": "backstage-cli repo lint",
       "prettier:check": "prettier --check .",
       "prettier:fix": "prettier --write .",
@@ -41,6 +38,9 @@
       "publish-version": "lerna publish from-package --yes --no-verify-access",
       "yarn:audit:fix": "yarn-audit-fix"
     },
+  "resolutions": {
+    "@types/express": "^4.17.13"
+  },
     "devDependencies": {
       "@backstage/cli": "^0.26.11",
       "@spotify/prettier-config": "^15.0.0",

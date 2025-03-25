@@ -77,7 +77,8 @@ localenv.sh
 
 !website/yarn.lock
 # transpiled JavaScript, Typings and test files
-
+**/*.d.ts
+**/*.tsbuildinfo
 !backstage/*.js
 !jest.config.js
 

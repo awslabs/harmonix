@@ -3,7 +3,7 @@
     "target": "ES2020",
     "module": "esnext",
     "lib": [
-      "es2020"
+      "es2021"
     ],
     "allowJs": true,
     "declaration": true,
@@ -41,10 +41,26 @@
       "./node_modules/@types"
     ],
     "types": ["node", "jest"],
-    "useDefineForClassFields": true  
+    "useDefineForClassFields": true
   },
+  "include": [
+    "./aws-apps-demo/**/*.ts",
+    "./aws-apps-demo/**/*.tsx",
+    "./catalog-backend-module-aws-apps-entities-processor/**/*.ts",
+    "./catalog-backend-module-aws-apps-entities-processor/**/*.tsx",
+    "./scaffolder-backend-module-aws-apps/**/*.ts",
+    "./scaffolder-backend-module-aws-apps/**/*.tsx",
+    "./aws-apps/**/*.ts",
+    "./aws-apps/**/*.tsx",
+    "./aws-apps-backend/**/*.ts",
+    "./aws-apps-backend/**/*.tsx",
+    "./aws-apps-common/**/*.ts",
+    "./aws-apps-common/**/*.tsx",
+  ],
   "exclude": [
     "node_modules",
-    "cdk.out"
+    "cdk.out",
+    "dist",
+    "dist-types"
   ]
 }

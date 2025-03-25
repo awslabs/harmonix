@@ -34,16 +34,20 @@ install: verify-env
 	@echo -e "Visit the application at https://${R53_HOSTED_ZONE_NAME}" 2>&1 | tee -a $(LOGFILE)
 
 verify-env:
-ifeq (,$(wildcard ./config/.env))
-    $(error The configuration file at ./config/.env is missing.  Please configure the .env file first.)
-endif
-	@echo "Found a ./config/.env file.  Proceeding..."
-ifndef AWS_ACCOUNT_ID
-	$(error AWS_ACCOUNT_ID is undefined.  Please ensure this is set in the config/.env file)
-endif
-ifndef AWS_DEFAULT_REGION
-	$(error AWS_DEFAULT_REGION is undefined.  Please ensure this is set in the config/.env file)
-endif
+	@if [ ! -f ./config/.env ]; then \
+		echo "The configuration file at ./config/.env is missing. Please configure the .env file first."; \
+		exit 1; \
+	else \
+		echo "Found a ./config/.env file. Proceeding..."; \
+	fi
+	@if [ -z "$$AWS_ACCOUNT_ID" ]; then \
+		echo "AWS_ACCOUNT_ID is undefined. Please ensure this is set in the config/.env file"; \
+		exit 1; \
+	fi
+	@if [ -z "$$AWS_DEFAULT_REGION" ]; then \
+		echo "AWS_DEFAULT_REGION is undefined. Please ensure this is set in the config/.env file"; \
+		exit 1; \
+	fi
 
 set-secrets:
 	./build-script/secure-secrets-creation.sh
@@ -96,6 +100,25 @@ stop-local:  ## Stop all running processes for local development
 
 push-backstage-reference-repo:
 	. ./build-script/gitlab-tools.sh
+
+plugins:
+	cd ./backstage-plugins/plugins && \
+	set -e && \
+	yarn install && \
+	yarn workspaces run tsc && \
+	yarn workspaces run build
+
+plugins-test: plugins
+	cd ./backstage-plugins/plugins && \
+	set -e && \
+	yarn workspaces run test
+
+plugins-clean:
+	cd ./backstage-plugins/plugins && \
+	set -e && \
+	find . -name dist -type d -prune -exec rm -rf '{}' + && \
+	find . -name dist-types -type d -prune -exec rm -rf '{}' + && \
+	find . -name node_modules -type d -prune -exec rm -rf '{}' +
 
 build-and-deploy-backstage-image: build-backstage deploy-backstage
 

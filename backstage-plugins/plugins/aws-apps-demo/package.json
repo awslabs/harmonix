@@ -7,7 +7,7 @@
   "license": "Apache-2.0",
   "author": {
     "name": "Amazon Web Services",
-    "url": "http://aws.amazon.com"
+    "url": "https://aws.amazon.com"
   },
   "publishConfig": {
     "access": "public",

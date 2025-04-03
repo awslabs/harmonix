@@ -1,0 +1,382 @@
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/app-config.yaml backstage/app-config.yaml
+--- backstage-1-37-1-pure/app-config.yaml	2025-04-06 09:10:44
++++ backstage/app-config.yaml	2025-04-10 16:35:42
+@@ -1,9 +1,11 @@
+ app:
+-  title: Scaffolded Backstage App
++  title: Harmonix
+   baseUrl: http://localhost:3000
++  logo: ${CUSTOMER_LOGO}
++  logoIcon: ${CUSTOMER_LOGO_ICON}
+ 
+ organization:
+-  name: My Company
++  name: ${CUSTOMER_NAME}
+ 
+ backend:
+   # Used for enabling authentication, secret is shared by all backend plugins
+@@ -12,6 +14,12 @@
+   # auth:
+   #   keys:
+   #     - secret: ${BACKEND_SECRET}
++  auth:
++    externalAccess:
++      - type: static
++        options:
++          token: ${AUTOMATION_KEY}
++          subject: automation-system
+   baseUrl: http://localhost:7007
+   listen:
+     port: 7007
+@@ -28,13 +36,24 @@
+   # This is for local development only, it is not recommended to use this in production
+   # The production database configuration is stored in app-config.production.yaml
+   database:
+-    client: better-sqlite3
+-    connection: ':memory:'
++    # client: better-sqlite3
++    # connection: ':memory:'
++    client: pg
++    connection:
++      host: ${POSTGRES_HOST}
++      port: ${POSTGRES_PORT}
++      user: ${POSTGRES_USER}
++      password: ${POSTGRES_PASSWORD}
+   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
++  platformRegion: us-east-1
++  reading:
++    allow:
++      - host: ${GITLAB_HOSTNAME}
++      - host: ${GITHUB_HOSTNAME}
+ 
+ integrations:
+   github:
+-    - host: github.com
++    - host: ${GITHUB_HOSTNAME}
+       # This is a Personal Access Token or PAT from GitHub. You can find out how to generate this token, and more information
+       # about setting up the GitHub integration here: https://backstage.io/docs/integrations/github/locations#configuration
+       token: ${GITHUB_TOKEN}
+@@ -42,6 +61,11 @@
+     # - host: ghe.example.net
+     #   apiBaseUrl: https://ghe.example.net/api/v3
+     #   token: ${GHE_TOKEN}
++  gitlab:
++    - host: ${GITLAB_HOSTNAME}
++      apiBaseUrl: https://${GITLAB_HOSTNAME}/api/v4
++      baseUrl: https://${GITLAB_HOSTNAME}
++      token: ${SECRET_GITLAB_CONFIG_PROP_apiToken}
+ 
+ proxy:
+   ### Example for how to add a proxy endpoint for the frontend.
+@@ -64,36 +88,71 @@
+ 
+ auth:
+   # see https://backstage.io/docs/auth/ to learn about auth providers
++  environment: development
+   providers:
+     # See https://backstage.io/docs/auth/guest/provider
+-    guest: {}
++    # guest: {}
++    okta:
++      development:
++        clientId: ${OKTA_CLIENT_ID}
++        clientSecret: ${OKTA_CLIENT_SECRET}
++        audience: ${OKTA_AUDIENCE}
++        # authServerId:
++        # idp:
++        signIn:
++          resolvers:
++            - resolver: emailMatchingUserEntityProfileEmail
++            - resolver: emailLocalPartMatchingUserEntityName
++            - resolver: emailMatchingUserEntityAnnotation
+ 
+ scaffolder:
+   # see https://backstage.io/docs/features/software-templates/configuration for software template options
++  defaultAuthor:
++    name: ${BACKSTAGE_SCAFFOLDER_NAME}
++    email: ${BACKSTAGE_SCAFFOLDER_EMAIL}
+ 
++gitlab:
++  allowedKinds:
++    - Component
++    - Resource
++    - AWSEnvironmentProvider
++
+ catalog:
+   import:
+     entityFilename: catalog-info.yaml
+     pullRequestBranchName: backstage-integration
+   rules:
+-    - allow: [Component, System, API, Resource, Location]
++    - allow:
++        [
++          Component,
++          System,
++          API,
++          Resource,
++          Location,
++          Template,
++          AWSEnvironment,
++          AWSEnvironmentProvider,
++        ]
+   locations:
+     # Local example data, file locations are relative to the backend process, typically `packages/backend`
+-    - type: file
+-      target: ../../examples/entities.yaml
++    # - type: file
++    #   target: ../../examples/entities.yaml
+ 
+-    # Local example template
+-    - type: file
+-      target: ../../examples/template/template.yaml
+-      rules:
+-        - allow: [Template]
++    # # Local example template
++    # - type: file
++    #   target: ../../examples/template/template.yaml
++    #   rules:
++    #     - allow: [Template]
+ 
+-    # Local example organizational data
++    # # Local example organizational data
++    # - type: file
++    #   target: ../../examples/org.yaml
++    #   rules:
++    #     - allow: [User, Group]
+     - type: file
+-      target: ../../examples/org.yaml
++      target: ../../../git-temp/backstage-reference/templates/all-templates.yaml
+       rules:
+-        - allow: [User, Group]
+-
++        - allow: [Location, Component]
+     ## Uncomment these lines to add more example data
+     # - type: url
+     #   target: https://github.com/backstage/backstage/blob/master/packages/catalog-model/examples/all.yaml
+@@ -106,6 +165,48 @@
+   # Experimental: Always use the search method in UrlReaderProcessor.
+   # New adopters are encouraged to enable it as this behavior will be the default in a future release.
+   useUrlReadersSearch: true
++  
++  providers:
++    okta:
++      - orgUrl: ${OKTA_AUDIENCE}
++        token: ${OKTA_API_TOKEN}
++        schedule:
++          frequency:
++              minutes: 5
++          timeout:
++            minutes: 3
++          initialDelay:
++            minutes: 1
++        # userFilter: profile.department eq "engineering"
++        # groupFilter: profile.name eq "Developers"
++    gitlab:
++      opa:
++        host: ${GITLAB_HOSTNAME}
++        branch: main
++        fallbackBranch: main
++        skipForkedRepos: false
++        # group: example-group # Optional. Group and subgroup (if needed) to look for repositories. If not present the whole instance will be scanned
++        groupPattern: "aws-environment*"
++        entityFilename: .backstage/catalog-info.yaml
++        projectPattern: '[\s\S]*'
++        schedule:
++          frequency: { minutes: 30 }
++          timeout: { minutes: 3 }
++    # github:
++    #   # the provider ID can be any camelCase string
++    #   opa:
++    #     organization: 'aws-fsi-pace' # string
++    #     catalogPath: '.backstage/catalog-info.yaml' # string
++    #     filters:
++    #       branch: 'main' # string
++    #       repository: '.*' # Regex
++    #     validateLocationsExist: true
++    #     schedule: # same options as in TaskScheduleDefinition
++    #       # supports cron, ISO duration, "human duration" as used in code
++    #       frequency: { minutes: 30 }
++    #       # supports ISO duration, "human duration" as used in code
++    #       timeout: { minutes: 3 }
++
+ 
+ kubernetes:
+   # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
+@@ -113,4 +214,4 @@
+ # see https://backstage.io/docs/permissions/getting-started for more on the permission framework
+ permission:
+   # setting this to `false` will disable permissions
+-  enabled: true
++  enabled: true
+\ No newline at end of file
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/app/src/App.tsx backstage/packages/app/src/App.tsx
+--- backstage-1-37-1-pure/packages/app/src/App.tsx	2025-04-06 09:10:44
++++ backstage/packages/app/src/App.tsx	2025-04-10 11:12:40
+@@ -36,6 +36,8 @@
+ import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
+ import { RequirePermission } from '@backstage/plugin-permission-react';
+ import { catalogEntityCreatePermission } from '@backstage/plugin-catalog-common/alpha';
++import { oktaAuthApiRef } from '@backstage/core-plugin-api';
++import { AppCatalogPage } from '@aws/plugin-aws-apps-for-backstage';
+ 
+ const app = createApp({
+   apis,
+@@ -57,7 +59,23 @@
+     });
+   },
+   components: {
+-    SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
++    // SignInPage: props => <SignInPage {...props} auto providers={['guest']} />,
++    SignInPage: props => {
++      return (
++        <SignInPage
++          {...props}
++          auto
++          providers={[
++            {
++              id: 'okta-auth-provider',
++              title: 'Okta',
++              message: 'Sign in using Okta credentials',
++              apiRef: oktaAuthApiRef,
++            },
++          ]}
++        />
++      );
++    },
+   },
+ });
+ 
+@@ -95,6 +113,21 @@
+     </Route>
+     <Route path="/settings" element={<UserSettingsPage />} />
+     <Route path="/catalog-graph" element={<CatalogGraphPage />} />
++    <Route path="/aws-apps-search-page" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="all" />
++    </Route>
++    <Route path="/aws-apps-search-page/environments" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="awsenvironment" />
++    </Route>
++    <Route path="/aws-apps-search-page/providers" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="awsenvironmentprovider" />
++    </Route>
++    <Route path="/aws-apps-search-page/apps" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="component" />
++    </Route>
++    <Route path="/aws-apps-search-page/resources" element={<CatalogIndexPage />}>
++      <AppCatalogPage kind="resource" />
++    </Route>
+   </FlatRoutes>
+ );
+ 
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/app/src/components/Root/Root.tsx backstage/packages/app/src/components/Root/Root.tsx
+--- backstage-1-37-1-pure/packages/app/src/components/Root/Root.tsx	2025-04-06 09:10:44
++++ backstage/packages/app/src/components/Root/Root.tsx	2025-04-09 11:14:01
+@@ -22,11 +22,15 @@
+   SidebarSpace,
+   useSidebarOpenState,
+   Link,
++  SidebarSubmenu,
++  SidebarSubmenuItem,
+ } from '@backstage/core-components';
+ import MenuIcon from '@material-ui/icons/Menu';
+ import SearchIcon from '@material-ui/icons/Search';
+ import { MyGroupsSidebarItem } from '@backstage/plugin-org';
+ import GroupIcon from '@material-ui/icons/People';
++import CloudIcon from '@material-ui/icons/Cloud';
++import { useApp } from '@backstage/core-plugin-api';
+ 
+ const useSidebarLogoStyles = makeStyles({
+   root: {
+@@ -67,6 +71,33 @@
+       <SidebarGroup label="Menu" icon={<MenuIcon />}>
+         {/* Global nav, not org-specific */}
+         <SidebarItem icon={HomeIcon} to="catalog" text="Home" />
++        <SidebarDivider />
++        <SidebarGroup label="AWS" icon={<MenuIcon />}>
++          <SidebarItem icon={CloudIcon} text="AWS">
++            <SidebarSubmenu title="AWS Catalog">
++              <SidebarSubmenuItem
++                title="Environments"
++                to="aws-apps-search-page/environments?filters[kind]=awsenvironment"
++                icon={useApp().getSystemIcon('kind:domain')}
++              />
++              <SidebarSubmenuItem
++                title="Providers"
++                to="aws-apps-search-page/providers?filters[kind]=awsenvironmentprovider"
++                icon={useApp().getSystemIcon('kind:system')}
++              />
++              <SidebarSubmenuItem
++                title="Apps"
++                to="aws-apps-search-page/apps?filters[kind]=component"
++                icon={useApp().getSystemIcon('kind:component')}
++              />
++              <SidebarSubmenuItem
++                title="Resources"
++                to="aws-apps-search-page/resources?filters[kind]=resource"
++                icon={useApp().getSystemIcon('kind:resource')}
++              />
++            </SidebarSubmenu>
++          </SidebarItem>
++        </SidebarGroup>
+         <MyGroupsSidebarItem
+           singularTitle="My Group"
+           pluralTitle="My Groups"
+diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
+--- backstage-1-37-1-pure/packages/backend/src/index.ts	2025-04-06 09:10:44
++++ backstage/packages/backend/src/index.ts	2025-04-09 14:39:35
+@@ -7,6 +7,10 @@
+  */
+ 
+ import { createBackend } from '@backstage/backend-defaults';
++import {
++  gitlabPlugin,
++  catalogPluginGitlabFillerProcessorModule,
++} from '@immobiliarelabs/backstage-plugin-gitlab-backend';
+ 
+ const backend = createBackend();
+ 
+@@ -14,10 +18,12 @@
+ backend.add(import('@backstage/plugin-proxy-backend'));
+ backend.add(import('@backstage/plugin-scaffolder-backend'));
+ backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
++backend.add(import('@roadiehq/scaffolder-backend-module-utils'));
+ backend.add(import('@backstage/plugin-techdocs-backend'));
+ 
+ // auth plugin
+ backend.add(import('@backstage/plugin-auth-backend'));
++backend.add(import('@backstage/plugin-auth-backend-module-okta-provider'));
+ // See https://backstage.io/docs/backend-system/building-backends/migrating#the-auth-plugin
+ backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
+ // See https://backstage.io/docs/auth/guest/provider
+@@ -31,6 +37,22 @@
+ // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
+ backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
+ 
++// See https://www.npmjs.com/package/@roadiehq/catalog-backend-module-okta
++backend.add(
++  import('@roadiehq/catalog-backend-module-okta/okta-entity-provider'), // The required entity provider
++);
++backend.add(
++  import('@roadiehq/catalog-backend-module-okta/org-provider-factory'), // Optional - Load both users and groups
++);
++
++// See https://backstage.io/docs/integrations/gitlab/discovery
++backend.add(import('@backstage/plugin-catalog-backend-module-gitlab'));
++
++// See https://backstage.io/docs/integrations/github/discovery/
++backend.add(import('@backstage/plugin-catalog-backend-module-github'));
++
++backend.add(import('@aws/backstage-plugin-catalog-backend-module-aws-apps-entities-processor'));
++
+ // permission plugin
+ backend.add(import('@backstage/plugin-permission-backend'));
+ // See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
+@@ -51,5 +73,8 @@
+ 
+ // kubernetes
+ backend.add(import('@backstage/plugin-kubernetes-backend'));
++
++backend.add(gitlabPlugin);
++backend.add(catalogPluginGitlabFillerProcessorModule);
+ 
+ backend.start();

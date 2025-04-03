@@ -5,7 +5,7 @@ import { GenericAWSEnvironment, readOpaAppAuditPermission } from '@aws/plugin-aw
 import { Entity } from '@backstage/catalog-model';
 import { EmptyState } from '@backstage/core-components';
 import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
-import { isGithubActionsAvailable } from '@backstage/plugin-github-actions';
+import { isGithubActionsAvailable } from '@backstage-community/plugin-github-actions';
 import { RequirePermission, usePermission } from '@backstage/plugin-permission-react';
 import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 import { Grid, LinearProgress } from '@material-ui/core';

@@ -10,7 +10,7 @@ iac-deployment-env-provider:
     - apt install nodejs npm git python3-pip yq jq -y
     - export PIP_BREAK_SYSTEM_PACKAGES=1
     - pip3 install awscli --upgrade
-    - yarn global add aws-cli typescript@latest aws-cdk@2.171.1
+    - yarn global add aws-cli typescript@latest aws-cdk@2.1007.0
     - yarn --version
     - aws --version
     - echo -e "\e[0Ksection_end:`date +%s`:get_tools\r\e[0K"

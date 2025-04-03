@@ -12,7 +12,7 @@ type FeatureGroup = {
 const opaMainVideoContent = (
   <div className='opa-video-item'>
   <h4>The Platformers - Harmonix on AWS</h4>
-  <iframe width="400" height="225" src="https://www.youtube.com/embed/h9HwnkkmQPA/1.jpg?" title="What is OPA on AWS + Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/h9HwnkkmQPA/1.jpg?" title="What is Harmonix on AWS + Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div> 
 )
 
@@ -26,7 +26,7 @@ const opaSecondVideoContent = (
 const opaThirdVideoContent = (
   <div className='opa-video-item'>
     <h4>Containers from the couch</h4>
-    <iframe width="400" height="225" src="https://www.youtube.com/embed/EN6mlTX71Ts/1.jpg?" title="OPA on AWS" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <iframe width="400" height="225" src="https://www.youtube.com/embed/EN6mlTX71Ts/1.jpg?" title="Harmonix on AWS" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
   </div>
 )
 const opaForthVideoContent = (
@@ -39,8 +39,8 @@ const opaForthVideoContent = (
 const opaFifthVideoContent = (
   <div className='opa-video-item'>
   <h4>Harmonix on AWS Tech Playlist</h4>
-  {/* <iframe width="400" height="250" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> */}
-  <iframe width="400" height="225" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  {/* <iframe width="400" height="250" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="Harmonix on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> */}
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="Harmonix on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 </div>
 )
 const opaSixthVideoContent = (
@@ -138,7 +138,7 @@ const EnterpriseFeatureList: FeatureItem[] = [
 
 const opaDescription : FeatureItem[] = [
   {
-    title: 'OPA on AWS',
+    title: 'Harmonix on AWS',
     Svg: require('@site/static/img/regulations.svg').default,
     noSVG:true,
     minHeight:'300px',

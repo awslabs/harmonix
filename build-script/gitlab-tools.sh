@@ -13,6 +13,11 @@ source ${configDir}/.env
 
 GITLAB_TOKEN=$SECRET_GITLAB_CONFIG_PROP_apiToken
 
+if [[ -z "$GITLAB_TOKEN" ]]; then 
+  echo "Please set the API token before proceeding"
+  exit 1
+fi
+
 # Try to create a new project if one doesn't exist (will fail through)
 curl -H "Content-Type:application/json" "https://$GITLAB_HOSTNAME/api/v4/projects?private_token=$GITLAB_TOKEN" -d "{ \"name\": \"backstage-reference\" ,  \"visibility\": \"internal\" }"
 

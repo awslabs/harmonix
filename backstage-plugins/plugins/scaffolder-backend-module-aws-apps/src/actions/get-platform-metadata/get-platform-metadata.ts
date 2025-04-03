@@ -9,7 +9,7 @@ const ID = 'opa:get-platform-metadata';
 
 const examples = [
   {
-    description: 'Retrieve data about the OPA on AWS platform',
+    description: 'Retrieve data about the Harmonix on AWS platform',
     example: yaml.stringify({
       steps: [
         {
@@ -27,7 +27,7 @@ export function getPlatformMetadataAction(options: { envConfig: Config }) {
 
   return createTemplateAction({
     id: ID,
-    description: 'Retrieve data about the OPA on AWS platform',
+    description: 'Retrieve data about the Harmonix on AWS platform',
     examples,
     schema: {
       output: {
@@ -37,7 +37,7 @@ export function getPlatformMetadataAction(options: { envConfig: Config }) {
         ],
         properties: {
           platformRegion: {
-            title: 'The AWS region where the OPA on AWS solution is deployed',
+            title: 'The AWS region where the Harmonix on AWS solution is deployed',
             type: 'string'
           }
         }

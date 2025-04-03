@@ -9,7 +9,7 @@ default:
     - echo -e "\e[0Ksection_start:`date +%s`:get_tools1[collapsed=true]\r\e[0KGet Tools"
     - apt-get update
     - apt install nodejs npm git python3-pip yq jq unzip -y
-    - yarn global add typescript@latest aws-cdk@2.171.1
+    - yarn global add typescript@latest aws-cdk@2.1007.0
     - yarn --version
     - echo -e "\e[0Ksection_end:`date +%s`:get_tools1\r\e[0K"
 

@@ -54,7 +54,7 @@ After the scaffolder configuration is updated, you can use the new actions in yo
 ## AWS Apps Scaffolder Actions
 
 Documentation for common usage of the contributed scaffolder actions is included below.
-For full documentation of the scaffolder action inputs and outputs, see the https://<your backstage app>/create/actions page in your Backstage app.
+For full documentation of the scaffolder action inputs and outputs, see the https://\<your backstage app>/create/actions page in your Backstage app.
 
 The scaffolder actions which create AWS resources will leverage the AWS Environments and Environments Provider model provided in the `@aws/plugin-aws-apps-backend-for-backstage` plugin.
 Reference the plugin documentation to understand how to create and surface AWS Environments for use in scaffolder actions and the UI.
@@ -143,7 +143,7 @@ The template snippet below demonstrates this action in the `steps` section of a 
 
 ### Get Platform Metadata
 
-The `opa:get-platform-metadata` scaffolder action retrieves information about the platform and environment on which OPA on AWS is running.  
+The `opa:get-platform-metadata` scaffolder action retrieves information about the platform and environment on which Harmonix on AWS is running.  
 
 The action will return the AWS region where the platform is running.  Future metadata is also planned.
 
@@ -153,7 +153,7 @@ The action will return the AWS region where the platform is running.  Future met
 ...
   steps:
     ...
-    # Get data about the OPA on AWS platform
+    # Get data about the Harmonix on AWS platform
     - id: opaGetPlatformInfo
       name: Get OPA platform information
       action: opa:get-platform-metadata
@@ -163,7 +163,7 @@ The action will return the AWS region where the platform is running.  Future met
 
 ### Get Platform Parameters
 
-The `opa:get-platform-parameters` scaffolder action retrieve AWS SSM parameter values for the OPA on AWS platform so that their values can be used by other template actions.
+The `opa:get-platform-parameters` scaffolder action retrieve AWS SSM parameter values for the Harmonix on AWS platform so that their values can be used by other template actions.
 
 The action will return a `params` response as an object containing a map of SSM parameters.
 
@@ -173,7 +173,7 @@ The action will return a `params` response as an object containing a map of SSM 
 ...
   steps:
     ...
-    # Get data about the OPA on AWS platform
+    # Get data about the Harmonix on AWS platform
     - id: opaGetPlatformParams
       name: Get parameter values
       action: opa:get-platform-parameters
@@ -204,7 +204,7 @@ The action will return a `params` response as an object containing a map of SSM 
 ...
   steps:
     ...
-    # Get data about the OPA on AWS platform
+    # Get data about the Harmonix on AWS platform
     - id: opaGetPlatformParams
       name: Get parameter values
       action: opa:get-platform-parameters

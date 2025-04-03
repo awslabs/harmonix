@@ -3,15 +3,15 @@
 
 import { Entity } from '@backstage/catalog-model';
 import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
-import { isGithubActionsAvailable } from '@backstage/plugin-github-actions';
+import { isGithubActionsAvailable } from '@backstage-community/plugin-github-actions';
 import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 import { Grid } from '@material-ui/core';
 import React, { ReactNode } from 'react';
 import { CICDContent } from '../../components/CICDContent/CICDContent';
 import { EntityDeleteAppCard } from '../../plugin';
 import { AwsRDSResourcePage } from '../AwsRDSResourcePage/AwsRDSResourcePage';
-import {AwsS3ResourcePage} from '../AwsS3ResourcePage/AwsS3ResourcePage'
-import {AwsSecretsManagerResourcePage} from '../AwsSecretsManagerResourcePage/AwsSecretsManagerResourcePage'
+import { AwsS3ResourcePage } from '../AwsS3ResourcePage/AwsS3ResourcePage'
+import { AwsSecretsManagerResourcePage } from '../AwsSecretsManagerResourcePage/AwsSecretsManagerResourcePage'
 
 interface AwsResourcePageProps {
   children: ReactNode;
@@ -78,7 +78,7 @@ export function AwsResourcePage(_props: AwsResourcePageProps) {
       {_props.children}
       <EntityLayout>
         <EntityLayout.Route path="/" title="Overview">
-          <AwsSecretsManagerResourcePage/>
+          <AwsSecretsManagerResourcePage />
         </EntityLayout.Route>
         <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
           <CICDContent />

@@ -105,7 +105,7 @@ cdk-bootstrap:  ## Bootstrap the CDK in an AWS account
 	@. ./build-script/deploy-cdk-bootstrap.sh
 	@echo "Bootstrap Finished."
 
-##@ OPA Infrastructure Tasks
+##@ Harmonix Infrastructure Tasks
 
 # Resolves all environment variables in template files, executes "cdk deploy" 
 # for the OPAStack, then restores template files to their original content

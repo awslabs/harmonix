@@ -1,13 +1,13 @@
 {
   "name": "@aws/plugin-scaffolder-backend-aws-apps-for-backstage",
   "description": "App Development for Backstage.io on AWS - scaffolder actions",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
   "author": {
     "name": "Amazon Web Services",
-    "url": "http://aws.amazon.com"
+    "url": "https://aws.amazon.com"
   },
   "publishConfig": {
     "access": "public",
@@ -37,27 +37,27 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-   "@aws-sdk/client-sfn": "^3.623.0",
-    "@aws-sdk/client-ssm": "^3.623.0",
-    "@aws-sdk/types": "^3.609.0",
-    "@aws-sdk/client-secrets-manager": "^3.623.0",
-    "@aws-sdk/util-arn-parser": "^3.568.0",
-    "@backstage/catalog-client": "^1.6.5",
-    "@backstage/catalog-model": "^1.5.0",
-    "@backstage/config": "^1.2.0",
-    "@backstage/plugin-scaffolder-backend": "^1.23.0",
-    "@backstage/plugin-scaffolder-node": "^0.4.8",
-    "@backstage/integration": "^1.13.0",
+    "@aws-sdk/client-sfn": "^3.787.0",
+    "@aws-sdk/client-ssm": "^3.787.0",
+    "@aws-sdk/types": "^3.775.0",
+    "@aws-sdk/client-secrets-manager": "^3.787.0",
+    "@aws-sdk/util-arn-parser": "^3.723.0",
+    "@backstage/catalog-client": "^1.9.1",
+    "@backstage/catalog-model": "^1.7.3",
+    "@backstage/config": "^1.3.2",
+    "@backstage/plugin-scaffolder-backend": "^1.31.0",
+    "@backstage/plugin-scaffolder-node": "^0.8.0",
+    "@backstage/integration": "^1.16.2",
     "@backstage/errors": "^1.2.4",
-    "@backstage/types": "^1.1.1",
-    "@aws/plugin-aws-apps-backend-for-backstage": "^0.3.4",
+    "@backstage/types": "^1.2.1",
+    "@aws/plugin-aws-apps-backend-for-backstage": "^0.4.0",
     "lodash": "^4.17.21",
-    "winston": "^3.13.1",
+    "winston": "^3.17.0",
     "yaml": "^2.5.0"
   },
   "devDependencies": {
-    "@backstage/backend-common": "^0.23.3",
-    "@backstage/cli": "^0.26.11",
+    "@backstage/backend-common": "^0.25.0",
+    "@backstage/cli": "^0.31.0",
     "@types/lodash": "4.17.7"
   },
   "files": [

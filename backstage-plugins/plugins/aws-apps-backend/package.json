@@ -1,13 +1,13 @@
 {
   "name": "@aws/plugin-aws-apps-backend-for-backstage",
   "description": "App Development for Backstage.io on AWS Backend plugin",
-  "version": "0.3.4",
+  "version": "0.4.0",
   "main": "src/index.ts",
   "types": "src/index.ts",
   "license": "Apache-2.0",
   "author": {
     "name": "Amazon Web Services",
-    "url": "http://aws.amazon.com"
+    "url": "https://aws.amazon.com"
   },
   "publishConfig": {
     "access": "public",
@@ -25,7 +25,9 @@
   "backstage": {
     "role": "backend-plugin",
     "pluginId": "aws-apps-backend",
-    "pluginPackages": ["@backstage/plugin-catalog"]
+    "pluginPackages": [
+      "@backstage/plugin-catalog"
+    ]
   },
   "scripts": {
     "start": "backstage-cli package start",
@@ -37,43 +39,43 @@
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
-    "@aws-sdk/client-cloudformation": "^3.623.0",
-    "@aws-sdk/client-cloudwatch-logs": "^3.623.0",
-    "@aws-sdk/client-dynamodb": "^3.623.0",
-    "@aws-sdk/client-ecs": "^3.623.0",
-    "@aws-sdk/client-eks": "^3.623.0",
-    "@aws-sdk/client-resource-groups": "^3.623.0",
-    "@aws-sdk/client-s3": "^3.623.0",
-    "@aws-sdk/client-lambda": "^3.623.0",
-    "@aws-sdk/client-secrets-manager": "^3.623.0",
-    "@aws-sdk/client-ssm": "^3.623.0",
-    "@aws-sdk/client-sts": "^3.623.0",
-    "@aws-sdk/credential-provider-node": "^3.623.0",
-    "@aws-sdk/types": "^3.609.0",
-    "@aws-sdk/util-arn-parser": "^3.568.0",
-    "@aws/plugin-aws-apps-common-for-backstage": "^0.3.4",
-    "@backstage/backend-common": "^0.23.3",
-    "@backstage/backend-defaults": "^0.4.0",
-    "@backstage/backend-plugin-api": "^0.7.0",
-    "@backstage/config": "^1.2.0",
+    "@aws-sdk/client-cloudformation": "^3.787.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.787.0",
+    "@aws-sdk/client-dynamodb": "^3.787.0",
+    "@aws-sdk/client-ecs": "^3.787.0",
+    "@aws-sdk/client-eks": "^3.787.0",
+    "@aws-sdk/client-resource-groups": "^3.787.0",
+    "@aws-sdk/client-s3": "^3.787.0",
+    "@aws-sdk/client-lambda": "^3.787.0",
+    "@aws-sdk/client-secrets-manager": "^3.787.0",
+    "@aws-sdk/client-ssm": "^3.787.0",
+    "@aws-sdk/client-sts": "^3.787.0",
+    "@aws-sdk/credential-provider-node": "^3.787.0",
+    "@aws-sdk/types": "^3.775.0",
+    "@aws-sdk/util-arn-parser": "^3.723.0",
+    "@aws/plugin-aws-apps-common-for-backstage": "^0.4.0",
+    "@backstage/backend-common": "^0.25.0",
+    "@backstage/backend-defaults": "^0.8.2",
+    "@backstage/backend-plugin-api": "^1.2.1",
+    "@backstage/config": "^1.3.2",
     "express": "^4.17.1",
     "express-promise-router": "^4.1.0",
     "octokit": "^3.1.2",
     "octokit-commit-multiple-files": "^5.0.2",
     "winston": "^3.2.1",
-    "yaml": "^2.0.0",
+    "yaml": "^2.7.1",
     "yn": "^4.0.0",
     "node-fetch": "^2.6.7"
   },
   "devDependencies": {
-    "@backstage/backend-test-utils": "^0.4.4",
-    "@backstage/cli": "^0.26.11",
-    "@backstage/plugin-auth-backend": "^0.22.9",
-    "@backstage/plugin-auth-backend-module-guest-provider": "^0.1.8",
+    "@backstage/backend-test-utils": "^1.3.1",
+    "@backstage/cli": "^0.31.0",
+    "@backstage/plugin-auth-backend": "^0.24.4",
+    "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.6",
     "@types/express": "*",
     "@types/supertest": "^2.0.12",
     "supertest": "^6.2.4",
-    "msw": "^2.3.1"
+    "msw": "^1.0.0"
   },
   "files": [
     "dist"

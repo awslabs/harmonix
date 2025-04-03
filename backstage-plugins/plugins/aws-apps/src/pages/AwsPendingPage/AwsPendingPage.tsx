@@ -5,14 +5,14 @@ import { Entity } from '@backstage/catalog-model';
 import { EntityAboutCard, EntityLayout, EntityLinksCard } from '@backstage/plugin-catalog';
 import { EntityCatalogGraphCard } from '@backstage/plugin-catalog-graph';
 import { useEntity } from '@backstage/plugin-catalog-react';
-import { isGithubActionsAvailable } from '@backstage/plugin-github-actions';
+import { isGithubActionsAvailable } from '@backstage-community/plugin-github-actions';
 import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 import { Grid } from '@material-ui/core';
 import React from 'react';
 import { CICDContent } from '../../components/CICDContent/CICDContent';
 import { EntityGeneralInfoCard } from '../../plugin';
 
-interface AwsPendingPageProps {}
+interface AwsPendingPageProps { }
 
 const isCicdApplicable = (entity: Entity) => {
   return isGitlabAvailable(entity) || isGithubActionsAvailable(entity);

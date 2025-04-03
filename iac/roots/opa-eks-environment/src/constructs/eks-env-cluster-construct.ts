@@ -8,7 +8,7 @@ import * as eks from "aws-cdk-lib/aws-eks";
 import * as iam from "aws-cdk-lib/aws-iam";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
-import { KubectlV31Layer } from '@aws-cdk/lambda-layer-kubectl-v31';
+import { KubectlV32Layer } from '@aws-cdk/lambda-layer-kubectl-v32';
 import { OPAEnvironmentParams } from "@aws/aws-app-development-common-constructs";
 import {
   getCreateK8sOpaResources,
@@ -101,9 +101,9 @@ export class OPAEKSClusterConstruct extends Construct {
       eks.ClusterLoggingTypes.AUTHENTICATOR,
       eks.ClusterLoggingTypes.SCHEDULER,
     ];
-    const kubectlLayer = new KubectlV31Layer(this, 'kubectl');
+    const kubectlLayer = new KubectlV32Layer(this, 'kubectl');
     const albControllerVersion = eks.AlbControllerVersion.V2_6_2;
-    const kubernetesVersion = eks.KubernetesVersion.V1_31;
+    const kubernetesVersion = eks.KubernetesVersion.V1_32;
 
     const clusterAdminK8sUsername = props.clusterAdminRole.roleArn;
 

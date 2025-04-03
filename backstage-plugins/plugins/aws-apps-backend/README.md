@@ -2,9 +2,9 @@
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0 
 -->
-# OPA on AWS Backend
+# Harmonix on AWS Backend
 
-This is the backend part of the OPA on AWS plugin.  Its key responsibilities:
+This is the backend part of the Harmonix on AWS plugin.  Its key responsibilities:
 
 1. **Catalog contributions** - the plugin provides the AWSEnvironment and AWSEnvironmentProvider entity Kinds, including processing and validation of the entities.
 2. **Authentication / Authorization** - the plugin assumes defined roles with permisisons for provisioning infrastructure resources for a target environment account.
@@ -24,7 +24,7 @@ Setup for the AWS Apps backend requires a router for Backstage, making the catal
 
 ### Configure a router
 
-Create a `awsApps.ts` file in the `packages/backend/src/plugins/`directory.  This file creates a router for the OPA on AWS backend.
+Create a `awsApps.ts` file in the `packages/backend/src/plugins/`directory.  This file creates a router for the Harmonix on AWS backend.
 
 ```ts
 // packages/backend/src/plugins/awsApps.ts
@@ -114,7 +114,7 @@ export default async function createPlugin(
 
 ### Permission Framework Policy
 
-The OPA on AWS backend plugin leverages the [Backstage permissions framework](https://backstage.io/docs/permissions/overview) to contribute a permission decision for access to audit entries.  If you would like to implement a policy for your Backstage instance to control access to audit entries you will start with the [Permission framework getting started documentation](https://backstage.io/docs/permissions/getting-started) to set up the base framework.  
+The Harmonix on AWS backend plugin leverages the [Backstage permissions framework](https://backstage.io/docs/permissions/overview) to contribute a permission decision for access to audit entries.  If you would like to implement a policy for your Backstage instance to control access to audit entries you will start with the [Permission framework getting started documentation](https://backstage.io/docs/permissions/getting-started) to set up the base framework.  
 With the framework in place, you can leverage the `readOpaAppAuditPermission` permission in your policy definition to restrict access to audit entries.
 
 ```ts

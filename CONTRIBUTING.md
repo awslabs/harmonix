@@ -51,7 +51,7 @@ opensource-codeofconduct@amazon.com with any additional questions or comments.
 
 
 ### Security issue notifications
-If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](http://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
+If you discover a potential security issue in this project we ask that you notify AWS/Amazon Security via our [vulnerability reporting page](https://aws.amazon.com/security/vulnerability-reporting/). Please do **not** create a public github issue.
 
 
 ### Licensing
@@ -59,37 +59,37 @@ If you discover a potential security issue in this project we ask that you notif
 See the [LICENSE](LICENSE) file for our project's licensing. We will ask you to confirm the licensing of your contribution.
 
 
-## Contributing Assets to OPA on AWS
+## Contributing Assets to Harmonix on AWS
 
-Thank you for considering a contribution to OPA on AWS project!
+Thank you for considering a contribution to Harmonix on AWS project!
 The above described guidelines are to set the standard of submitting Pull Request, That is in conjunction to the below description
 
 ### Contribution Type
 
-1. Contributing OPA on AWS Templates
+1. Contributing Harmonix on AWS Templates
    1. Provider Template
    2. App Template
    3. Resource Template
    4. Other Template
-2. Contributing OPA on AWS Pipelines
+2. Contributing Harmonix on AWS Pipelines
    1. New pipeline pattern
    2. Update existing pipeline pattern
-3. Contributing OPA on AWS Core modifications
-   1. Change in UI / Frontend of OPA on AWS plugins
-   2. Change in SDK API / Backend of OPA on AWS Plugins
+3. Contributing Harmonix on AWS Core modifications
+   1. Change in UI / Frontend of Harmonix on AWS plugins
+   2. Change in SDK API / Backend of Harmonix on AWS Plugins
    3. Change in sacffolder actions
    4. Change in architecture or platform design
    5. Change in common interfaces
-4. Contributing OPA on AWS extensions
+4. Contributing Harmonix on AWS extensions
    1. Integration with new tools and plugins
    2. Integration with additional Backstage.io APIs / entities
-   3. Extending OPA on AWS model
+   3. Extending Harmonix on AWS model
 
 ### Submitting Contribution
 
-Before submitting any contribution type please make sure it adheres to the OPA on AWS [architecture](https://opaonaws.io/docs/techdocs/architecture)
+Before submitting any contribution type please make sure it adheres to the Harmonix on AWS [architecture](https://harmonixonaws.io/docs/techdocs/architecture)
 
-### Contributing an OPA on AWS provider
+### Contributing an Harmonix on AWS provider
 
 Questions to consider when designing new provider:
 1. Why do i need a new provider? does the existing providers support the type of application I'm trying to build?
@@ -123,25 +123,25 @@ Don't forget to update all-templates.yaml with your new template path
 #### Test your provider
 **Step 1**<br/>
 Make sure you are able to provision your new provider template.
-We highly recommend to test different context for this step as described in the [test-cases](https://opaonaws.io/docs/tests)
+We highly recommend to test different context for this step as described in the [test-cases](https://harmonixonaws.io/docs/tests)
 
 **Step 2**<br/>
 Make sure you can update the provider configurations or IAC and the pipeline will apply the changes succufully 
 
 **Step 3**<br/>
-Add entries in  [test-cases](https://opaonaws.io/docs/tests) document for the new provider implemented.
+Add entries in  [test-cases](https://harmonixonaws.io/docs/tests) document for the new provider implemented.
 
 #### Submit your PR
 Submit a pull request for the new provider following the instructions in this page.
 
 
-### Contributing an OPA on AWS application
+### Contributing an Harmonix on AWS application
 
 Questions to consider when designing a new application pattern:
 
 1. Who is the team that going to be using this application template? does it address their requirements?
 2. What pattern this new application introduce? is there already an existing pattern that can be used? 
-3. Does this application can use an existing environment or it requires a new environment type / provider? if so, see the above *Contributing an OPA on AWS provider*
+3. Does this application can use an existing environment or it requires a new environment type / provider? if so, see the above *Contributing an Harmonix on AWS provider*
 4. What kind of permissions and resources this application needs?
 5. What kind of operational actions this application need? which of them can be supported through a pipeline and which one needs a UI of platform changes?
 6. Will this application support upgrades? what will be the effect of the deployed applications if we were to be update it?
@@ -173,7 +173,7 @@ Don't forget to update all-templates.yaml with your new template path
 #### Test your application
 **Step 1**<br/>
 Make sure you are able to provision your new application template.
-We highly recommend to test different context for this step as described in the [test-cases](https://opaonaws.io/docs/tests).
+We highly recommend to test different context for this step as described in the [test-cases](https://harmonixonaws.io/docs/tests).
 You should also test provisioning another application on the same environment to make sure there's not conflict of configurations and/or resources.
 
 **Step 2**<br/>
@@ -181,7 +181,7 @@ You should also test provisioning another application on the same environment to
 2. Make sure you can update the application code /src and CD pipeline will build and deploy the new application  
 
 **Step 3**<br/>
-Add entries in  [test-cases](https://opaonaws.io/docs/tests) document for the new application implemented.
+Add entries in  [test-cases](https://harmonixonaws.io/docs/tests) document for the new application implemented.
 
 #### Submit your PR
 Submit a pull request for the new provider following the instructions in this page.

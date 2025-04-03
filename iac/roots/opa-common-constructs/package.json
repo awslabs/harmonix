@@ -1,7 +1,7 @@
 {
   "name": "@aws/aws-app-development-common-constructs",
   "version": "0.3.0",
-  "description": "Constructs collection for OPA",
+  "description": "Constructs collection for Harmonix",
   "main": "index.ts",
   "types": "index.d.ts",
   "files": [
@@ -14,22 +14,22 @@
     "test": "jest"
   },
   "devDependencies": {
-    "@types/babel__traverse": "7.20.6",
-    "@types/jest": "^29.5.12",
-    "@types/node": "^20.3.1",
-    "@types/prettier": "2.7.3",
-    "@types/source-map-support": "^0.5.6",
-    "aws-cdk": "2.171.1",
+    "@types/babel__traverse": "7.20.7",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.14.0",
+    "@types/prettier": "3.0.0",
+    "@types/source-map-support": "^0.5.10",
+    "aws-cdk": "2.1007.0",
     "jest": "^29.7.0",
-    "ts-jest": "^29.2.4",
+    "ts-jest": "^29.3.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.4"
+    "typescript": "^5.8.2"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.627.0",
-    "aws-cdk-lib": "2.171.1",
-    "cdk-nag": "^2.28.175",
-    "constructs": "^10.3.0",
+    "@aws-sdk/client-s3": "^3.779.0",
+    "aws-cdk-lib": "2.187.0",
+    "cdk-nag": "^2.35.61",
+    "constructs": "^10.4.2",
     "source-map-support": "^0.5.21"
   }
 }

@@ -32,13 +32,13 @@ The solution contains 3 main processes:
   > **Note**: The Lambda functions are stiched together by the Classification Lambda. In other words, when a request is made to the Classifier, the Retriever and Response will automatically be called and the API response will be the final answer from the LLM. This feature is enabled by the **OPERATION_MODE** environment variable being set to **INCLUSIVE** in the SAM template. To disable, change the value to **DISABLE**.
 
 ## Deploying the Application
-This application is configured to be deployed on top of the **AWS Generative AI** Environment Provider. Once your environment is configured, you can follow the steps in the software template to deploy your AWS Gen AI Chatbot via the OPA on AWS UI.
+This application is configured to be deployed on top of the **AWS Generative AI** Environment Provider. Once your environment is configured, you can follow the steps in the software template to deploy your AWS Gen AI Chatbot via the Harmonix on AWS UI.
 
 ## Interacting with the Application
 To interact with the backend of the application, you need to do so in the following order:
 
 As an Application Developer:
-1. **Setting Configuration Parameters** - To set the parameters that are used in the application, see **./events/set-configuration**. For more information on parameter definitions, please visit the full documentation on the [OPA on AWS](https://opaonaws.io/) website.
+1. **Setting Configuration Parameters** - To set the parameters that are used in the application, see **./events/set-configuration**. For more information on parameter definitions, please visit the full documentation on the [Harmonix on AWS](https://harmonixonaws.io/) website.
 2. **Uploading Contextual Documents** - To upload relevant documents you need to go into your S3 **Data Bucket** and upload files there. The name of this bucket can be found on the Entity Page of your application, under AWS Infrastructure Resources, listed as an S3 bucket with the following naming convention: **{app-name}-{env-prov}-databucket-xxxx**. Simply upload a document and wait for the indices to be created in OpenSearch. (Note: This solution only supports .txt files)
 3. **Testing** - To test the Classifier, Retriever and Response Lambda functions, see the corresponding files **./events/{function-name}**
 

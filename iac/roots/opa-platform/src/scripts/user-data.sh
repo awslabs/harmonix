@@ -117,7 +117,7 @@ do
 
     ADMIN_GITLAB_PASSWORD=$(aws secretsmanager get-secret-value --secret-id opa-admin-gitlab-secrets| jq --raw-output '.SecretString' | jq -r .password)
     if [[ -z "$ADMIN_GITLAB_PASSWORD" ]]; then
-        echo "ERROR: could not get ADMIN_GITLAB_PASSWORD from secretsmanager.  Generating random password"
+        echo "WARN: could not get ADMIN_GITLAB_PASSWORD from secretsmanager.  Generating random password"
         ADMIN_GITLAB_PASSWORD=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 10 ; echo '')
     fi
 
@@ -127,8 +127,26 @@ do
     aws secretsmanager put-secret-value --secret-id opa-admin-gitlab-secrets --secret-string '{"apiToken":"'"$ADMIN_TOKEN"'", "password":"'"$ADMIN_GITLAB_PASSWORD"'", "username":"'"$ADMIN_USERNAME"'", "runnerRegistrationToken":"", "runnerId":""}'
 
     echo "Updating GitLab admin user name, password and token"
-    # Explicit namespace created to avoid validation errors.  See GitLab issue: https://gitlab.com/gitlab-org/gitlab/-/issues/439166
-    gitlab-rails runner "n = Namespace.new(name: '$ADMIN_USERNAME', description: '$ADMIN_USERNAME namespace'); u = User.new(username: '$ADMIN_USERNAME', email: '$ADMIN_USERNAME@amazon.com', name: '$ADMIN_USERNAME', password: '$ADMIN_GITLAB_PASSWORD', password_confirmation: '$ADMIN_GITLAB_PASSWORD', admin: true, namespace: n); u.skip_confirmation!; u.save!; token = User.find_by_username('$ADMIN_USERNAME').personal_access_tokens.create(scopes: [:read_user, :read_repository, :api, :read_api, :write_repository], name: '$ADMIN_USERNAME-token', expires_at: 365.days.from_now); token.set_token('$ADMIN_TOKEN'); token.save!;"
+
+    # Note, you can troubleshoot the rails commands below by connecting to the GitLab Host EC2 from the AWS Web console using the Session Manager utility.
+    # Once your session is established, enter this command and wait for several seconds before your rails session is active:
+    #    sudo gitlab-rails console
+    # Once your session is active, you can type in commands and see the output immediately. See the rails_console link below for details
+    # Example commands that will print the details of the admin user:
+    #    user = User.find_by_username('$ADMIN_USERNAME')
+    #    pp user.attributes
+
+    # See https://docs.gitlab.com/administration/operations/rails_console/
+    # See https://docs.gitlab.com/17.10/user/profile/account/create_accounts/#create-users-through-the-rails-console
+    # See https://docs.gitlab.com/user/profile/personal_access_tokens/#create-a-personal-access-token-programmatically
+
+    # GitLab 16.11 through 17.6
+    # This has been tested to work on version 17.10 as well
+    # gitlab-rails runner "u = User.new(username: '$ADMIN_USERNAME', email: '$ADMIN_USERNAME@amazon.com', name: '$ADMIN_USERNAME', password: '$ADMIN_GITLAB_PASSWORD', password_confirmation: '$ADMIN_GITLAB_PASSWORD', admin: true); u.assign_personal_namespace(Organizations::Organization.default_organization); u.skip_confirmation!; u.save!; token = User.find_by_username('$ADMIN_USERNAME').personal_access_tokens.create(scopes: [:read_user, :read_repository, :api, :read_api, :write_repository], name: '$ADMIN_USERNAME-token', expires_at: 365.days.from_now); token.set_token('$ADMIN_TOKEN'); token.save!;"
+
+    #  GitLab 17.7 and later
+    gitlab-rails runner "u = Users::CreateService.new(nil, username: '$ADMIN_USERNAME', email: '$ADMIN_USERNAME@amazon.com', name: '$ADMIN_USERNAME', password: '$ADMIN_GITLAB_PASSWORD', password_confirmation: '$ADMIN_GITLAB_PASSWORD', organization_id: Organizations::Organization.first.id, skip_confirmation: true).execute; token = User.find_by_username('$ADMIN_USERNAME').personal_access_tokens.create(scopes: [:read_user, :read_repository, :api, :read_api, :write_repository], name: '$ADMIN_USERNAME-token', expires_at: 365.days.from_now); token.set_token('$ADMIN_TOKEN'); token.save!;" 
+    gitlab-rails runner "harmonix = User.find_by_username('$ADMIN_USERNAME'); harmonix.admin = true; harmonix.save;"
 
     GROUP_ID=$(curl --location --request POST 'localhost/api/v4/groups/' --header "PRIVATE-TOKEN: $ADMIN_TOKEN" --header 'Content-Type: application/json' --data-raw '{ "path": "aws-app", "name": "aws-app", "visibility": "internal" }' | jq .id)
     ENV_GROUP_ID=$(curl --location --request POST 'localhost/api/v4/groups/' --header "PRIVATE-TOKEN: $ADMIN_TOKEN" --header 'Content-Type: application/json' --data-raw '{ "path": "aws-environments", "name": "aws-environments", "visibility": "internal" }' | jq .id)
@@ -151,7 +169,9 @@ do
     echo "Setting up new PAT"
     PAT_AUTH_TOKEN=$(echo $RANDOM | shasum | head -c 30)
     echo "PAT_AUTH_TOKEN is $PAT_AUTH_TOKEN"
-    sudo gitlab-rails runner "token = User.find_by_username('opa-admin').personal_access_tokens.create(scopes: ['create_runner'], name: 'create_runner_pat', expires_at: 10.days.from_now); token.set_token('$PAT_AUTH_TOKEN'); token.save!"
+    sudo gitlab-rails runner "token = User.find_by_username('$ADMIN_USERNAME').personal_access_tokens.create(scopes: ['create_runner'], name: 'create_runner_pat', expires_at: 10.days.from_now); token.set_token('$PAT_AUTH_TOKEN'); token.save!"
+    sudo gitlab-rails runner "token = User.find_by_username('$ADMIN_USERNAME').personal_access_tokens.create(scopes: ['read_user', 'read_repository'], name: 'Automation token', expires_at: 365.days.from_now); token.set_token('token-string-here123'); token.save!"
+
     echo "Setting PAT into secret for later retrieval when runners are registered"
     aws secretsmanager put-secret-value --secret-id opa-admin-gitlab-secrets --secret-string '{"apiToken":"'"$ADMIN_TOKEN"'", "password":"'"$ADMIN_GITLAB_PASSWORD"'", "username":"'"$ADMIN_USERNAME"'", "PAT":"'"$PAT_AUTH_TOKEN"'", "runnerRegistrationToken":"'"$RUNNER_TOKEN"'", "runnerId":""}'
     echo "Finished setting up new PAT"

@@ -2,9 +2,9 @@
 Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0 
 -->
-# OPA on AWS Frontend
+# Harmonix on AWS Frontend
 
-This is the frontend UI of the OPA on AWS plugin.  An AWS Catalog Page and several entity cards are contributed to the UI from this plugin.
+This is the frontend UI of the Harmonix on AWS plugin.  An AWS Catalog Page and several entity cards are contributed to the UI from this plugin.
 
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -14,16 +14,16 @@ This is the frontend UI of the OPA on AWS plugin.  An AWS Catalog Page and sever
 
 ## Installation
 
-Install the OPA on AWS frontend plugin into your Backstage application:
+Install the Harmonix on AWS frontend plugin into your Backstage application:
 
 ```sh
 # From your Backstage root directory
-yarn add --cwd packages/app @aws/plugin-aws-apps-for-backstage@0.2.0
+yarn add --cwd packages/app @aws/plugin-aws-apps-for-backstage@0.4.0
 ```
 
 ## Configuration
 
-Each of the UI components contributed in the OPA on AWS frontend plugin can be configured independently and added to your Backstage platform as desired.  Details for adding each type of UI component are found in the sections below.
+Each of the UI components contributed in the Harmonix on AWS frontend plugin can be configured independently and added to your Backstage platform as desired.  Details for adding each type of UI component are found in the sections below.
 
 ### EntityPage customization for AWS apps
 

@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.4.0 (soon to be released)
+* Upgraded Harmonix on AWS to the latest Backstage version (1.37.1) and new backend system.
+* Upgraded the GitLab Community Edition version to 17.10.3
+* Upgraded Infrastructure as Code dependency versions
+* Updated Serverless application template Node runtime from 18 to 22
+* Upgrade EKS Kubernetes cluster version from 1.31 to 1.32
+* Upgraded PostgreSQL version for RDS resource to
+* Installation of 3rd party plugins is now done using the new backend system for Backstage. The versions of 3rd party plugins have been updated to the lateest.
+* Added `mise.toml` file to make it easier to build Harmonix using tested tool versions. See the [mise website](https://mise.jdx.dev/getting-started.html) for installation instructions
+* All Harmonix front end pages are now exported so that they can be referenced and extended
+  * See [PR](https://github.com/awslabs/harmonix/pull/146)
+
 ## 0.3.4 - 2024-08-23
 * Upgraded Harmonix on AWS to the latest Backstage version and new backend system. 1.29.0
 * New custom entity processor plugin - compatible with the new backend backstage system. <a href="docs/techdocs/plugins"> details here </a>

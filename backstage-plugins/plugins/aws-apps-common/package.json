@@ -30,13 +30,15 @@
   },
   "scripts": {
     "build": "backstage-cli package build",
+    "tsc": "tsc",
     "lint": "backstage-cli package lint",
-    "test": "backstage-cli package test",
+    "test": "backstage-cli package test --all --watchAll=false",
     "clean": "backstage-cli package clean",
     "prepack": "backstage-cli package prepack",
     "postpack": "backstage-cli package postpack"
   },
   "dependencies": {
+    "typescript": "5.5.4"
   },
   "devDependencies": {
     "@backstage/cli": "^0.26.11"

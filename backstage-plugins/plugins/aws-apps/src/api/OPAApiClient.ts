@@ -748,6 +748,8 @@ export class OPAApiClient implements OPAApi {
     const response = await this.fetchApi.fetch(url, requestOptions);
 
     if (!response.ok) {
+      // TODO: @backstage/errors 1.2.4 breaking change
+      // https://github.com/backstage/backstage/commit/6d61b44466c18828858a86bdaa907a9313291273#diff-4e02182cde01ae1de546f97685a690703997c3921afe0a933ae5ff05e3199216
       throw await ResponseError.fromResponse(response);
     }
 

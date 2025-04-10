@@ -25,6 +25,7 @@ const examples = [
   },
 ];
 
+/** @public */
 export function getComponentInfoAction() {
   return createTemplateAction<{
     componentName: string;
@@ -46,9 +47,7 @@ export function getComponentInfoAction() {
       },
       output: {
         type: 'object',
-        required: [
-          'kebabCaseComponentName',
-        ],
+        required: ['kebabCaseComponentName'],
         properties: {
           kebabCaseComponentName: {
             title: 'The component name, converted to kebab case',
@@ -58,7 +57,7 @@ export function getComponentInfoAction() {
       },
     },
     async handler(ctx) {
-      const { componentName, } = ctx.input;
+      const { componentName } = ctx.input;
 
       const kebabComponentName = kebabCase(componentName);
 

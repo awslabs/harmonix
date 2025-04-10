@@ -87,14 +87,14 @@ export class GitlabHostingConstruct extends Construct {
       ],
     });
 
-    const gitlabEc2Role = new iam.Role(this, "GitlabIamRole", {
+    const iamRole = new iam.Role(this, "GitlabIamRole", {
       assumedBy: new iam.ServicePrincipal("ec2.amazonaws.com"),
       description: "Iam Role assumed by the Gitlab server",
       managedPolicies: [iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonSSMManagedInstanceCore")],
       inlinePolicies: { GitlabIamRolePolicy: gitlabIamRolePolicy },
     });
 
-    NagSuppressions.addResourceSuppressions(gitlabEc2Role, [
+    NagSuppressions.addResourceSuppressions(iamRole, [
       { id: "AwsSolutions-IAM4", reason: "Assumed roles will use AWS managed policies for demonstration purposes.  Customers will be advised/required to assess and apply custom policies based on their role requirements" },
       { id: "AwsSolutions-IAM5", reason: "Assumed roles will require permissions to perform multiple ecs, ddb, and ec2 for demonstration purposes.  Customers will be advised/required to assess and apply minimal permission based on role mappings to their idP groups" },
     ], true);
@@ -136,7 +136,7 @@ export class GitlabHostingConstruct extends Construct {
       vpc: props.network.vpc,
       securityGroup: instanceSecurityGroup,
       machineImage,
-      role: gitlabEc2Role,
+      role: iamRole,
       blockDevices: [rootVolume],
       requireImdsv2: true,
     });

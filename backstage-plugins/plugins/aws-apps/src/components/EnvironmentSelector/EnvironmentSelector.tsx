@@ -17,17 +17,23 @@ const EnvironmentSelector = ({
 }: {
   input: { awsComponent: AWSComponent };
 }) => {
-  const [selectedEnv, setSelectedEnv] = useState(`${awsComponent.currentEnvironment.environment.name}|${awsComponent.currentEnvironment.providerData.name}`);
+  const [selectedEnv, setSelectedEnv] = useState(
+    `${awsComponent.currentEnvironment.environment.name}|${awsComponent.currentEnvironment.providerData.name}`,
+  );
 
   const selectorItems = Object.keys(awsComponent.environments).map(env => {
-    // Note that the environments keys have been lower-cased so we get the
+    // Note that the environments' keys have been lower-cased so we get the
     // case-sensitive environment name here
     const envName = awsComponent.environments[env].environment.name;
-    
+
     const key = `${envName}|${awsComponent.environments[env].providerData.name}`;
     // if (awsComponent.environments[env].providerData.length>1) TODO: Pretty name for single provider environments
-    const title = envName; //- awsComponent.environments[env].providerData.name;
-    return (<MenuItem key={"ID-" + key} value={key}>{title}</MenuItem>)
+
+    return (
+      <MenuItem key={`ID-${key}`} value={key}>
+        {envName}
+      </MenuItem>
+    );
   });
 
   const handleChange = (event: SelectChangeEvent) => {
@@ -38,7 +44,7 @@ const EnvironmentSelector = ({
 
   return (
     <div>
-      <FormControl sx={{ m: 1, minWidth: 120, }}>
+      <FormControl sx={{ m: 1, minWidth: 120 }}>
         <InputLabel id="lbl-select-aws-environment">Environments</InputLabel>
         <Select
           labelId="select-aws-environment"
@@ -46,6 +52,7 @@ const EnvironmentSelector = ({
           value={selectedEnv}
           label="Environments"
           onChange={handleChange}
+          variant="outlined"
         >
           {selectorItems}
         </Select>
@@ -54,7 +61,7 @@ const EnvironmentSelector = ({
   );
 };
 
-// Extract information from hook and populate the drop down
+// Extract information from hook and populate the drop-down
 export const EnvironmentSelectorWidget = () => {
   const awsAppLoadingStatus = useAsyncAwsApp();
 
@@ -65,7 +72,12 @@ export const EnvironmentSelectorWidget = () => {
       awsComponent: awsAppLoadingStatus.component,
     };
     return <EnvironmentSelector input={input} />;
-  } else {
-    return <EmptyState missing="data" title="No environment data to show" description="Environments data would show here" />;
   }
+  return (
+    <EmptyState
+      missing="data"
+      title="No environment data to show"
+      description="Environments data would show here"
+    />
+  );
 };

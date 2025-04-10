@@ -22,6 +22,7 @@ const examples = [
   },
 ];
 
+/** @public */
 export function getPlatformMetadataAction(options: { envConfig: Config }) {
   const { envConfig } = options;
 
@@ -32,16 +33,14 @@ export function getPlatformMetadataAction(options: { envConfig: Config }) {
     schema: {
       output: {
         type: 'object',
-        required: [
-          'platformRegion',
-        ],
+        required: ['platformRegion'],
         properties: {
           platformRegion: {
             title: 'The AWS region where the OPA on AWS solution is deployed',
-            type: 'string'
-          }
-        }
-      }
+            type: 'string',
+          },
+        },
+      },
     },
     async handler(ctx) {
       const platformRegion = envConfig.getString('backend.platformRegion');

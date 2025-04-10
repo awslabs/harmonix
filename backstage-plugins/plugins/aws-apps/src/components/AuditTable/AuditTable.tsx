@@ -6,7 +6,7 @@ import { EmptyState, Table, TableColumn } from '@backstage/core-components';
 import { LinearProgress } from '@material-ui/core';
 import { useApi } from '@backstage/core-plugin-api';
 import { opaApiRef } from '../../api';
-import { Typography } from '@mui/material';
+import Typography from '@mui/material/Typography';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { AuditRecord } from '@aws/plugin-aws-apps-common-for-backstage';
 
@@ -14,50 +14,55 @@ const AuditTable = () => {
   const api = useApi(opaApiRef);
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
+  const [error, setError] = useState<{
+    isError: boolean;
+    errorMsg: string | null;
+  }>({ isError: false, errorMsg: null });
   const [items, setItems] = useState<AuditRecord[]>([]);
 
   useEffect(() => {
+    async function getAuditDetails() {
+      return api.getAuditDetails();
+    }
     getAuditDetails()
       .then(results => {
         setLoading(false);
         if (results.Count! > 0 && results.Items) {
-          const items = results.Items.map(item => {
+          const auditRecords = results.Items.map(item => {
             const auditRecord: AuditRecord = {
-              id: item['id'].S || '',
-              origin: item['origin'].S || '',
-              actionType: item['actionType'].S || '',
-              actionName: item['actionName'].S || '',
-              appName: item['appName'].S || '',
-              createdDate: item['createdDate'].S || '',
-              createdAt: item['createdAt'].S || '',
-              initiatedBy: item['initiatedBy'].S || '',
-              owner: item['owner'].S || '',
-              assumedRole: item['assumedRole'].S || '',
-              targetAccount: item['targetAccount'].S || '',
-              targetRegion: item['targetRegion'].S || '',
-              prefix: item['prefix'].S || '',
-              providerName: item['providerName'].S || '',
-              request: item['request'].S || '',
-              status: item['status'].S || '',
-              message: item['message'].S || '',
+              id: item.id.S ?? '',
+              origin: item.origin.S ?? '',
+              actionType: item.actionType.S ?? '',
+              actionName: item.actionName.S ?? '',
+              appName: item.appName.S ?? '',
+              createdDate: item.createdDate.S ?? '',
+              createdAt: item.createdAt.S ?? '',
+              initiatedBy: item.initiatedBy.S ?? '',
+              owner: item.owner.S ?? '',
+              assumedRole: item.assumedRole.S ?? '',
+              targetAccount: item.targetAccount.S ?? '',
+              targetRegion: item.targetRegion.S ?? '',
+              prefix: item.prefix.S ?? '',
+              providerName: item.providerName.S ?? '',
+              request: item.request.S ?? '',
+              status: item.status.S ?? '',
+              message: item.message.S ?? '',
             };
 
             return auditRecord;
           });
-          setItems(items);
+          setItems(auditRecords);
           setError({ isError: false, errorMsg: '' });
         }
       })
       .catch(err => {
         setLoading(false);
-        setError({ isError: true, errorMsg: `Unexpected error occurred while retrieving audit data: ${err}` });
+        setError({
+          isError: true,
+          errorMsg: `Unexpected error occurred while retrieving audit data: ${err}`,
+        });
       });
-  }, []);
-
-  async function getAuditDetails() {
-    return api.getAuditDetails();
-  }
+  }, [api]);
 
   const columns: TableColumn[] = [
     {
@@ -133,7 +138,13 @@ const AuditTable = () => {
 
   return (
     <div>
-      <Table options={{ paging: true }} data={items} columns={columns} title="Audit Table" isLoading={loading} />
+      <Table
+        options={{ paging: true }}
+        data={items}
+        columns={columns}
+        title="Audit Table"
+        isLoading={loading}
+      />
     </div>
   );
 };
@@ -148,7 +159,12 @@ export const AuditWidget = () => {
     //   awsComponent: awsAppLoadingStatus.component
     // };
     return <AuditTable />;
-  } else {
-    return <EmptyState missing="data" title="No audit data to show" description="Audit data would show here" />;
   }
+  return (
+    <EmptyState
+      missing="data"
+      title="No audit data to show"
+      description="Audit data would show here"
+    />
+  );
 };

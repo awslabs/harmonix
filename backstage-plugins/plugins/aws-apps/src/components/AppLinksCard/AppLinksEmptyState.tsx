@@ -21,8 +21,7 @@ const useStyles = makeStyles<BackstageTheme>(
     code: {
       borderRadius: 6,
       margin: theme.spacing(2, 0),
-      background:
-        theme.palette.type === 'dark' ? '#444' : theme.palette.common.white,
+      background: theme.palette.type === 'dark' ? '#444' : theme.palette.common.white,
     },
   }),
   { name: 'PluginCatalogAppLinksEmptyState' },
@@ -34,8 +33,8 @@ export function AppLinksEmptyState() {
   return (
     <>
       <Typography variant="body1">
-        No links defined for this entity. You can add links to your entity YAML
-        as shown in the highlighted example below:
+        No links defined for this entity. You can add links to your entity YAML as shown in the highlighted example
+        below:
       </Typography>
       <div className={classes.code}>
         <CodeSnippet

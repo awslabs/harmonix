@@ -1,0 +1,169 @@
+---
+# This is a sample Software Template yaml file demonstrating how the aws-apps
+# scaffolder actions can be used in the larger context of creating a new application
+# in Backstage
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: example-awsapp-template
+  title: Example AWS Application
+spec:
+  owner: group:developers
+  type: website
+  
+  parameters:
+    - title: Provide basic component information
+      required:
+        - component_id
+        - owner
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component
+          ui:field: EntityNamePicker
+          ui:autofocus: true
+        description:
+          title: Description
+          type: string
+          description: Help others understand what this service is for
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            catalogFilter:
+              kind: [Group]
+    - title: Provide environment information for the application
+      required:
+        - environment
+      properties:
+        environment:
+          title: AWS Environment
+          type: string
+          description: The AWS Environment where the application is created
+          ui:field: EntityPicker
+          ui:options:
+            allowedKinds:
+              - AWSEnvironment
+            defaultKind: AWSEnvironment
+
+   # Get the Gitlab repository for source code management
+    - title: Choose a git repository location
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - {{ gitlab_hostname }}
+            allowedOwners:
+              - aws-app
+
+  steps:
+    # Get environment provider data based on the user-selected environment
+    - id: opaGetAwsEnvProviders
+      name: Get AWS Environment Providers
+      action: opa:get-env-providers
+      input:
+        environmentRef: ${{ parameters.environment }}
+
+    # Configure a properties file for each environment provider that relates to the environment selected by the user
+    # These properties files are referenced by the application's CICD pipeline
+    - id: createProviderPropsFiles
+      each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
+      name: Store environment provider parameters
+      action: roadiehq:utils:fs:write
+      input:
+        path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
+        content: |
+          TARGET_VPCID=${{ each.value.vpcId }}
+          TARGET_ENV_NAME=${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          TARGET_ENV_PROVIDER_NAME=${{ each.value.envProviderName }}
+          ACCOUNT=${{ each.value.accountId }}
+          REGION=${{ each.value.region }}
+          PREFIX=${{ each.value.envProviderPrefix }}
+          ENV_ROLE_ARN=${{ each.value.assumedRoleArn }}
+          OPA_CI_ENVIRONMENT=${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}
+          OPA_CI_REGISTRY_IMAGE=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com/${{ parameters.component_id | lower }}-${{ steps['opaGetAwsEnvProviders'].output.envName | lower }}-${{ each.value.envProviderName | lower }}
+          OPA_CI_REGISTRY=${{ each.value.accountId }}.dkr.ecr.${{ each.value.region }}.amazonaws.com
+          OPA_CI_ENVIRONMENT_MANUAL_APPROVAL={% if steps['opaGetAwsEnvProviders'].output.envDeployManualApproval %}true{% else %}false{% endif %}
+
+    # Create an empty Secrets Manager secret
+    # In this example, we're creating a new secret where a Gitlab
+    # repository access token string will be stored.
+    - id: createSecretManager
+      name: Create a Secret
+      action: opa:create-secret
+      input:
+        secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
+
+    # Retrieves Infrastructure as Code (IaC) that should be executed (by the CICD pipeline) before the applicaiton 
+    # is deployed. The below example retrieves AWS ECS CDK code
+    - id: fetchIac
+      name: Fetch ECS Infrastructure as Code
+      action: fetch:template
+      input: 
+        url: https://{{ gitlab_hostname }}/opa-admin/backstage-reference/-/tree/main/common/aws_ecs
+        targetPath: ./.iac
+        values:
+          component_id: ${{ parameters.component_id | lower }}
+          appEnvPlaintext: ""
+
+    # Fetches the template code from the remote repo where this template resides
+    # In a real template, the input values which start with "aws_" would be used to
+    # record AWS-specific annotations into the catalog.yaml file for the entity.
+    - id: fetchBase
+      name: Fetch Base
+      action: fetch:template
+      input:
+        url: ./content
+        values:
+          component_id: ${{ parameters.component_id | lower }}
+          title: ${{ parameters.component_id }}
+          description: ${{ parameters.description }}
+          owner: ${{ parameters.owner }}
+          awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
+          awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
+          awsSecretRepoArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+
+    # Publishes the contents of the working directory to a new GitLab repo
+    - id: publish
+      name: Publish
+      action: publish:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        repoVisibility: internal
+        defaultBranch: main
+
+    # Create a new Gitlab repository access token for the newly created repo
+    # and store the access token in the Secret that we created earlier
+    - id: createRepoToken
+      name: Create Repo Token
+      action: opa:createRepoAccessToken:gitlab
+      input:
+        repoUrl: ${{ parameters.repoUrl }}
+        projectId: ${{ steps['publish'].output.projectId }}
+        secretArn: ${{ steps['createSecretManager'].output.awsSecretArn }}
+        region: us-east-1
+
+    # The final step is to register our new component in the catalog.
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps['publish'].output.repoContentsUrl }}
+        catalogInfoPath: "/.backstage/catalog-info.yaml"
+
+  # Outputs are displayed to the user after a successful execution of the template.
+  output:
+    links:
+      - title: Repository
+        url: ${{ steps['publish'].output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps['register'].output.entityRef }}

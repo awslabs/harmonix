@@ -1,0 +1,52 @@
+{
+  "name": "@aws/plugin-aws-apps-common-for-backstage",
+  "version": "0.4.0",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "http://aws.amazon.com"
+  },
+  "description": "Common functionalities for the harmonix plugin",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "module": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awslabs/harmonix.git",
+    "directory": "backstage-plugins/plugins/harmonix-common"
+  },
+  "bugs": {
+    "url": "https://github.com/awslabs/harmonix/issues"
+  },
+  "backstage": {
+    "role": "common-library",
+    "pluginId": "aws-apps-common",
+    "pluginPackages": [
+      "@aws/plugin-aws-apps-common-for-backstage"
+    ]
+  },
+  "sideEffects": false,
+  "scripts": {
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "devDependencies": {
+    "@aws-sdk/client-cloudformation": "^3.777.0",
+    "@aws-sdk/types": "^3.775.0",
+    "@backstage/cli": "^0.31.0"
+  },
+  "files": [
+    "dist",
+    "config.d.ts"
+  ],
+  "configSchema": "config.d.ts"
+}

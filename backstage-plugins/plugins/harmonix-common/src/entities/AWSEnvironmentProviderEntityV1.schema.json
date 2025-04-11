@@ -1,0 +1,68 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "AWSEnvironmentProviderEntityV1Alpha",
+    "description": "A Template describes a scaffolding task for use with the Scaffolder. It describes the required parameters as well as a series of steps that will be taken to execute the scaffolding task.",
+    "examples": [
+      {
+        "apiVersion": "aws.backstage.io/v1alpha",
+        "kind": "AWSEnvironmentProvider",
+        "metadata": {
+          "name": "aws-environment-provider",
+          "title": "AWS environment provider",
+          "description": "An AWS environment provider entity",
+          "tags": ["aws"]
+        },
+        "spec": {
+          "type": "aws-environment-provider",
+          "lifecycle": "experimental",
+          "owner": "group:dev-ops",
+          "system": "demo"
+        }
+      }
+    ],
+    "allOf": [
+      {
+        "$ref": "Entity"
+      },
+      {
+        "type": "object",
+        "required": ["spec"],
+        "properties": {
+          "apiVersion": {
+            "enum": ["aws.backstage.io/v1alpha"]
+          },
+          "kind": {
+            "enum": ["AWSEnvironmentProvider"]
+          },
+          "spec": {
+            "type": "object",
+            "required": ["type", "lifecycle", "owner"],
+            "properties": {
+              "type": {
+                "type": "string",
+                "description": "The type of the Environment",     
+                "minLength": 1
+              },
+              "lifecycle": {
+                "type": "string",
+                "description": "The lifecycle state of the Environment.",
+                "examples": ["experimental", "production", "deprecated"],
+                "minLength": 1
+              },
+              "owner": {
+                "type": "string",
+                "description": "An entity reference to the owner of the Environment.",
+                "examples": ["artist-relations-team", "user:john.johnson"],
+                "minLength": 1
+              },
+              "system": {
+                "type": "string",
+                "description": "An entity reference to the system that the Environment belongs to.",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    ]
+  }

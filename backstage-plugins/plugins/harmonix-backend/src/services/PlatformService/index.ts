@@ -1,0 +1,1 @@
+export { createAppsPlatformService } from './createPlatformService';

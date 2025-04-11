@@ -1,10 +1,10 @@
 {
   "name": "app-development-for-backstage-io-on-aws",
-  "description": "App Development for Backstage.io on AWS plugins",
+  "description": "Harmonix on AWS plugins",
   "version": "0.0.0",
   "repository": {
     "type": "git",
-    "url": "github:awslabs/app-development-for-backstage-io-on-aws"
+    "url": "github:awslabs/harmonix"
   },
   "license": "Apache-2.0",
   "author": {
@@ -14,12 +14,11 @@
   "private": true,
   "workspaces": {
     "packages": [
-      "aws-apps",
-      "aws-apps-backend",
-      "aws-apps-common",
-      "aws-apps-demo",
-      "catalog-backend-module-aws-apps-entities-processor",
-      "scaffolder-backend-module-aws-apps"
+      "harmonix-frontend",
+      "harmonix-backend",
+      "harmonix-common",
+      "catalog-backend-module-harmonix",
+      "scaffolder-backend-module-harmonix"
     ]
   },
   "engines": {

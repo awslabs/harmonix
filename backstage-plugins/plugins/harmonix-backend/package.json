@@ -1,0 +1,85 @@
+{
+  "name": "@aws/plugin-aws-apps-backend-for-backstage",
+  "version": "0.4.0",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awslabs/harmonix.git",
+    "directory": "backstage-plugins/plugins/harmonix-backend"
+  },
+  "bugs": {
+    "url": "https://github.com/awslabs/harmonix-backend/issues"
+  },
+  "backstage": {
+    "role": "backend-plugin",
+    "pluginId": "aws-apps-backend",
+    "pluginPackages": [
+      "@aws/plugin-aws-apps-backend-for-backstage"
+    ]
+  },
+  "scripts": {
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.777.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.777.0",
+    "@aws-sdk/client-dynamodb": "^3.777.0",
+    "@aws-sdk/client-ecs": "^3.777.0",
+    "@aws-sdk/client-eks": "^3.777.0",
+    "@aws-sdk/client-lambda": "^3.777.0",
+    "@aws-sdk/client-resource-groups": "^3.777.0",
+    "@aws-sdk/client-s3": "^3.777.0",
+    "@aws-sdk/client-secrets-manager": "^3.777.0",
+    "@aws-sdk/client-ssm": "^3.777.0",
+    "@aws-sdk/client-sts": "^3.777.0",
+    "@aws-sdk/credential-provider-node": "^3.777.0",
+    "@aws-sdk/types": "^3.775.0",
+    "@aws-sdk/util-arn-parser": "^3.723.0",
+    "@backstage/backend-defaults": "^0.8.2",
+    "@backstage/backend-plugin-api": "^1.2.1",
+    "@backstage/catalog-client": "^1.9.1",
+    "@backstage/errors": "^1.2.7",
+    "@backstage/plugin-catalog-node": "^1.16.1",
+    "@aws/plugin-aws-apps-common-for-backstage": "^0.4.0",
+    "@backstage/backend-common": "^0.25.0",
+    "@backstage/config": "^1.3.2",
+    "express": "^4.17.1",
+    "express-promise-router": "^4.1.0",
+    "octokit": "^3.1.2",
+    "octokit-commit-multiple-files": "^5.0.2",
+    "yaml": "^2.7.1",
+    "yn": "^4.0.0",
+    "node-fetch": "^2.6.7"
+  },
+  "devDependencies": {
+    "@aws/plugin-aws-apps-common-for-backstage": "^0.4.0",
+    "@backstage/backend-test-utils": "^1.3.1",
+    "@backstage/cli": "^0.31.0",
+    "@backstage/plugin-auth-backend": "^0.24.4",
+    "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.6",
+    "@types/express": "*",
+    "@types/supertest": "^2.0.12",
+    "supertest": "^6.2.4",
+    "msw": "^1.0.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

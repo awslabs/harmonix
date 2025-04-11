@@ -60,18 +60,20 @@ export const getRepoInfo = (entity:Entity) : IRepositoryInfo => {
 
     switch (gitProvider) {
       case GitProviders.GITLAB:
+        var projectSlugArray = entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString().split('/') : [];
         return {
           gitProvider,
           gitHost: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/instance']?.toString() : "",
-          gitRepoName: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "",
-          gitProjectGroup: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString().split('/')[0] : "",
+          gitRepoName: projectSlugArray.pop() || "", // get last element of path for the repository name or empty string if the array is empty
+          gitProjectGroup: projectSlugArray.join("/"), // re-join the remainder of the array to get the namespace
           isPrivate: true
         }
       case GitProviders.GITHUB:
+        var projectSlugArray = entity.metadata.annotations ? entity.metadata.annotations['github.com/project-slug']?.toString().split('/') : []
         return {
           gitHost: "github.com",
-          gitRepoName: entity.metadata.annotations ? entity.metadata.annotations['github.com/project-slug']?.toString().split('/')[1] : "",
-          gitOrganization: entity.metadata.annotations ? entity.metadata.annotations['github.com/project-slug']?.toString().split('/')[0] : "",
+          gitRepoName: projectSlugArray[1], // get last element of the array (repo name)
+          gitOrganization: projectSlugArray[0], // get first element of the array (organization)
           gitProvider,
           isPrivate: true
         }

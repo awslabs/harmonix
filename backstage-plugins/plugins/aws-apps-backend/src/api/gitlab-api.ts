@@ -24,7 +24,7 @@ export class GitLabAPI implements ISCMBackendAPI {
         }
         else
         {
-            groupName=""
+            groupName=gitProjectGroup
             repoName = gitRepoName;
         }
         const url = `https://${gitHost}/api/v4/projects?search=${repoName}`;
@@ -156,7 +156,7 @@ export class GitLabAPI implements ISCMBackendAPI {
                 isSuccuess: true,
                 message: `Retrieved file content successfully`,            
                 httpResponse : result.status,
-                value:resultBody.content
+                value: Buffer.from(resultBody.content, 'base64').toString()
             };
         }
     }

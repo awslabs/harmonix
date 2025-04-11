@@ -53,6 +53,14 @@ Please see our [Installation instructions](https://harmonixonaws.io/docs/getting
 ## 3. FAQs
 Please see our [FAQs page](https://harmonixonaws.io/docs/faq)
 
+## 4. Build locally
+
+```sh
+cd backstage-plugins
+yarn --cwd plugins tsc --outDir dist-types
+yarn --cwd plugins build
+```
+
 ## Security
 
 See [CONTRIBUTING](CONTRIBUTING.md#security-issue-notifications) for more information.

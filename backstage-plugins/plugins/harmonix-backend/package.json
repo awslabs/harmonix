@@ -74,7 +74,7 @@
     "@backstage/cli": "^0.31.0",
     "@backstage/plugin-auth-backend": "^0.24.4",
     "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.6",
-    "@types/express": "*",
+    "@types/express": "^4.0.0",
     "@types/supertest": "^2.0.12",
     "supertest": "^6.2.4",
     "msw": "^1.0.0"

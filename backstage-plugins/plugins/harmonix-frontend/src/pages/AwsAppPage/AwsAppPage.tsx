@@ -98,7 +98,7 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         </EntityLayout.Route>
         {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}>
+            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>} resourceRef=''>
               {auditContent}
             </RequirePermission>
           </EntityLayout.Route>
@@ -125,7 +125,7 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         </EntityLayout.Route>
         {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}>
+            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}  resourceRef=''>
               {auditContent}
             </RequirePermission>
           </EntityLayout.Route>
@@ -152,7 +152,7 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         </EntityLayout.Route>
         {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}>
+            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}  resourceRef=''>
               {auditContent}
             </RequirePermission>
           </EntityLayout.Route>

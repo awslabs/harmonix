@@ -12,6 +12,7 @@
 * All Harmonix front end pages are now exported so that they can be referenced and extended
   * See [PR](https://github.com/awslabs/harmonix/pull/146)
 * Harmonix installation should be run using [Yarn 4](https://yarnpkg.com/) since [ Backstage has moved to using Yarn 4](https://backstage.io/docs/tutorials/yarn-migration/)
+* Added configurations and Make targets for compiling and testing Harmonix plugins
 * Harmonix plugin names have not changed, but the directory names under `backstage-plugins/plugins` that hold the source code of the plugins have changed:
   *  `aws-apps` -> `harmomix-frontend`
   *  `aws-apps-backend` -> `harmonix-backend`

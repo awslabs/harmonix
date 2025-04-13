@@ -117,6 +117,29 @@ deploy-platform: ## Deploys the platform CDK stack
 destroy-platform:  ## Destroys the platform CDK stack	
 	. ./build-script/destroy-platform.sh
 
+# Compiles and builds Harmonix Backstage plugins
+plugins-build:
+	cd ./backstage-plugins/plugins && \
+	set -e && \
+	yarn install && \
+	yarn run tsc && \
+	yarn workspaces run build
+
+# Run unit tests on Harmonix Backstage plugins
+plugins-test: plugins-build
+	cd ./backstage-plugins/plugins && \
+	set -e && \
+	yarn run test
+
+# Clean uncommitted files that are generated during compilation/testing and are not 
+# used by Backstage or committed to version control
+plugins-clean:
+	cd ./backstage-plugins/plugins && \
+	set -e && \
+	find . -name dist -type d -prune -exec rm -rf '{}' + && \
+	find . -name dist-types -type d -prune -exec rm -rf '{}' + && \
+	find . -name node_modules -type d -prune -exec rm -rf '{}' +
+
 ##@ General
 help:  ## Show help message
 	@awk 'BEGIN {FS = ": .*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[$$()% 0-9a-zA-Z_-]+(\\:[$$()% 0-9a-zA-Z_-]+)*:.*?##/ { gsub(/\\:/,":", $$1); printf "  \033[36m%-30s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)

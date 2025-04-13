@@ -26,11 +26,14 @@
     "role": "frontend-plugin",
     "pluginId": "aws-apps",
     "pluginPackages": [
+      "@backstage/plugin-home",
       "@aws/plugin-aws-apps-for-backstage"
     ]
   },
   "sideEffects": false,
   "scripts": {
+    "tsc": "tsc",
+    "tsc-config": "tsc --showConfig",
     "start": "backstage-cli package start",
     "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
@@ -51,6 +54,7 @@
     "@aws-sdk/client-ssm": "^3.782.0",
     "@aws-sdk/util-arn-parser": "^3.723.0",
     "@aws/plugin-aws-apps-common-for-backstage": "^0.4.0",
+    "@backstage-community/plugin-github-actions": "^0.9.0",
     "@backstage/catalog-model": "^1.7.3",
     "@backstage/core-components": "^0.17.0",
     "@backstage/core-plugin-api": "^1.10.5",
@@ -58,22 +62,23 @@
     "@backstage/plugin-catalog": "^1.28.0",
     "@backstage/plugin-catalog-graph": "^0.4.17",
     "@backstage/plugin-catalog-react": "^1.16.0",
+    "@backstage/plugin-home": "^0.8.6",
     "@backstage/plugin-permission-react": "^0.4.32",
+    "@backstage/plugin-search": "^1.4.24",
     "@backstage/plugin-techdocs": "^1.12.4",
     "@backstage/plugin-techdocs-module-addons-contrib": "^1.1.22",
     "@backstage/theme": "^0.6.4",
-    "@backstage-community/plugin-github-actions": "^0.9.0",
     "@emotion/react": "^11.13.0",
     "@emotion/styled": "^11.13.0",
     "@immobiliarelabs/backstage-plugin-gitlab": "^6.11.0",
     "@kubernetes/client-node": "^0.21.0",
     "@material-ui/core": "^4.12.2",
     "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.61",
     "@mui/icons-material": "^5.16.6",
     "@mui/material": "^5.16.6",
     "@mui/system": "^5.16.6",
     "file-saver": "^2.0.5",
-    "@material-ui/lab": "^4.0.0-alpha.61",
     "react-use": "^17.2.4"
   },
   "peerDependencies": {
@@ -84,16 +89,20 @@
     "@backstage/core-app-api": "^1.16.0",
     "@backstage/dev-utils": "^1.1.8",
     "@backstage/test-utils": "^1.7.6",
+    "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^14.0.0",
+    "@testing-library/react": "^16.0.0",
     "@testing-library/user-event": "^14.0.0",
     "@types/file-saver": "^2.0.5",
     "@types/node": "*",
+    "@types/react": "^18.3.3",
     "cross-fetch": "^4.0.0",
     "msw": "^1.0.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0",
-    "react-router-dom":"^6.26.0"
+    "react-router": "^6.26.0",
+    "react-router-dom": "^6.26.0",
+    "typescript": "~5.8.0"
   },
   "files": [
     "dist"

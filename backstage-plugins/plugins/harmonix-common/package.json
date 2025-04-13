@@ -32,6 +32,8 @@
   },
   "sideEffects": false,
   "scripts": {
+    "tsc": "tsc",
+    "tsc-config": "tsc --showConfig",
     "build": "backstage-cli package build",
     "lint": "backstage-cli package lint",
     "test": "backstage-cli package test",
@@ -42,7 +44,8 @@
   "devDependencies": {
     "@aws-sdk/client-cloudformation": "^3.777.0",
     "@aws-sdk/types": "^3.775.0",
-    "@backstage/cli": "^0.31.0"
+    "@backstage/cli": "^0.31.0",
+    "typescript": "~5.8.0"
   },
   "files": [
     "dist",

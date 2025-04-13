@@ -23,7 +23,7 @@ export interface RouterOptions {
 }
 
 export async function createRouter(options: RouterOptions): Promise<express.Router> {
-  const { logger, userInfo, catalogApi, permissions, auth, httpAuth, awsSDKService,gitProviderService,platformService} = options;
+  const { logger, userInfo, catalogApi, permissions, httpAuth, awsSDKService,gitProviderService,platformService} = options;
 
   const router = Router();
   router.use(express.json());

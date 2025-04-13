@@ -13,8 +13,8 @@ BACKSTAGE_CREATE_APP_VERSION="0.6.0"
 # has not been published to NPM yet, you'll need to install the Harmonix plugins
 # from the 'backstage-plugins' source code.
 # 
-# Set installMode to "from-source" to build/install OPA plugins from source
-# or set installMode to "npm" to install the latest published OPA NPM packages.
+# Set installMode to "from-source" to build/install Harmonix plugins from source
+# or set installMode to "npm" to install the latest published Harmonix NPM packages.
 installMode="from-source"
 NC='\033[0m' # No Color
 RED='\033[1;31m'
@@ -104,4 +104,4 @@ cd -
 # plugins' README files to manually modify the Backstage source files
 # patch -d$(basename ${backstageDir}) -p1 < $harmonixHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch
 git apply --directory=$(basename $backstageDir) --verbose --whitespace=nowarn $harmonixHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch || \
-    (echo "${RED}Error applying OPA diff patch to Backstage. This error can be ignored if the patch was already successfully applied previously. If not, the patch will need to be applied manually before proceeding.${NC}")
+    (echo "${RED}Error applying Harmonix diff patch to Backstage. This error can be ignored if the patch was already successfully applied previously. If not, the patch will need to be applied manually before proceeding.${NC}")

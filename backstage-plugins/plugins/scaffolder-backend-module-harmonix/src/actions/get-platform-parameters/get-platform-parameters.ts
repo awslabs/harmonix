@@ -8,7 +8,7 @@ import {
 } from '../../helpers/action-context';
 import { Config } from '@backstage/config'
 
-const ID = 'opa:get-platform-parameters';
+const ID = 'harmonix:get-platform-parameters';
 
 const examples = [
   {

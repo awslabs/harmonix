@@ -76,11 +76,11 @@ spec:
   steps:
     - id: opaGetPlatformInfo
       name: Get OPA platform information
-      action: opa:get-platform-metadata
+      action: harmonix:get-platform-metadata
       
     - id: opaGetAwsEnvProviders
       name: Get AWS Environment Providers
-      action: opa:get-env-providers
+      action: harmonix:get-env-providers
       input:
         environmentRef: ${{ parameters.environment }}
 
@@ -93,7 +93,7 @@ spec:
     - id: createProviderPropsFiles
       each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
       name: Store environment provider parameters
-      action: roadiehq:utils:fs:write
+      action: harmonix:fs:write
       input:
         path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
         content: |
@@ -112,7 +112,7 @@ spec:
           
     - id: createSecretManager
       name: Create a Secret
-      action: opa:create-secret
+      action: harmonix:create-secret
       input:
         secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
 
@@ -168,7 +168,7 @@ spec:
     # Create a gitlab repository access token and store it in a SecretsManager secret    
     - id: createRepoToken
       name: Create Repo Token
-      action: opa:createRepoAccessToken:gitlab
+      action: harmonix:createRepoAccessToken:gitlab
       input:
         repoUrl: ${{ parameters.repoUrl }}
         projectId: ${{ steps['publish'].output.projectId }}

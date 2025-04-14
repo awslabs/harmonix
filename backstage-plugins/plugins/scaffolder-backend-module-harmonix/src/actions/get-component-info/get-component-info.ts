@@ -5,7 +5,7 @@ import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { kebabCase } from 'lodash';
 import { stringify } from 'yaml';
 
-const ID = 'opa:get-component-info';
+const ID = 'harmonix:get-component-info';
 
 const examples = [
   {

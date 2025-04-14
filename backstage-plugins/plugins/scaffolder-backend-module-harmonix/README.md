@@ -59,7 +59,7 @@ Reference the plugin documentation to understand how to create and surface AWS E
 
 ### Get Environment Providers
 
-The `opa:get-env-providers` scaffolder action retreives AWS environment providers so that their configurations can be used by other template actions.  Refer to the `/create/actions` path of your Backstage instance for details on the returned output.
+The `harmonix:get-env-providers` scaffolder action retreives AWS environment providers so that their configurations can be used by other template actions.  Refer to the `/create/actions` path of your Backstage instance for details on the returned output.
 
 ```yaml
 # template.yaml
@@ -69,7 +69,7 @@ The `opa:get-env-providers` scaffolder action retreives AWS environment provider
     ...
     - id: opaGetAwsEnvProviders
       name: Get AWS Environment Providers
-      action: opa:get-env-providers
+      action: harmonix:get-env-providers
       input:
         environmentRef: ${{ parameters.environment }}
     ...
@@ -78,7 +78,7 @@ The `opa:get-env-providers` scaffolder action retreives AWS environment provider
 
 ### Create AWS SecretsManager Secrets
 
-The `opa:create-secret` scaffolder action creates a new Secret in the [AWS Secrets Manager service](https://aws.amazon.com/secrets-manager/).  
+The `harmonix:create-secret` scaffolder action creates a new Secret in the [AWS Secrets Manager service](https://aws.amazon.com/secrets-manager/).  
 
 The template snippet below demonstrates this action in the `steps` section of a Backstage Software Template.  See the example in the plugin's [src/example/template.yaml][example_template] file to better understand the action in the context of a full template.
 
@@ -92,7 +92,7 @@ This action will generate a `awsSecretArn` output which can be referenced in sub
     ...
     - id: createSecretManager
       name: Creates a Secret
-      action: opa:create-secret
+      action: harmonix:create-secret
       input:
         # The name of the SecretsManager secret
         secretName: ${{ parameters.component_id | lower }}-gitlab-access-token
@@ -112,7 +112,7 @@ This action will generate a `awsSecretArn` output which can be referenced in sub
 
 ### Create Gitlab Repo Access Token
 
-The `opa:createRepoAccessToken:gitlab` scaffolder action creates a [project access token][gitlab_pat] where access is restrited to a specific Gitlab repository.  
+The `harmonix:createRepoAccessToken:gitlab` scaffolder action creates a [project access token][gitlab_pat] where access is restrited to a specific Gitlab repository.  
 
 The template snippet below demonstrates this action in the `steps` section of a Backstage Software Template.  See the example in the plugin's [src/example/template.yaml][example_template] file to better understand the action in the context of a full template.
 
@@ -126,7 +126,7 @@ The template snippet below demonstrates this action in the `steps` section of a 
     # and store the access token in an AWS Secret
     - id: createRepoToken
       name: Create Repo Token
-      action: opa:createRepoAccessToken:gitlab
+      action: harmonix:createRepoAccessToken:gitlab
       input:
         # the url of the gitlab repository
         repoUrl: ${{ parameters.repoUrl }}
@@ -141,7 +141,7 @@ The template snippet below demonstrates this action in the `steps` section of a 
 
 ### Get Platform Metadata
 
-The `opa:get-platform-metadata` scaffolder action retrieves information about the platform and environment on which Harmonix on AWS is running.  
+The `harmonix:get-platform-metadata` scaffolder action retrieves information about the platform and environment on which Harmonix on AWS is running.  
 
 The action will return the AWS region where the platform is running.  Future metadata is also planned.
 
@@ -154,14 +154,14 @@ The action will return the AWS region where the platform is running.  Future met
     # Get data about the Harmonix on AWS platform
     - id: opaGetPlatformInfo
       name: Get OPA platform information
-      action: opa:get-platform-metadata
+      action: harmonix:get-platform-metadata
     ...
 
 ```
 
 ### Get Platform Parameters
 
-The `opa:get-platform-parameters` scaffolder action retrieve AWS SSM parameter values for the Harmonix on AWS platform so that their values can be used by other template actions.
+The `harmonix:get-platform-parameters` scaffolder action retrieve AWS SSM parameter values for the Harmonix on AWS platform so that their values can be used by other template actions.
 
 The action will return a `params` response as an object containing a map of SSM parameters.
 
@@ -174,7 +174,7 @@ The action will return a `params` response as an object containing a map of SSM 
     # Get data about the Harmonix on AWS platform
     - id: opaGetPlatformParams
       name: Get parameter values
-      action: opa:get-platform-parameters
+      action: harmonix:get-platform-parameters
       input:
         paramKeys:
           - '/my/ssm/parameter1'
@@ -192,7 +192,7 @@ The returned object for the example above:
 
 ### Get SSM Parameters
 
-The `opa:get-ssm-parameters` scaffolder action is very similar to the action above except that it will retrieve AWS SSM parameter values for each environment provider so that their configurations can be used by other template actions.  This action is often used in conjunction with the `opa:get-env-providers` action's response of an array of environment providers.
+The `harmonix:get-ssm-parameters` scaffolder action is very similar to the action above except that it will retrieve AWS SSM parameter values for each environment provider so that their configurations can be used by other template actions.  This action is often used in conjunction with the `harmonix:get-env-providers` action's response of an array of environment providers.
 
 The action will return a `params` response as an object containing a map of SSM parameters keyed off of the environment provider name.
 
@@ -205,7 +205,7 @@ The action will return a `params` response as an object containing a map of SSM 
     # Get data about the Harmonix on AWS platform
     - id: opaGetPlatformParams
       name: Get parameter values
-      action: opa:get-platform-parameters
+      action: harmonix:get-platform-parameters
       input:
         paramKeys:
           - '/my/ssm/parameter1'

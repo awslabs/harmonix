@@ -10,7 +10,7 @@ import { Config } from '@backstage/config'
 import yaml from 'yaml';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node/*';
 
-const ID = 'opa:createRepoAccessToken:gitlab';
+const ID = 'harmonix:createRepoAccessToken:gitlab';
 
 const examples = [
   {

@@ -5,7 +5,7 @@ import { Config } from '@backstage/config';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import yaml from 'yaml';
 
-const ID = 'opa:get-platform-metadata';
+const ID = 'harmonix:get-platform-metadata';
 
 const examples = [
   {

@@ -165,11 +165,11 @@ spec:
   steps:
     - id: opaGetPlatformInfo
       name: Get OPA platform information
-      action: opa:get-platform-metadata
+      action: harmonix:get-platform-metadata
       
     - id: resolvePlatformVariables
       name: Resolve Platform Variables
-      action: opa:get-platform-parameters
+      action: harmonix:get-platform-parameters
       input:
         paramKeys:
           - '/opa/platform-role'
@@ -211,7 +211,7 @@ spec:
         url: "https://{{gitlab_hostname}}/opa-admin/backstage-reference/-/tree/main/environments/opa-common-constructs"
     - id: createYarnPackageFile
       name: Configure Yarn Package Manager
-      action: roadiehq:utils:fs:write
+      action: harmonix:fs:write
       input:
         path: ./.iac/package.json
         content: |

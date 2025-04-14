@@ -7,7 +7,7 @@ import { Config } from '@backstage/config'
 import yaml from 'yaml';
 
 
-const ID = 'opa:create-secret';
+const ID = 'harmonix:create-secret';
 
 const examples = [
   {

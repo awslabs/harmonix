@@ -10,7 +10,7 @@ import {
 } from '../../helpers/action-context';
 import { EnvironmentProvider, EnvironmentProviderConnection } from '../../types';
 
-const ID = 'opa:get-ssm-parameters';
+const ID = 'harmonix:get-ssm-parameters';
 
 const examples = [
   {

@@ -68,7 +68,7 @@ spec:
     # Get environment provider data based on the user-selected environment
     - id: opaGetAwsEnvProviders
       name: Get AWS Environment Providers
-      action: opa:get-env-providers
+      action: harmonix:get-env-providers
       input:
         environmentRef: ${{ parameters.environment }}
 
@@ -77,7 +77,7 @@ spec:
     - id: createProviderPropsFiles
       each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
       name: Store environment provider parameters
-      action: roadiehq:utils:fs:write
+      action: harmonix:fs:write
       input:
         path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName}}.properties
         content: |
@@ -98,7 +98,7 @@ spec:
     # repository access token string will be stored.
     - id: createSecretManager
       name: Create a Secret
-      action: opa:create-secret
+      action: harmonix:create-secret
       input:
         secretName: aws-apps-${{ (parameters.repoUrl | parseRepoUrl).repo | lower }}-access-token
 
@@ -144,7 +144,7 @@ spec:
     # and store the access token in the Secret that we created earlier
     - id: createRepoToken
       name: Create Repo Token
-      action: opa:createRepoAccessToken:gitlab
+      action: harmonix:createRepoAccessToken:gitlab
       input:
         repoUrl: ${{ parameters.repoUrl }}
         projectId: ${{ steps['publish'].output.projectId }}

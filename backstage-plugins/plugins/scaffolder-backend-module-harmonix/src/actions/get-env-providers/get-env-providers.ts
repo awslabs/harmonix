@@ -9,7 +9,7 @@ import { getAWScreds } from '@aws/plugin-aws-apps-backend-for-backstage';
 import { getSSMParameterValue } from '../../helpers/action-context';
 import { EnvironmentProvider } from '../../types';
 
-const ID = 'opa:get-env-providers';
+const ID = 'harmonix:get-env-providers';
 
 const examples = [
   {

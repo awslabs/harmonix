@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@aws/aws-app-development-common-constructs": "0.3.0",
-    "aws-cdk-lib": "2.171.1",
+    "aws-cdk-lib": "2.186.0",
     "constructs": "^10.3.0"
   }
 }

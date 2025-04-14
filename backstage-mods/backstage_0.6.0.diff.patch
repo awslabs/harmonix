@@ -323,7 +323,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
            pluralTitle="My Groups"
 diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
 --- backstage-1-37-1-pure/packages/backend/src/index.ts	2025-04-06 09:10:44
-+++ backstage/packages/backend/src/index.ts	2025-04-09 14:39:35
++++ backstage/packages/backend/src/index.ts	2025-04-14 15:41:50
 @@ -7,6 +7,10 @@
   */
  
@@ -335,12 +335,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  
  const backend = createBackend();
  
-@@ -14,10 +18,12 @@
- backend.add(import('@backstage/plugin-proxy-backend'));
- backend.add(import('@backstage/plugin-scaffolder-backend'));
- backend.add(import('@backstage/plugin-scaffolder-backend-module-github'));
-+backend.add(import('@roadiehq/scaffolder-backend-module-utils'));
- backend.add(import('@backstage/plugin-techdocs-backend'));
+@@ -18,6 +22,7 @@
  
  // auth plugin
  backend.add(import('@backstage/plugin-auth-backend'));
@@ -348,7 +343,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  // See https://backstage.io/docs/backend-system/building-backends/migrating#the-auth-plugin
  backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
  // See https://backstage.io/docs/auth/guest/provider
-@@ -31,6 +37,22 @@
+@@ -31,6 +36,22 @@
  // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
  backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
  
@@ -371,7 +366,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  // permission plugin
  backend.add(import('@backstage/plugin-permission-backend'));
  // See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
-@@ -51,5 +73,8 @@
+@@ -51,5 +72,8 @@
  
  // kubernetes
  backend.add(import('@backstage/plugin-kubernetes-backend'));

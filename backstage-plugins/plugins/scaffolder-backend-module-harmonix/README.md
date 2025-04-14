@@ -26,7 +26,6 @@ Configure the action(s) you would like to use in your Backstage app.
 import {
   createRepoAccessTokenAction,
   createSecretAction,
-  createS3BucketAction,
   getEnvProvidersAction,
   getComponentInfoAction,
   getSsmParametersAction,
@@ -39,7 +38,6 @@ import {
 const actions = [
   ...builtInActions,
   createRepoAccessTokenAction({ integrations, envConfig:env.config }),
-  createS3BucketAction(),
   createSecretAction( {envConfig:env.config}),
   getEnvProvidersAction({ catalogClient }),
   getComponentInfoAction(),

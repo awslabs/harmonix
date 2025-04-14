@@ -78,7 +78,6 @@ yarn --cwd packages/backend add \
     "@backstage/plugin-catalog-backend-module-gitlab@^0.6.4" \
     "@backstage/plugin-permission-backend@^0.5.55" \
     "@roadiehq/catalog-backend-module-okta@^1.1.2" \
-    "@roadiehq/scaffolder-backend-module-utils@^3.4.2" \
     "@immobiliarelabs/backstage-plugin-gitlab-backend@^6.11.0" \
     "@aws/plugin-aws-apps-backend-for-backstage@${AWS_APPS_BACKEND_VERSION}" \
     "@aws/plugin-scaffolder-backend-aws-apps-for-backstage@${AWS_APPS_SCAFFOLDER_VERSION}" \

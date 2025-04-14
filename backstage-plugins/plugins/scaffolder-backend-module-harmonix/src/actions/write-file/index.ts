@@ -1,4 +1,3 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
-
-export { createS3BucketAction } from './create-s3-bucket';
+export { createWriteFileAction } from './write-file';

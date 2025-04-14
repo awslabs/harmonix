@@ -17,6 +17,9 @@
   * Add support for [dry runs](https://backstage.io/docs/features/software-templates/dry-run-testing/)
   * Use new `createTemplateAction` function format now that the old one is deprecated in the latest Backstage scaffolder plugin.
     * See [backstage scaffolder changelog](https://github.com/backstage/backstage/blob/master/plugins/scaffolder-node/CHANGELOG.md) for details, specifically for version `0.8.0`.
+  * Scaffolding action names have changed, and the software templates have been updated to use the new names
+    * Summary: change "opa:" to "harmonix:". For example, the `opa:get-component-info` scaffolder action is now called `harmonix:get-component-info`
+* Software templates no longer utilize `@roadiehq/scaffolder-backend-module-utils`
 * Harmonix plugin names have not changed, but the directory names under `backstage-plugins/plugins` that hold the source code of the plugins have changed:
   *  `aws-apps` -> `harmomix-frontend`
   *  `aws-apps-backend` -> `harmonix-backend`

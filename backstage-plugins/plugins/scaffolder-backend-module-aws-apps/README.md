@@ -51,6 +51,60 @@ const actions = [
 ```
 After the scaffolder configuration is updated, you can use the new actions in your Software Templates.
 
+## Configuration (new backend system)
+
+To configure the scaffolder through the new backend system, follow these instructions :
+
+```ts
+// packages/backend/index.ts
+import {
+  createRepoAccessTokenAction,
+  createSecretAction,
+  createS3BucketAction,
+  getEnvProvidersAction,
+  getComponentInfoAction,
+  getSsmParametersAction,
+  getPlatformParametersAction,
+  getPlatformMetadataAction,
+} from '@aws/plugin-scaffolder-backend-aws-apps-for-backstage';
+import { ScmIntegrations } from '@backstage/integration';
+// ...
+const harmonixScaffolderActionsModule = createBackendModule({
+  pluginId: 'scaffolder', // name of the plugin that the module is targeting
+  moduleId: 'harmonix-actions',
+  register(env) {
+    env.registerInit({
+      deps: {
+        scaffolder: scaffolderActionsExtensionPoint,
+        config: coreServices.rootConfig,
+        discovery: coreServices.discovery
+        // ... and other dependencies as needed
+      },
+      async init({ scaffolder, config, discovery /* ..., other dependencies */ }) {
+        // Here you have the opportunity to interact with the extension
+        // point before the plugin itself gets instantiated
+        const integrations = ScmIntegrations.fromConfig(config);
+        const catalogClient = new CatalogClient({
+          discoveryApi: discovery,
+        });
+        scaffolder.addActions(createRepoAccessTokenAction({ integrations, envConfig: config }) as unknown as TemplateAction<any, any>);
+        scaffolder.addActions(createS3BucketAction() as unknown as TemplateAction<any, any>);
+        scaffolder.addActions(createSecretAction( {envConfig:config}) as unknown as TemplateAction<any, any>);
+        scaffolder.addActions(getEnvProvidersAction({ catalogClient: catalogClient }) as unknown as TemplateAction<any, any>);
+        scaffolder.addActions(getComponentInfoAction() as unknown as TemplateAction<any, any>);
+        scaffolder.addActions(getSsmParametersAction() as unknown as TemplateAction<any, any>);
+        scaffolder.addActions(getPlatformParametersAction({envConfig:config}) as unknown as TemplateAction<any, any>);
+        scaffolder.addActions(getPlatformMetadataAction({envConfig:config}) as unknown as TemplateAction<any, any>);
+        scaffolder.addActions(createWriteFileAction());
+        scaffolder.addActions(createAppendFileAction());
+      },
+    });
+  },
+});
+backend.add(harmonixScaffolderActionsModule);
+
+```
+
 ## AWS Apps Scaffolder Actions
 
 Documentation for common usage of the contributed scaffolder actions is included below.

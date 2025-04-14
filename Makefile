@@ -123,7 +123,7 @@ plugins-build:
 	set -e && \
 	yarn install && \
 	yarn run tsc && \
-	yarn workspaces run build
+	yarn run build
 
 # Run unit tests on Harmonix Backstage plugins
 plugins-test: plugins-build

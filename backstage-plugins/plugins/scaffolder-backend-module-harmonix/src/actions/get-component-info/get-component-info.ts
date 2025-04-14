@@ -26,38 +26,24 @@ const examples = [
 ];
 
 export function getComponentInfoAction() {
-  return createTemplateAction<{
-    componentName: string;
-  }>({
+
+  return createTemplateAction({
     id: ID,
     description: 'Sets useful component info for other actions to use',
+    supportsDryRun: true,
     examples,
     schema: {
       input: {
-        type: 'object',
-        required: ['componentName'],
-        properties: {
-          componentName: {
-            title: 'Component Name',
-            description: 'The name of the component',
-            type: 'string',
-          },
-        },
+        componentName: d => d.string().describe('The name of the component'),
       },
       output: {
-        type: 'object',
-        required: [
-          'kebabCaseComponentName',
-        ],
-        properties: {
-          kebabCaseComponentName: {
-            title: 'The component name, converted to kebab case',
-            type: 'string',
-          },
-        },
-      },
+        kebabCaseComponentName: d => d.string().describe('The component name, converted to kebab case'),
+      }
     },
-    async handler(ctx) {
+    handler: async ctx => {
+
+      // Note: no special handling is needed for dry runs
+
       const { componentName, } = ctx.input;
 
       const kebabComponentName = kebabCase(componentName);
@@ -66,4 +52,5 @@ export function getComponentInfoAction() {
       ctx.output('kebabCaseComponentName', kebabComponentName);
     },
   });
+
 }

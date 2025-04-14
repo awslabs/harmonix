@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { CatalogApi } from '@backstage/catalog-client';
-import { JsonArray, } from '@backstage/types';
 import { Entity, EntityRelation, RELATION_DEPENDS_ON } from '@backstage/catalog-model';
 import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import yaml from 'yaml';
@@ -50,122 +49,74 @@ interface DeploymentParameters {
 export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
   const { catalogClient } = options;
 
-  return createTemplateAction<{
-    environmentRef: string;
-  }>({
+  return createTemplateAction({
     id: ID,
     description: 'Retrieves AWS Environment Provider data',
+    supportsDryRun: true,
     examples,
     schema: {
       input: {
-        required: ['environmentRef'],
-        type: 'object',
-        properties: {
-          environmentRef: {
-            type: 'string',
-            title: 'Entity reference',
-            description: 'The entity reference identifier for an AWS Environment',
-          },
-        },
+        environmentRef: d => d.string().describe('The entity reference identifier for an AWS Environment'),
       },
       output: {
-        type: 'object',
-        required: [
-          'envName',
-          'envShortName',
-          'envRef',
-          'envDeployManualApproval',
-          'envProviders',
-        ],
-        properties: {
-          envName: {
-            title: 'The AWS environment name',
-            type: 'string',
-          },
-          envShortName: {
-            title: 'The short AWS environment name e.g. dev, qa, prod',
-            type: 'string',
-          },
-          envRef: {
-            title: 'The entity reference ID of the environment',
-            type: 'string',
-          },
-          envDeployManualApproval: {
-            title: 'Whether manual approval is required for deploying to the environment',
-            type: 'boolean',
-          },
-          envProviders: {
-            title: 'The AWS environment providers',
-            type: 'array',
-            items: {
-              type: 'object',
-              required: [
-                'envProviderName',
-                'envProviderType',
-                'envProviderPrefix',
-                'account',
-                'region',
-                'vpcId',
-                'publicSubnets',
-                'privateSubnets',
-                'assumedRoleArn'
-              ],
-              properties: {
-                envProviderName: {
-                  title: 'The AWS environment provider name',
-                  type: 'string',
-                },
-                envProviderType: {
-                  title: 'The AWS environment provider type',
-                  type: 'string',
-                },
-                account: {
-                  title: 'The AWS account where infrastructure will be deployed',
-                  type: 'string',
-                },
-                region: {
-                  title: 'The AWS region where infrastructure will be deployed',
-                  type: 'string',
-                },
-                vpcId: {
-                  title: 'The VPC identifier where infrastructure will be deployed',
-                  type: 'string',
-                },
-                publicSubnets: {
-                  title: 'The VPC public subnet ids',
-                  type: 'array',
-                },
-                privateSubnets: {
-                  title: 'The VPC private subnet ids',
-                  type: 'array',
-                },
-                clusterArn: {
-                  title: 'The Arn of the cluster where the service and task are deployed, if needed. A cluster could be ECS or EKS',
-                  type: 'string',
-                },
-                assumedRoleArn: {
-                  title: 'The Arn of AWS IAM role that can be assumed to deploy resources to the environment provider',
-                  type: 'string',
-                },
-                kubectlLambdaArn: {
-                  title: 'EKS Only - The Arn of the lambda function that that can execute kubectl commands against the provider\'s EKS cluster',
-                  type: 'string',
-                },
-                kubectlLambdaRoleArn: {
-                  title: 'The Arn of the IAM role for the lambda function that that can execute kubectl commands against the provider\'s EKS cluster',
-                  type: 'string',
-                },
-              }
-            }
-          },
-        }
-      },
+        envName: d => d.string().describe('The AWS environment name'),
+        envShortName: d => d.string().describe('The short AWS environment name e.g. dev, qa, prod'),
+        envRef: d => d.string().describe('The entity reference ID of the environment'),
+        envDeployManualApproval: d => d.boolean().describe('Whether manual approval is required for deploying to the environment'),
+        envProviders: d => d.array(
+          d.object({
+            envProviderName: d.string().describe('The AWS environment provider name'),
+            envProviderType: d.string().describe('The AWS environment provider type'),
+            envProviderPrefix: d.string().describe('The AWS environment provider prefix'),
+            accountId: d.string().describe('The AWS account where infrastructure will be deployed'),
+            region: d.string().describe('The AWS region where infrastructure will be deployed'),
+            vpcId: d.string().describe('The VPC identifier where infrastructure will be deployed'),
+            publicSubnets: d.string().describe('The VPC public subnet ids'),
+            privateSubnets: d.string().describe('The VPC private subnet ids'),
+            assumedRoleArn: d.string().describe('The ARN of AWS IAM role that can be assumed to deploy resources to the environment provider'),
+
+            // optional output attributes that are only returned for providers that have compute clusters
+            clusterArn: d.string().optional().describe('The ARN of the cluster where the service and task are deployed, if needed. A cluster could be ECS or EKS'),
+            kubectlLambdaArn: d.string().optional().describe('EKS Only - The ARN of the lambda function that that can execute kubectl commands against the provider\'s EKS cluster'),
+            kubectlLambdaRoleArn: d.string().optional().describe('The ARN of the IAM role for the lambda function that that can execute kubectl commands against the provider\'s EKS cluster'),
+          })
+        ).describe('The AWS environment providers'),
+      }
     },
-    async handler(ctx) {
+    handler: async ctx => {
+
       const { environmentRef } = ctx.input;
       const token = ctx.secrets?.backstageToken;
 
       ctx.logger.info(`environmentRef: ${environmentRef}`);
+
+      // If this is a dry run, return a hardcoded object
+      if (ctx.isDryRun) {
+
+        ctx.output('envName', 'envName');
+        ctx.output('envRef', environmentRef);
+        ctx.output('envDeployManualApproval', false)
+        ctx.output('envShortName', 'envShortName');
+        ctx.output('envProviders', [
+          {
+            envProviderName: 'envProviderName',
+            envProviderType: 'eks',
+            envProviderPrefix: 'pre',
+            accountId: '123456789123',
+            region: 'us-east-1',
+            vpcId: 'vpc-123123123abc',
+            publicSubnets: 'subnet-123,subnet-456,subnet-789',
+            privateSubnets: 'subnet-023,subnet-056,subnet-089',
+            clusterArn: 'arn:aws:eks:us-east-1:123456789123:cluster/my-cluster',
+            assumedRoleArn: 'arn:aws:iam::123456789123:role/some-role',
+            kubectlLambdaArn: 'arn:aws:lambda:us-east-1:123456789123:function:my-function',
+            kubectlLambdaRoleArn: 'arn:aws:iam::123456789123:role/kubectl-role'
+          }
+        ]);
+
+        ctx.logger.info(`Dry run complete`);
+        return;
+      }
 
       // Fail early if there is no user entity
       if (ctx.user?.entity === undefined) {
@@ -201,7 +152,7 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
 
       ctx.logger.debug(`envProviders info: ${JSON.stringify(deploymentParametersArray, null, 2)}`);
 
-      const envProviderOutputArray: JsonArray = [];
+      const envProviderOutputArray = [];
 
       // looping over all providers of the selected environment
       for (const params of deploymentParametersArray) {
@@ -232,8 +183,8 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
 
         try {
           const vpcId = !!ssmPathVpc ? await getSSMParameterValue(region, credentials, ssmPathVpc, ctx.logger) : '';
-          const publicSubnets = !!ssmPathVpc ? await getSSMParameterValue(region, credentials, ssmPublicSubnets, ctx.logger): '';
-          const privateSubnets = !!ssmPathVpc ? await getSSMParameterValue(region, credentials, ssmPrivateSubnets, ctx.logger): '';
+          const publicSubnets = !!ssmPathVpc ? await getSSMParameterValue(region, credentials, ssmPublicSubnets, ctx.logger) : '';
+          const privateSubnets = !!ssmPathVpc ? await getSSMParameterValue(region, credentials, ssmPrivateSubnets, ctx.logger) : '';
           const clusterArn = (envProviderType === 'ecs' || envProviderType === 'eks') ? await getSSMParameterValue(region, credentials, ssmPathCluster, ctx.logger) : '';
           const assumedRoleArn = await getSSMParameterValue(region, credentials, ssmAssumeRoleArn, ctx.logger);
 
@@ -316,6 +267,7 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
 
         return deploymentParams;
       }
+
     },
   });
 

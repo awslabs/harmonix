@@ -7,6 +7,7 @@ import {
   getPlatformAccountSSMParameterValue
 } from '../../helpers/action-context';
 import { Config } from '@backstage/config'
+
 const ID = 'opa:get-platform-parameters';
 
 const examples = [
@@ -31,47 +32,37 @@ const examples = [
 
 export function getPlatformParametersAction(options: { envConfig: Config }) {
   const { envConfig } = options;
-  return createTemplateAction<{
-    paramKeys: string[];
-    region?: string;
-  }>({
+
+  return createTemplateAction({
     id: ID,
     description: 'Retrieve AWS SSM parameter values for platform configurations can be used by other template actions',
+    supportsDryRun: true,
     examples,
     schema: {
       input: {
-        type: 'object',
-        required: ['paramKeys'],
-        properties: {
-          paramKeys: {
-            type: 'array',
-            items: {
-              type: 'string'
-            },
-            title: 'SSM parameter keys',
-            description: 'The SSM parameter keys to look up',
-          },
-          region: {
-            type: 'string',
-            title: 'Platform region',
-            description: 'Optional region to locate SSM parameters.  If not provided, the default region will be used where Backstage is running'
-          }
-        },
+        paramKeys: d => d.array(d.string()).describe('The SSM parameter keys to look up'),
+
+        // optional params
+        region: d => d.string().optional().describe('Optional region to locate SSM parameters. If not provided, the default region will be used where Backstage is running'),
       },
       output: {
-        type: 'object',
-        required: [
-          'params',
-        ],
-        properties: {
-          params: {
-            title: 'Map of SSM parameters',
-            type: 'object',
-          },
-        },
-      },
+        params: d => d.object({}).passthrough(),
+      }
     },
-    async handler(ctx) {
+    handler: async ctx => {
+
+      // If this is a dry run, return a hardcoded object
+      if (ctx.isDryRun) {
+
+        ctx.output('params', {
+          '/opa/platform-role': 'arn:aws:sts::012345678912:role/platformrole',
+          '/opa/pipeline-role': 'arn:aws:sts::012345678912:role/pipelinerole'
+        });
+
+        ctx.logger.info(`Dry run complete`);
+        return;
+      }
+
       let { paramKeys, region } = ctx.input;
       if (!region) {
         region = envConfig.getString('backend.platformRegion')

@@ -61,7 +61,7 @@ export function createS3BucketAction() {
     },
     async handler() {
 
-      // We plan to remove/depricate this scaffolder action...
+      // We plan to remove/deprecate this scaffolder action...
 
       // const { bucketName, tags, envProviders } = ctx.input;
 

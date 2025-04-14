@@ -13,12 +13,17 @@
   * See [PR](https://github.com/awslabs/harmonix/pull/146)
 * Harmonix installation should be run using [Yarn 4](https://yarnpkg.com/) since [ Backstage has moved to using Yarn 4](https://backstage.io/docs/tutorials/yarn-migration/)
 * Added configurations and Make targets for compiling and testing Harmonix plugins
+* Updated scaffolding actions
+  * Add support for [dry runs](https://backstage.io/docs/features/software-templates/dry-run-testing/)
+  * Use new `createTemplateAction` function format now that the old one is deprecated in the latest Backstage scaffolder plugin.
+    * See [backstage scaffolder changelog](https://github.com/backstage/backstage/blob/master/plugins/scaffolder-node/CHANGELOG.md) for details, specifically for version `0.8.0`.
 * Harmonix plugin names have not changed, but the directory names under `backstage-plugins/plugins` that hold the source code of the plugins have changed:
   *  `aws-apps` -> `harmomix-frontend`
   *  `aws-apps-backend` -> `harmonix-backend`
   *  `aws-apps-common` -> `harmonix-common`
   *  `catalog-backend-module-aws-apps-entities-processor` -> `catalog-backend-module-harmonix`
   *  `scaffolder-backend-module-aws-apps` -> `scaffolder-backend-module-harmonix`
+* Front end home page customizaions and theming that used to be located in the `@aws/plugin-aws-apps-demo-for-backstage` package have been moved into `harmonix-frontend`.
 
 ## 0.3.4 - 2024-08-23
 * Upgraded Harmonix on AWS to the latest Backstage version and new backend system. 1.29.0

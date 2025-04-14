@@ -1,49 +1,62 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 import { ScmIntegrationRegistry } from '@backstage/integration';
 import { parseRepoUrl } from '../../helpers/util';
 import { InputError } from '@backstage/errors';
 import { validate as validateArn } from '@aws-sdk/util-arn-parser';
 import { putSecret } from '../../helpers/action-context';
 import { Config } from '@backstage/config'
+import yaml from 'yaml';
+import { createTemplateAction } from '@backstage/plugin-scaffolder-node/*';
+
+const ID = 'opa:createRepoAccessToken:gitlab';
+
+const examples = [
+  {
+    description: 'Create a new Gitlab repository access token for the newly created repo and store the access token in AWS SecretsManager',
+    example: yaml.stringify({
+      steps: [
+        {
+          action: ID,
+          id: 'createRepoToken',
+          name: 'Create Repo Token',
+          input: {
+            repoUrl: "${{ parameters.repoUrl }}",
+            projectId: "${{ steps['publish'].output.projectId }}",
+            secretArn: "${{ steps['createSecretManager'].output.awsSecretArn }}",
+            region: "us-east-1"
+          },
+        },
+      ],
+    }),
+  },
+];
 
 export function createRepoAccessTokenAction(options: { integrations: ScmIntegrationRegistry, envConfig: Config }) {
   const { integrations, envConfig } = options;
-  return createTemplateAction<{
-    repoUrl: string;
-    secretArn: string;
-    projectId: number;
-    region?: string;
-  }>({
-    id: 'opa:createRepoAccessToken:gitlab',
+
+  return createTemplateAction({
+    id: ID,
     description: 'Initializes a git repository of the content in the workspace, and publishes it to GitLab.',
+    supportsDryRun: true,
+    examples,
     schema: {
       input: {
-        type: 'object',
-        required: ['repoUrl', 'secretArn', 'projectId'],
-        properties: {
-          repoUrl: {
-            title: 'Repository Location',
-            type: 'string',
-          },
-          projectId: {
-            title: 'Project Id',
-            type: 'number',
-          },
-          secretArn: {
-            title: 'Arn of the SecretsManager secret where the access token will be stored',
-            type: 'string',
-          },
-          region: {
-            title: 'AWS Region',
-            type: 'string',
-          },
-        },
+        repoUrl: d => d.string().describe('Repository Location'),
+        projectId: d => d.number().describe('Project Id'),
+        secretArn: d => d.string().describe('ARN of the SecretsManager secret where the access token will be stored'),
+        region: d => d.string().optional().describe('AWS Region'),
       },
     },
-    async handler(ctx) {
+    handler: async ctx => {
+
+      // If this is a dry run, log and return
+      if (ctx.isDryRun) {
+        ctx.logger.info(`Dry run complete`);
+        return;
+      }
+
       let { repoUrl, projectId, secretArn, region } = ctx.input;
       if (!region) {
         region = envConfig.getString('backend.platformRegion')
@@ -120,7 +133,7 @@ export function createRepoAccessTokenAction(options: { integrations: ScmIntegrat
         date.setDate(date.getDate() + 364);
         return date.toISOString().split('T')[0];
       }
-
     },
   });
+
 }

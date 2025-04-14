@@ -1,12 +1,18 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { GenericAWSEnvironment, readOpaAppAuditPermission } from '@aws/plugin-aws-apps-common-for-backstage';
+import {
+  GenericAWSEnvironment,
+  readOpaAppAuditPermission,
+} from '@aws/plugin-aws-apps-common-for-backstage';
 import { Entity } from '@backstage/catalog-model';
 import { EmptyState } from '@backstage/core-components';
 import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
-import { isGithubActionsAvailable } from '@backstage/plugin-github-actions';
-import { RequirePermission, usePermission } from '@backstage/plugin-permission-react';
+import { isGithubActionsAvailable } from '@backstage-community/plugin-github-actions';
+import {
+  RequirePermission,
+  usePermission,
+} from '@backstage/plugin-permission-react';
 import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 import { Grid, LinearProgress } from '@material-ui/core';
 import React, { ReactNode } from 'react';
@@ -31,8 +37,11 @@ const isCicdApplicable = (entity: Entity) => {
   return isGitlabAvailable(entity) || isGithubActionsAvailable(entity);
 };
 
-export function isAppType(appType: string, env: GenericAWSEnvironment): (entity: Entity) => boolean {
-  return (/*entity: Entity*/): boolean => {
+export function isAppType(
+  appType: string,
+  env: GenericAWSEnvironment,
+): (entity: Entity) => boolean {
+  return (/* entity: Entity*/): boolean => {
     // ecs or eks or serverless
     return env.providerData.providerType === appType;
   };
@@ -98,7 +107,10 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         </EntityLayout.Route>
         {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}>
+            <RequirePermission
+              permission={readOpaAppAuditPermission}
+              errorPage={<></>}
+            >
               {auditContent}
             </RequirePermission>
           </EntityLayout.Route>
@@ -125,7 +137,10 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         </EntityLayout.Route>
         {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}>
+            <RequirePermission
+              permission={readOpaAppAuditPermission}
+              errorPage={<></>}
+            >
               {auditContent}
             </RequirePermission>
           </EntityLayout.Route>
@@ -152,7 +167,10 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         </EntityLayout.Route>
         {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}>
+            <RequirePermission
+              permission={readOpaAppAuditPermission}
+              errorPage={<></>}
+            >
               {auditContent}
             </RequirePermission>
           </EntityLayout.Route>
@@ -167,26 +185,36 @@ export function AwsAppPage(_props: AwsAppPageProps) {
     const env = awsAppLoadingStatus.component.currentEnvironment;
     return (
       <EntitySwitch>
-        <EntitySwitch.Case if={isAppType('ecs', env)}>{AwsECSAppEntityPage}</EntitySwitch.Case>
-        <EntitySwitch.Case if={isAppType('eks', env)}>{AwsEKSAppEntityPage}</EntitySwitch.Case>
-        <EntitySwitch.Case if={isAppType('serverless', env)}>{AwsServerlessAppEntityPage}</EntitySwitch.Case>
-        <EntitySwitch.Case if={isAppType('gen-ai-serverless', env)}>{AwsServerlessAppEntityPage}</EntitySwitch.Case>
+        <EntitySwitch.Case if={isAppType('ecs', env)}>
+          {AwsECSAppEntityPage}
+        </EntitySwitch.Case>
+        <EntitySwitch.Case if={isAppType('eks', env)}>
+          {AwsEKSAppEntityPage}
+        </EntitySwitch.Case>
+        <EntitySwitch.Case if={isAppType('serverless', env)}>
+          {AwsServerlessAppEntityPage}
+        </EntitySwitch.Case>
+        <EntitySwitch.Case if={isAppType('gen-ai-serverless', env)}>
+          {AwsServerlessAppEntityPage}
+        </EntitySwitch.Case>
         <EntitySwitch.Case>
-          <h1>Application Type "{env.providerData.providerType}" Is Not Supported At This Time</h1>
+          <h1>
+            Application Type "{env.providerData.providerType}" Is Not Supported
+            At This Time
+          </h1>
         </EntitySwitch.Case>
       </EntitySwitch>
     );
-  } else {
-    if (awsAppLoadingStatus.error) {
-      console.log(awsAppLoadingStatus.error);
-    }
-
-    return (
-      <EmptyState
-        missing="data"
-        title="Failed to load environment entity data"
-        description="An error occurred when trying to load entity environment data. See the environment entity yaml file definitions to troubleshoot."
-      />
-    );
   }
+  // if (awsAppLoadingStatus.error) {
+  //    console.log(awsAppLoadingStatus.error);
+  // }
+
+  return (
+    <EmptyState
+      missing="data"
+      title="Failed to load environment entity data"
+      description="An error occurred when trying to load entity environment data. See the environment entity yaml file definitions to troubleshoot."
+    />
+  );
 }

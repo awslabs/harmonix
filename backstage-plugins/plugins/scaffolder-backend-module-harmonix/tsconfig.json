@@ -3,6 +3,11 @@
   "compilerOptions": {
     "declaration": true,
     "outDir": "dist",
-    "declarationDir": "../dist-types"
+    "declarationDir": "../dist-types",
+    "types": [
+      "node",
+      "jest",
+      "fs-extra",
+    ],
   },
 }

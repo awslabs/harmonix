@@ -85,6 +85,13 @@ backstage-install: ## install base backstage app and dependency modules
 	$(MAKE) yarn-install
 
 ##@ Local Debugging
+
+start-local-with-role:  ## Assume the Harmonix system role and start the Backstage app for local development
+	. ./build-script/local-backstage-role-assumption.sh
+
+start-local-debug-with-role:  ## Assume the Harmonix system role and start the Backstage app in debug mode for local development
+	. ./build-script/local-backstage-role-assumption.sh "debug"
+
 start-local:  ## Start the backstage app for local development
 	. ./build-script/local-runners.sh; start_local
 

@@ -9,6 +9,7 @@
 * Upgraded PostgreSQL version for RDS resource to VER_16_6
 * Installation of 3rd party plugins is now done using the new backend system for Backstage. The versions of 3rd party plugins have been updated to the lateest.
 * Added `mise.toml` file to make it easier to build Harmonix using tested tool versions. See the [mise website](https://mise.jdx.dev/getting-started.html) for installation instructions
+* Running Backstage locally is easier than ever. See [our documentation on running locally](https://harmonixonaws.io/docs/techdocs/customizations#running-locally) for more details.
 * All Harmonix front end pages are now exported so that they can be referenced and extended
   * See [PR](https://github.com/awslabs/harmonix/pull/146)
 * Harmonix installation should be run using [Yarn 4](https://yarnpkg.com/) since [ Backstage has moved to using Yarn 4](https://backstage.io/docs/tutorials/yarn-migration/)

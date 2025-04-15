@@ -110,9 +110,10 @@ confirm_aws_account() {
     if [[ -z "$AWS_ACCOUNT_ID" ]]; then
         echo "WARNING, AWS_ACCOUNT_ID is not set - cannot validate that you are logged into the right AWS account."
     elif [[ "$AWS_ACCOUNT_ID" != "$cliAccountId" ]]; then
-        echo "ERROR: You are currently logged into account \"$cliAccountId\", but this script "
-        echo "is trying to deploy to account \"$AWS_ACCOUNT_ID\"."
-        echo "Update your AWS CLI profile or set the AWS_PROFILE environment variable to fix this."
+        echo -e "${RED}ERROR: You are currently logged into account \"$cliAccountId\", but the Harmonix AWS account "
+        echo -e "is set to \"$AWS_ACCOUNT_ID\". These values must match for this script to function properly."
+        echo -e "\nTo fix this, either update your AWS_ACCOUNT_ID setting in config/.env or update your AWS CLI"
+        echo -e "profile or set the AWS_PROFILE environment variable.\n${NC}"
         exit 1
     fi
 }

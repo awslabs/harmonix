@@ -45,7 +45,7 @@ rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' --exclude='
 
 rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' $appDir/iac/roots/{opa-common-constructs,opa-ecs-environment,opa-ecs-ec2-environment,opa-eks-environment,opa-serverless-environment,opa-gen-ai-environment} $appDir/git-temp/backstage-reference/environments
 \cp $appDir/iac/roots/package.json $appDir/git-temp/backstage-reference/environments
-
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments
 
 cd $appDir/git-temp/backstage-reference;
 

@@ -3,7 +3,6 @@
 
 import { AssumeRoleCommand, STSClient } from '@aws-sdk/client-sts';
 import { AwsCredentialIdentity } from '@aws-sdk/types';
-import { getRootLogger } from '@backstage/backend-common';
 import { BackstageUserInfo } from '@backstage/backend-plugin-api';
 import { parseEntityRef, UserEntity } from '@backstage/catalog-model';
 export interface AwsAuthResponse {
@@ -50,7 +49,6 @@ async function fetchCreds(
   prefix: string,
   providerName: string
 ): Promise<AwsAuthResponse> {
-  const logger = getRootLogger();
   try {
 
     // TODO: remove this code once we reference memberGroups
@@ -69,20 +67,20 @@ async function fetchCreds(
     // const ddbClient = new DynamoDBClient({ region });
     // let roleArn: string | undefined;
     // for (const group of memberGroups) {
-    //   logger.info(group);
+    //   console.log(group);
     //   // if we've already found a match, move on.
     //   if (roleArn !== undefined) {
     //     break;
     //   }
     //   const tableKey = `${accountId}-${group}`;
-    //   logger.debug(`Querying DynamoDB for ${tableKey}`);
+    //   console.log(`Querying DynamoDB for ${tableKey}`);
     //   const command = new QueryCommand({
     //     TableName: securityTableName,
     //     KeyConditionExpression: 'id = :id',
     //     ExpressionAttributeValues: { ':id': { S: tableKey } },
     //   });
     //   const response = await ddbClient.send(command);
-    //   logger.debug(`ddb response: ${JSON.stringify(response, null, 2)}`);
+    //   console.log(`ddb response: ${JSON.stringify(response, null, 2)}`);
     //   const roleMapped = response.Items?.at(0);
     //   roleArn = roleMapped?.IAMRoleArn.S?.toString();
     // }
@@ -93,7 +91,7 @@ async function fetchCreds(
       throw new Error(`Did not find a role mapping in the groups for user ${userName}`);
     }
     // Assume the mapped role with the STS service and return the credentials
-    logger.debug(`Fetching credentials for mapped role: ${roleArn}`);
+    console.log(`Fetching credentials for mapped role: ${roleArn}`);
     const stsClient = new STSClient({ region });
     const stsResult = await stsClient.send(
       new AssumeRoleCommand({
@@ -118,7 +116,7 @@ async function fetchCreds(
     // if we weren't able to return credentials, throw an error to be caught by callers
     throw new Error(`Assuming role ${roleArn} failed to return credentials`);
   } catch (error) {
-    logger.error(error);
+    console.error(error);
     throw error;
   }
 }
@@ -131,7 +129,6 @@ export async function getAWScreds(
   user?: UserEntity,
   userIdentity?: BackstageUserInfo,
 ): Promise<AwsAuthResponse> {
-  const logger = getRootLogger();
   let memberGroups: string[];
   if (!/\d{12}/.test(accountId)) {
     // must be a string of 12 digits
@@ -148,12 +145,12 @@ export async function getAWScreds(
   } else {
     if (user === undefined && userIdentity !== undefined) {
       const userName = parseEntityRef(userIdentity?.userEntityRef).name;
-      logger.info(`Fetching credentials for user ${userName}`);
+      console.log(`Fetching credentials for user ${userName}`);
       memberGroups = getMemberGroupFromUserIdentity(userIdentity);
       return fetchCreds(memberGroups, region, accountId, userName, prefix, providerName);
     } else {
       const userName = user?.metadata.name;
-      logger.info(`Fetching credentials for user ${userName}`);
+      console.log(`Fetching credentials for user ${userName}`);
       memberGroups = getMemberGroupFromUserEntity(user);
       return fetchCreds(memberGroups, region, accountId, userName!, prefix, providerName);
     }

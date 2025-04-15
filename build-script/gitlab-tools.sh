@@ -45,7 +45,14 @@ rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' --exclude='
 
 rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' $appDir/iac/roots/{opa-common-constructs,opa-ecs-environment,opa-ecs-ec2-environment,opa-eks-environment,opa-serverless-environment,opa-gen-ai-environment} $appDir/git-temp/backstage-reference/environments
 \cp $appDir/iac/roots/package.json $appDir/git-temp/backstage-reference/environments
-\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments
+
+# copy tsconfig.json into each environment since CDK deployments require it when using TypeScript > 5.8
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-common-constructs
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-ecs-environment
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-ecs-ec2-environment
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-eks-environment
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-serverless-environment
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-gen-ai-environment
 
 cd $appDir/git-temp/backstage-reference;
 

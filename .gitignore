@@ -141,6 +141,7 @@ lerna-debug.log*
 !environment/.environment-shared.json
 
 /backstage
+/backstage*-pure
 git-temp
 
 # Ignore TypeScript typings EXCEPT for config.d.ts, which are used by Backstage to enable plugin configurations

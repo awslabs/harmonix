@@ -1,6 +1,6 @@
-diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/app-config.yaml backstage/app-config.yaml
---- backstage-1-37-1-pure/app-config.yaml	2025-04-06 09:10:44
-+++ backstage/app-config.yaml	2025-04-10 16:35:42
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/app-config.yaml backstage/app-config.yaml
+--- backstage-1-37-1-pure/app-config.yaml	2025-04-14 17:23:01
++++ backstage/app-config.yaml	2025-04-14 16:56:12
 @@ -1,9 +1,11 @@
  app:
 -  title: Scaffolded Backstage App
@@ -209,9 +209,9 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 -  enabled: true
 +  enabled: true
 \ No newline at end of file
-diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/app/src/App.tsx backstage/packages/app/src/App.tsx
---- backstage-1-37-1-pure/packages/app/src/App.tsx	2025-04-06 09:10:44
-+++ backstage/packages/app/src/App.tsx	2025-04-10 11:12:40
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/app/src/App.tsx backstage/packages/app/src/App.tsx
+--- backstage-1-37-1-pure/packages/app/src/App.tsx	2025-04-14 17:24:10
++++ backstage/packages/app/src/App.tsx	2025-04-14 16:56:12
 @@ -36,6 +36,8 @@
  import { CatalogGraphPage } from '@backstage/plugin-catalog-graph';
  import { RequirePermission } from '@backstage/plugin-permission-react';
@@ -268,9 +268,9 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
    </FlatRoutes>
  );
  
-diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/app/src/components/Root/Root.tsx backstage/packages/app/src/components/Root/Root.tsx
---- backstage-1-37-1-pure/packages/app/src/components/Root/Root.tsx	2025-04-06 09:10:44
-+++ backstage/packages/app/src/components/Root/Root.tsx	2025-04-09 11:14:01
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/app/src/components/Root/Root.tsx backstage/packages/app/src/components/Root/Root.tsx
+--- backstage-1-37-1-pure/packages/app/src/components/Root/Root.tsx	2025-04-14 17:24:10
++++ backstage/packages/app/src/components/Root/Root.tsx	2025-04-14 16:56:12
 @@ -22,11 +22,15 @@
    SidebarSpace,
    useSidebarOpenState,
@@ -321,9 +321,9 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
          <MyGroupsSidebarItem
            singularTitle="My Group"
            pluralTitle="My Groups"
-diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
---- backstage-1-37-1-pure/packages/backend/src/index.ts	2025-04-06 09:10:44
-+++ backstage/packages/backend/src/index.ts	2025-04-14 15:41:50
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
+--- backstage-1-37-1-pure/packages/backend/src/index.ts	2025-04-14 17:24:10
++++ backstage/packages/backend/src/index.ts	2025-04-14 16:58:43
 @@ -7,6 +7,10 @@
   */
  
@@ -343,7 +343,7 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
  // See https://backstage.io/docs/backend-system/building-backends/migrating#the-auth-plugin
  backend.add(import('@backstage/plugin-auth-backend-module-guest-provider'));
  // See https://backstage.io/docs/auth/guest/provider
-@@ -31,6 +36,22 @@
+@@ -31,6 +36,20 @@
  // See https://backstage.io/docs/features/software-catalog/configuration#subscribing-to-catalog-errors
  backend.add(import('@backstage/plugin-catalog-backend-module-logs'));
  
@@ -361,17 +361,19 @@ diff -Naur --exclude=node_modules --exclude=*aws-apps* --exclude=package.json --
 +// See https://backstage.io/docs/integrations/github/discovery/
 +backend.add(import('@backstage/plugin-catalog-backend-module-github'));
 +
-+backend.add(import('@aws/backstage-plugin-catalog-backend-module-aws-apps-entities-processor'));
-+
  // permission plugin
  backend.add(import('@backstage/plugin-permission-backend'));
  // See https://backstage.io/docs/permissions/getting-started for how to create your own permission policy
-@@ -51,5 +72,8 @@
+@@ -51,5 +70,12 @@
  
  // kubernetes
  backend.add(import('@backstage/plugin-kubernetes-backend'));
 +
 +backend.add(gitlabPlugin);
 +backend.add(catalogPluginGitlabFillerProcessorModule);
++
++backend.add(import('@aws/backstage-plugin-catalog-backend-module-aws-apps-entities-processor'));
++backend.add(import('@aws/plugin-scaffolder-backend-aws-apps-for-backstage'));
++backend.add(import('@aws/plugin-aws-apps-backend-for-backstage'));
  
  backend.start();

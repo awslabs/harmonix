@@ -321,6 +321,130 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
          <MyGroupsSidebarItem
            singularTitle="My Group"
            pluralTitle="My Groups"
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/app/src/components/catalog/EntityPage.tsx backstage/packages/app/src/components/catalog/EntityPage.tsx
+--- backstage-1-37-1-pure/packages/app/src/components/catalog/EntityPage.tsx	2025-04-14 17:24:10
++++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2025-04-15 12:03:07
+@@ -27,6 +27,7 @@
+   isOrphan,
+   hasRelationWarnings,
+   EntityRelationWarning,
++  isResourceType,
+ } from '@backstage/plugin-catalog';
+ import {
+   EntityUserProfileCard,
+@@ -41,6 +42,7 @@
+   EntityCatalogGraphCard,
+ } from '@backstage/plugin-catalog-graph';
+ import {
++  Entity,
+   RELATION_API_CONSUMED_BY,
+   RELATION_API_PROVIDED_BY,
+   RELATION_CONSUMES_API,
+@@ -59,6 +61,23 @@
+   isKubernetesAvailable,
+ } from '@backstage/plugin-kubernetes';
+ 
++import {
++  AwsEnvironmentPage,
++  AwsEnvironmentProviderPage,
++  AwsComponentPage,
++} from '@aws/plugin-aws-apps-for-backstage';
++
++import { isGitlabAvailable, EntityGitlabContent } from '@immobiliarelabs/backstage-plugin-gitlab';
++
++import {
++  EntityGithubActionsContent,
++  isGithubActionsAvailable,
++} from '@backstage-community/plugin-github-actions';
++
++const isCicdApplicable = (entity: Entity) => {
++  return isGitlabAvailable(entity) || isGithubActionsAvailable(entity);
++}
++
+ const techdocsContent = (
+   <EntityTechdocsContent>
+     <TechDocsAddons>
+@@ -79,6 +98,15 @@
+       </EntitySwitch.Case>
+      */}
+ 
++    {/* AWS Modifications */}
++    <EntitySwitch.Case if={isGithubActionsAvailable}>
++      <EntityGithubActionsContent />
++    </EntitySwitch.Case>
++    <EntitySwitch.Case if={isGitlabAvailable}>
++      <EntityGitlabContent />
++    </EntitySwitch.Case>
++    {/* End of AWS Modifications */}
++
+     <EntitySwitch.Case>
+       <EmptyState
+         title="No CI/CD available for this entity"
+@@ -239,6 +267,12 @@
+       {overviewContent}
+     </EntityLayout.Route>
+ 
++    {/* AWS Modifications */}
++    <EntityLayout.Route path="/ci-cd" title="CI/CD" if={isCicdApplicable}>
++      {cicdContent}
++    </EntityLayout.Route>
++    {/* AWS Modifications */}
++
+     <EntityLayout.Route path="/docs" title="Docs">
+       {techdocsContent}
+     </EntityLayout.Route>
+@@ -251,6 +285,13 @@
+       {serviceEntityPage}
+     </EntitySwitch.Case>
+ 
++    {/* AWS Modifications */}
++
++    <EntitySwitch.Case if={isComponentType('aws-app')}>
++      <AwsComponentPage componentType='aws-app' />
++    </EntitySwitch.Case>
++    {/* End of AWS Modifications */}
++
+     <EntitySwitch.Case if={isComponentType('website')}>
+       {websiteEntityPage}
+     </EntitySwitch.Case>
+@@ -398,9 +439,37 @@
+   </EntityLayout>
+ );
+ 
++{/* AWS Modifications */ }
++
++const awsEnvironmentProviderEntityPage = (
++  <AwsEnvironmentProviderPage />
++);
++
++const awsEnvironmentEntityPage = (
++  <AwsEnvironmentPage />
++);
++
++const resourceEntityPage = (
++  <EntitySwitch>
++    <EntitySwitch.Case if={isResourceType('aws-resource')}>
++      <AwsComponentPage componentType='aws-resource' />
++    </EntitySwitch.Case>
++    <EntitySwitch.Case>{defaultEntityPage}</EntitySwitch.Case>
++  </EntitySwitch>
++);
++
++{/* End of AWS Modifications */ }
++
+ export const entityPage = (
+   <EntitySwitch>
+     <EntitySwitch.Case if={isKind('component')} children={componentPage} />
++    <EntitySwitch.Case if={isKind('resource')} children={resourceEntityPage} />
++
++    {/* AWS Modifications */}
++    <EntitySwitch.Case if={isKind('awsenvironment')} children={awsEnvironmentEntityPage} />
++    <EntitySwitch.Case if={isKind('awsenvironmentprovider')} children={awsEnvironmentProviderEntityPage} />
++    {/* End of AWS Modifications */}
++
+     <EntitySwitch.Case if={isKind('api')} children={apiPage} />
+     <EntitySwitch.Case if={isKind('group')} children={groupPage} />
+     <EntitySwitch.Case if={isKind('user')} children={userPage} />
 diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-37-1-pure/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
 --- backstage-1-37-1-pure/packages/backend/src/index.ts	2025-04-14 17:24:10
 +++ backstage/packages/backend/src/index.ts	2025-04-15 10:25:01

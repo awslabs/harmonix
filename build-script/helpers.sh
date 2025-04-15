@@ -105,6 +105,7 @@ aws_region () {
 confirm_aws_account() {
     cliAccountId=$(aws sts get-caller-identity --query Account --output text)
     echo ""
+    AWS_ACCOUNT_ID=$(echo "$AWS_ACCOUNT_ID" | tr -d '"') # strip surrounding double quotes if needed
 
     if [[ -z "$AWS_ACCOUNT_ID" ]]; then
         echo "WARNING, AWS_ACCOUNT_ID is not set - cannot validate that you are logged into the right AWS account."

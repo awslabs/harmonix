@@ -8,7 +8,7 @@ import { validate as validateArn } from '@aws-sdk/util-arn-parser';
 import { putSecret } from '../../helpers/action-context';
 import { Config } from '@backstage/config'
 import yaml from 'yaml';
-import { createTemplateAction } from '@backstage/plugin-scaffolder-node/*';
+import { createTemplateAction } from '@backstage/plugin-scaffolder-node';
 
 const ID = 'harmonix:createRepoAccessToken:gitlab';
 

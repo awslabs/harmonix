@@ -1542,6 +1542,7 @@ __metadata:
     "@backstage/plugin-scaffolder-node": "npm:^0.8.0"
     "@backstage/plugin-scaffolder-node-test-utils": "npm:^0.2.0"
     "@backstage/types": "npm:^1.2.1"
+    "@types/fs-extra": "npm:^11.0.4"
     "@types/lodash": "npm:4.17.7"
     lodash: "npm:^4.17.21"
     react: "npm:^18.0.0"

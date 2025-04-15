@@ -14,7 +14,7 @@ const examples = [
       steps: [
         {
           action: ID,
-          id: 'opaGetPlatformMetadata',
+          id: 'harmonixGetPlatformMetadata',
           name: 'Get platform information',
         },
       ],

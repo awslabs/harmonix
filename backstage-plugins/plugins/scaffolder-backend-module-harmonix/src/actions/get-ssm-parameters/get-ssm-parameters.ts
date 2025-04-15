@@ -19,7 +19,7 @@ const examples = [
       steps: [
         {
           action: ID,
-          id: 'opaGetSsmParams',
+          id: 'harmonixGetSsmParams',
           name: 'Get parameter values',
           input: {
             envProviders: "${{ steps['opaGetAwsEnvProviders'].output.envProviders }}",

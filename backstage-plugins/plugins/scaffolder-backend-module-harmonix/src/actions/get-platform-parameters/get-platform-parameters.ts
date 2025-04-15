@@ -17,7 +17,7 @@ const examples = [
       steps: [
         {
           action: ID,
-          id: 'opaGetPlatformParams',
+          id: 'harmonixGetPlatformParams',
           name: 'Get parameter values',
           input: {
             paramKeys:

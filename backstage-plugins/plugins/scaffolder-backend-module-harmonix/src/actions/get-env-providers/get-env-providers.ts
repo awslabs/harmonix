@@ -18,7 +18,7 @@ const examples = [
       steps: [
         {
           action: ID,
-          id: 'opaGetAwsEnvProviders',
+          id: 'harmonixGetAwsEnvProviders',
           name: 'Get AWS Environment Providers',
           input: {
             environmentRef: 'awsenvironment:Test-Environment',

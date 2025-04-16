@@ -69,6 +69,11 @@ auth:
         # authServerId: ${AUTH_OKTA_AUTH_SERVER_ID}
         # idp: ${AUTH_OKTA_IDP}
         # additionalScopes: ${AUTH_OKTA_ADDITIONAL_SCOPES}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+            - resolver: emailLocalPartMatchingUserEntityName
+            - resolver: emailMatchingUserEntityAnnotation
 
 integrations:
   gitlab:
@@ -116,8 +121,13 @@ catalog:
     okta:
       - orgUrl: ${OKTA_ORG_URL}
         token: ${OKTA_API_TOKEN}
-        frequency: { minutes: 30 }
-        timeout: { minutes: 3 }
+        schedule:
+          frequency:
+              minutes: 5
+          timeout:
+            minutes: 3
+          initialDelay:
+            minutes: 1
         # userFilter: profile.department eq "engineering"
         # groupFilter: profile.name eq "Everyone"
     gitlab:

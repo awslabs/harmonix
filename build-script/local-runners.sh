@@ -55,8 +55,4 @@ stop_local () {  ## Stop all running processes for local development
 	echo "Stopping any local PostgreSQL containers"
 	docker compose -f $appRootDir/config/docker-compose.yml down
 	echo "PostgreSQL container(s) stopped"
-	echo "Stopping Backstage"
-	kill $(lsof -ti :3000) >/dev/null 2>&1 || true
-	kill $(lsof -ti :7007) >/dev/null 2>&1 || true
-	echo "Backstage stopped"
 }

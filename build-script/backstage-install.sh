@@ -27,10 +27,13 @@ backstageDir=$harmonixHomeDir/backstage
 
 echo "" #intentional blank line
 
+FRESH_HARMONIX_BACKSTAGE_DOWNLOADED="n"
+
 # install base backstage app
 if [ ! -d "$backstageDir" ]; then
     echo "Installing the latest Backstage app using Create App version $BACKSTAGE_CREATE_APP_VERSION"
     BACKSTAGE_APP_NAME=backstage npx -y -q @backstage/create-app@$BACKSTAGE_CREATE_APP_VERSION --path $backstageDir
+    FRESH_HARMONIX_BACKSTAGE_DOWNLOADED="y"
 else
     echo "Backstage app directory already exists. Continuing..."
 fi
@@ -96,11 +99,17 @@ yarn --cwd packages/app add \
     # "@aws/plugin-aws-apps-demo-for-backstage@${AWS_APPS_DEMO_VERSION}"
 
 cd -
-# Copy/overwrite modified backstage files.
-# Note that these modifications were based on modifying Backstage 1.17 files.  
-# Later versions of Backstage may modify the base versions of these files and the overwrite action may wipe out intended Backstage changes.
-# A preferred approach is to be intentional in the customization of Backstage and follow the instructions in the 
-# plugins' README files to manually modify the Backstage source files
-# patch -d$(basename ${backstageDir}) -p1 < $harmonixHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch
-git apply --directory=$(basename $backstageDir) --verbose --whitespace=nowarn $harmonixHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch || \
-    (echo "${RED}Error applying Harmonix diff patch to Backstage. This error can be ignored if the patch was already successfully applied previously. If not, the patch will need to be applied manually before proceeding.${NC}")
+
+if [[ "$FRESH_HARMONIX_BACKSTAGE_DOWNLOADED" == "y" ]]; then
+    # Copy/overwrite modified Backstage files for Harmonix.
+    # Note that these modifications were based on modifying Backstage 1.38.0 files.  
+    # Later versions of Backstage may modify the base versions of these files and the overwrite action may wipe out intended Backstage changes.
+    # A preferred approach is to be intentional in the customization of Backstage and follow the instructions in the 
+    # plugins' README files to manually modify the Backstage source files
+    # patch -d$(basename ${backstageDir}) -p1 < $harmonixHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch
+    git apply --directory=$(basename $backstageDir) --verbose --whitespace=nowarn $harmonixHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch || \
+        (echo "${RED}Error applying Harmonix diff patch to Backstage. This error can be ignored if the patch was already successfully applied previously. If not, the patch will need to be applied manually before proceeding.${NC}")
+else
+    echo "Skipping applying Harmonix backstage patch file since the backstage directory already existed when this script was run."
+fi
+

@@ -41,7 +41,7 @@ if [ -f "$appDir/git-config-temp" ]; then
 fi
 
 # copy files to temp git repo
-rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' --exclude='**/.git' $appDir/backstage-reference/ $appDir/git-temp/backstage-reference
+rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' --filter="protect .git/" --filter="exclude .git/" --exclude='**/.git' $appDir/backstage-reference/ $appDir/git-temp/backstage-reference
 
 rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' $appDir/iac/roots/{opa-common-constructs,opa-ecs-environment,opa-ecs-ec2-environment,opa-eks-environment,opa-serverless-environment,opa-gen-ai-environment} $appDir/git-temp/backstage-reference/environments
 \cp $appDir/iac/roots/package.json $appDir/git-temp/backstage-reference/environments

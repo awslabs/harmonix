@@ -50,6 +50,7 @@ if [[ "$installMode" == "from-source" ]]; then
     cp -R $harmonixHomeDir/backstage-plugins/plugins/harmonix-common $backstageDir/plugins/
     cp -R $harmonixHomeDir/backstage-plugins/plugins/scaffolder-backend-module-harmonix $backstageDir/plugins/
     cp $harmonixHomeDir/backstage-plugins/plugins/package.json $backstageDir/plugins/
+    cp $harmonixHomeDir/backstage-plugins/plugins/tsconfig.json $backstageDir/plugins/
 
     # It is expected that the version identifier in each plugin's package.json will be
     # a larger semver identifier than any version that is officially published to npm registry.

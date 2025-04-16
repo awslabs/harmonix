@@ -9,6 +9,9 @@ source ${configDir}/.env
 
 cd "$backstageDir"
 
+# For the latest Backstage instructions, see
+# https://backstage.io/docs/deployment/docker
+
 yarn install --immutable
 
 # tsc outputs type definitions to dist-types/ in the repo root, which are then consumed by the build

@@ -13,7 +13,7 @@ import {
   IconButton, LinearProgress, makeStyles, Typography
 } from '@material-ui/core';
 import { Close } from '@mui/icons-material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { opaApiRef } from '../../api';
 import { SecretStringComponent } from '../common';
 

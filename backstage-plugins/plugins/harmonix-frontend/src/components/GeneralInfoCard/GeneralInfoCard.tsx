@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CodeSnippet, InfoCard, EmptyState } from '@backstage/core-components';
 import { LinearProgress } from '@material-ui/core';
 import { useApi } from '@backstage/core-plugin-api';
@@ -16,31 +16,29 @@ import { Entity } from '@backstage/catalog-model';
 
 const OpaAppGeneralInfo = ({
   input: { entity, repoSecretArn, api }
-}: { input: { account: string, region: string, entity: Entity, repoSecretArn: string, api: OPAApi} }) => {
+}: { input: { account: string, region: string, entity: Entity, repoSecretArn: string, api: OPAApi } }) => {
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<{ isError: boolean; errorMsg: string | null }>({ isError: false, errorMsg: null });
-  
+
   const [secretData, setSecretData] = useState("");
- 
+
   let repoInfo = getRepoInfo(entity);
   const gitRepoUrl = getRepoUrl(repoInfo);
 
-// const getGitAppUrl = () => {
-//     const gitAppUrl = gitHost + "/" + gitApp + ".git"
-//     return gitAppUrl
-//   }
+  // const getGitAppUrl = () => {
+  //     const gitAppUrl = gitHost + "/" + gitApp + ".git"
+  //     return gitAppUrl
+  //   }
 
   const HandleCopyGitClone = () => {
     let baseUrl = "git clone https://oauth2:"
     let cloneUrl = ""
-    if (!repoSecretArn) 
-    {
+    if (!repoSecretArn) {
       baseUrl = "git clone https://"
       cloneUrl = baseUrl + gitRepoUrl;
     }
-    else
-    {
+    else {
       cloneUrl = baseUrl + secretData + "@" + gitRepoUrl;
     }
     navigator.clipboard.writeText(cloneUrl);
@@ -52,10 +50,9 @@ const OpaAppGeneralInfo = ({
 
   async function getData() {
     if (!repoSecretArn) {
-      setSecretData("");  
+      setSecretData("");
     }
-    else
-    {
+    else {
       const secrets = await api.getPlatformSecret({
         secretName: repoSecretArn,
       });
@@ -96,21 +93,21 @@ const OpaAppGeneralInfo = ({
           <Grid container>
             <Grid item zeroMinWidth xs={8}>
               {
-                repoSecretArn?
-                 (
-                  <>
-                  <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Repository Access Token</Typography>
-                  <Typography noWrap>
-                    <IconButton sx={{ p: 0 }} onClick={HandleCopySecret}>
-                      <ContentCopyIcon></ContentCopyIcon>
-                    </IconButton>
-                    <SecretStringComponent secret={secretData ?? ''} />
-                  </Typography>
-                </>
-                ):
-                (<></>)
+                repoSecretArn ?
+                  (
+                    <>
+                      <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold' }}>Repository Access Token</Typography>
+                      <Typography noWrap>
+                        <IconButton sx={{ p: 0 }} onClick={HandleCopySecret}>
+                          <ContentCopyIcon></ContentCopyIcon>
+                        </IconButton>
+                        <SecretStringComponent secret={secretData ?? ''} />
+                      </Typography>
+                    </>
+                  ) :
+                  (<></>)
               }
-              
+
             </Grid>
             <Grid item zeroMinWidth xs={16}>
               <Typography sx={{ textTransform: 'uppercase', fontWeight: 'bold', mt: 1 }}>Clone url</Typography>

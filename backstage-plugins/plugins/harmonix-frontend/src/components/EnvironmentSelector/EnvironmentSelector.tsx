@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { EmptyState } from '@backstage/core-components';
 import { LinearProgress } from '@material-ui/core';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
@@ -23,7 +23,7 @@ const EnvironmentSelector = ({
     // Note that the environments keys have been lower-cased so we get the
     // case-sensitive environment name here
     const envName = awsComponent.environments[env].environment.name;
-    
+
     const key = `${envName}|${awsComponent.environments[env].providerData.name}`;
     // if (awsComponent.environments[env].providerData.length>1) TODO: Pretty name for single provider environments
     const title = envName; //- awsComponent.environments[env].providerData.name;

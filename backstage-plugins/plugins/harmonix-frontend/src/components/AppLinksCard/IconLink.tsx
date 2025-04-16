@@ -3,7 +3,7 @@
 
 import { makeStyles, Box, Typography } from '@material-ui/core';
 import LanguageIcon from '@material-ui/icons/Language';
-import React from 'react';
+
 import { Link } from '@backstage/core-components';
 import { IconComponent } from '@backstage/core-plugin-api';
 

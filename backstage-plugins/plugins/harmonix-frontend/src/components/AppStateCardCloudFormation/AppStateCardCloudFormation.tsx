@@ -5,7 +5,7 @@ import { InfoCard, EmptyState } from '@backstage/core-components';
 import { useApi } from '@backstage/core-plugin-api';
 import { LinearProgress } from '@material-ui/core';
 import { Button, CardContent, Divider, Grid, Typography } from '@mui/material';
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { DescribeStackEventsCommandOutput, UpdateStackCommandOutput, CreateStackCommandOutput, DeleteStackCommandOutput, } from "@aws-sdk/client-cloudformation";
 import { opaApiRef } from '../../api';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';

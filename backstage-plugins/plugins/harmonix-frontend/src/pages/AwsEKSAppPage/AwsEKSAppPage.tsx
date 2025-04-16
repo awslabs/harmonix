@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Grid } from '@material-ui/core';
 import { EntityAboutCard } from '@backstage/plugin-catalog';
 import { EntityGeneralInfoCard, EntityAppLinksCard, EntityInfrastructureInfoCard, EntityK8sAppStateCard } from '../../plugin';

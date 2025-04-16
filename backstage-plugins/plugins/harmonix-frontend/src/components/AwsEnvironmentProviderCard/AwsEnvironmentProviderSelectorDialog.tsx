@@ -11,7 +11,7 @@ import {
   IconButton, InputLabel, MenuItem, makeStyles
 } from '@material-ui/core';
 import { Close } from '@mui/icons-material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 // Declare styles to use in the components

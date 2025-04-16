@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { InfoCard, } from '@backstage/core-components';
 import { Button, IconButton, TableBody, TableCell, TableRow, Table, TableHead, CardContent, Grid } from '@material-ui/core';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -69,7 +69,7 @@ const AwsEnvironmentProviderCard = ({
     let index = 0;
     const envRuntimeType = entity.metadata.environmentType?.toString() || ""
 
-    catalog.getEntities({ filter: { 'kind': "awsenvironmentprovider", 'metadata.envType':envRuntimeType } }).then(entities => {
+    catalog.getEntities({ filter: { 'kind': "awsenvironmentprovider", 'metadata.envType': envRuntimeType } }).then(entities => {
       entities.items.forEach((et) => {
         if (providers.length > 0) {
           providers.forEach(existingP => {

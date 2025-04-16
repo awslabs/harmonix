@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useEntity, } from '@backstage/plugin-catalog-react';
-import React from 'react';
+
 import { InfoCard, Table, TableColumn } from '@backstage/core-components';
 import { Entity } from '@backstage/catalog-model';
 

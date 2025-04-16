@@ -5,7 +5,7 @@ import { SubvalueCell, Table, TableColumn } from '@backstage/core-components';
 import { AWSResource, AWSServiceResources } from '@aws/plugin-aws-apps-common-for-backstage';
 import { makeStyles, Typography } from '@material-ui/core';
 import { Link } from '@mui/material';
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { ResourceDetailsDialog } from './ResourceDetailsDialog';
 
 // Declare styles to use in the components

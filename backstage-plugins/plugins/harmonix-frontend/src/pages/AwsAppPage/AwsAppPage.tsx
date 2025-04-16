@@ -9,7 +9,7 @@ import { isGithubActionsAvailable } from '@backstage-community/plugin-github-act
 import { RequirePermission, usePermission } from '@backstage/plugin-permission-react';
 import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 import { Grid, LinearProgress } from '@material-ui/core';
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import {
   EntityAppPromoCard,
@@ -125,7 +125,7 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         </EntityLayout.Route>
         {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}  resourceRef=''>
+            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>} resourceRef=''>
               {auditContent}
             </RequirePermission>
           </EntityLayout.Route>
@@ -152,7 +152,7 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         </EntityLayout.Route>
         {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>}  resourceRef=''>
+            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>} resourceRef=''>
               {auditContent}
             </RequirePermission>
           </EntityLayout.Route>

@@ -3,7 +3,7 @@
 
 import { useEntity, } from '@backstage/plugin-catalog-react';
 import LanguageIcon from '@material-ui/icons/Language';
-import React from 'react';
+
 import { ColumnBreakpoints } from '@backstage/plugin-catalog';
 import { AppLinksEmptyState } from './AppLinksEmptyState';
 import { AppLinksGridList } from './AppLinksGridList';

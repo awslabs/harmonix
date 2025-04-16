@@ -7,7 +7,7 @@ import { ReportIssue } from '@backstage/plugin-techdocs-module-addons-contrib';
 import { TechDocsAddons } from '@backstage/plugin-techdocs-react';
 import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 import { Grid } from '@material-ui/core';
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { CICDContent } from '../../components/CICDContent/CICDContent';
 import { EntityDeleteProviderCard, EntityProviderInfoCard } from '../../plugin';
 
@@ -32,7 +32,7 @@ export function AwsEKSEnvironmentProviderPage(/* {children}: AwsEnvironmentProvi
             <EntityCatalogGraphCard variant="gridItem" height={400} showArrowHeads />
           </Grid>
           <Grid item md={6}>
-            <EntityProviderInfoCard/>
+            <EntityProviderInfoCard />
           </Grid>
           <Grid item md={6} xs={12}>
             <EntityLinksCard />
@@ -50,9 +50,9 @@ export function AwsEKSEnvironmentProviderPage(/* {children}: AwsEnvironmentProvi
         </EntityTechdocsContent>
       </EntityLayout.Route>
       <EntityLayout.Route path="/management" title="Management">
-         <Grid item md={6} xs={12}>
-            <EntityDeleteProviderCard />
-          </Grid>
+        <Grid item md={6} xs={12}>
+          <EntityDeleteProviderCard />
+        </Grid>
       </EntityLayout.Route>
     </EntityLayout>
   );

@@ -5,8 +5,8 @@
 
 scriptDir="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
 
-BACKSTAGE_CREATE_APP_VERSION="0.6.0"
-PURE_BACKSTAGE_VERSION="1-37-1"
+BACKSTAGE_CREATE_APP_VERSION="0.6.1"
+PURE_BACKSTAGE_VERSION="1-38-0"
 PURE_BACKSTAGE="backstage-${PURE_BACKSTAGE_VERSION}-pure"
 NEW_BACKSTAGE="backstage"
 

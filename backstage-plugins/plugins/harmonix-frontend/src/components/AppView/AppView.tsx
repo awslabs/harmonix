@@ -1,6 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Children } from 'react';
 import {
   Grid,
   Typography,
@@ -11,7 +12,7 @@ import {
   CardContent,
 } from '@mui/material';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import React from 'react';
+
 import { OPAAppData } from '../../types';
 
 export const AboutField = ({
@@ -27,7 +28,7 @@ export const AboutField = ({
 }) => {
 
   // Content is either children or a string prop `value`
-  const content = React.Children.count(children) ? (
+  const content = Children.count(children) ? (
     children
   ) : (
     <Typography variant="body2" >

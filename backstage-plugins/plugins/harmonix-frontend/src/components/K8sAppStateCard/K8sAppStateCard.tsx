@@ -14,7 +14,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { Button, CardContent, Divider, Grid, Typography } from '@mui/material';
 import { styled } from '@mui/system';
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { opaApiRef } from '../../api';
 import { base64PayloadConvert } from '../../helpers/util';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
@@ -149,7 +149,7 @@ const OpaAppStateOverview = ({
   const { cancellablePromise } = useCancellablePromise({ rejectOnCancel: true });
   const timerRef = useRef<any>(null);
   const repoInfo = awsComponent.getRepoInfo();
-  
+
   // Namespace-bound application admin role (not cluster admin role)
   const appAdminRoleArn = env.app.appAdminRoleArn;
 

@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { ReactNode, createContext } from 'react';
+import { ReactNode, createContext, useContext } from 'react';
 import { useApi, configApiRef } from '@backstage/core-plugin-api';
 import {
   catalogApiRef,
@@ -68,14 +68,13 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
   const config = useApi(configApiRef);
   const api = useApi(opaApiRef);
   api.setPlatformParams(entity.metadata.name, config.getString('backend.platformRegion'));
-  if (entity.metadata.name != _app_name)
-  {
+  if (entity.metadata.name != _app_name) {
     // switched app reset references of drop down env selector
     _envProviderEntityMap = null;
     _change_to_env_name = null;
     _change_to_env_provider_name = null;
   }
-  _app_name=entity.metadata.name
+  _app_name = entity.metadata.name
   // Look up environment and environment provider entities from the catalog
   async function getCatalogData(): Promise<EnvEntityMap> {
     if (!entity.relations) {
@@ -257,7 +256,7 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
 
       // Must match Fluent Bit configurations. See "log_group_template" setting in the EKS provider IaC.
       logGroupName: providerAppData["LogGroup"] || `/aws/apps/${eksAppDeployEnv.providerData.prefix}-${eksAppDeployEnv.providerData.name}/${providerAppData["Namespace"]}`,
-      
+
       resourceGroupArn: providerAppData["AppResourceGroup"] || "",
       cloudFormationStackName: providerAppData["StackName"] || "",
       links: []
@@ -293,8 +292,8 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
 
     //TODO: Feature optimization to cache app related data - make sure the key of the app matches. multi -app-> multi-env->multi-providers..
     //if (!_envEntities) {
-      await getCatalogData();
-//    }
+    await getCatalogData();
+    //    }
 
     const envEntities = _envEntities!;
     const envProviderEntityMap = _envProviderEntityMap!;
@@ -308,7 +307,7 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
       if (envEntity.envName === _change_to_env_name) {
         envProvider = envProviders
           .filter((providerEntity: Entity) => providerEntity.metadata.name === _change_to_env_provider_name)[0];
-  
+
         if (!envProvider) {
           console.error(`Could not filter based on env name ${_change_to_env_name} and provider name ${_change_to_env_provider_name}`)
           envProvider = envProviders[0];
@@ -384,9 +383,9 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
 
     // now build an AWS component matching the app and the deployed environment
     function getComponentType(entity: Entity): AWSComponentType {
-      if (entity.kind==="AWSEnvironment") {
+      if (entity.kind === "AWSEnvironment") {
         return AWSComponentType.AWSEnvironment
-      } else if (entity.kind==="AWSEnvironmentProvider") {
+      } else if (entity.kind === "AWSEnvironmentProvider") {
         return AWSComponentType.AWSProvider
       }
       let componentType: string = entity.spec?.type?.toString() || ""
@@ -409,26 +408,24 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
       })
       return lowest;
     }
-    const getRepoInfoImpl = () : IRepositoryInfo => {
+    const getRepoInfoImpl = (): IRepositoryInfo => {
       return getRepoInfo(entity);
     }
-    
-    const getComponentStateType = () : ComponentStateType => {
-      if (entity.metadata['componentState'] ===undefined)
-      {
-        throw Error ("Error: Entity of type Component must have componentState in metadata.")
+
+    const getComponentStateType = (): ComponentStateType => {
+      if (entity.metadata['componentState'] === undefined) {
+        throw Error("Error: Entity of type Component must have componentState in metadata.")
       }
       const componentState = entity.metadata['componentState']?.toString() || "";
-      switch (componentState)
-      {
-       case "cloudformation":
-        return ComponentStateType.CLOUDFORMATION
-       case "terraform-cloud":
-        return ComponentStateType.TERRAFORM_CLOUD
-       case "terraform-aws":
+      switch (componentState) {
+        case "cloudformation":
+          return ComponentStateType.CLOUDFORMATION
+        case "terraform-cloud":
+          return ComponentStateType.TERRAFORM_CLOUD
+        case "terraform-aws":
           return ComponentStateType.TERRAFORM_AWS;
-       default:
-        throw Error (`Unsupported component state  ${componentState}`);
+        default:
+          throw Error(`Unsupported component state  ${componentState}`);
       }
     }
 
@@ -436,10 +433,10 @@ export const useAwsComponentFromContext = (): AwsComponentHookLoadingStatus => {
       componentName: entity.metadata['name'],
       componentType,
       componentState: getComponentStateType(),
-      componentSubType: entity.spec? entity.spec['subType']!.toString(): "",
+      componentSubType: entity.spec ? entity.spec['subType']!.toString() : "",
       iacType: entity.metadata['iacType']?.toString() || "",
       repoSecretArn: entity.metadata['repoSecretArn']?.toString() || "",
-      getRepoInfo:getRepoInfoImpl,
+      getRepoInfo: getRepoInfoImpl,
       platformRegion: config.getString('backend.platformRegion'),
       environments: deployEnvs,
       currentEnvironment: !!_change_to_env_name ? deployEnvs[_change_to_env_name.toLowerCase()] : getLowerEnvironment(deployEnvs),
@@ -554,7 +551,7 @@ export const AwsAppProvider = (props: AwsAppProviderProps) => (
  * @public
  */
 export function useAsyncAwsApp(): AwsComponentHookLoadingStatus {
-  return React.useContext(AwsAppContext);
+  return useContext(AwsAppContext);
 }
 
 export const MISSING = 'missing';

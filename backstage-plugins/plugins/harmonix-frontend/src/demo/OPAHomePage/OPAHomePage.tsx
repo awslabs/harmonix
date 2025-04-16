@@ -13,7 +13,7 @@ import { Content, Page, Header } from '@backstage/core-components';
 import { HomePageSearchBar } from '@backstage/plugin-search';
 import { SearchContextProvider } from '@backstage/plugin-search-react';
 import { Grid, makeStyles } from '@material-ui/core';
-import React from 'react';
+
 import { AWSLogoFull } from '../AWSLogoFull';
 import { OPALogoFull } from '../OPALogoFull';
 
@@ -66,8 +66,8 @@ export const OPAHomePage = () => {
               <Header title={<WelcomeTitle language={['English']} />} pageTitleOverride="Home" />
             </Grid>
             <Grid container item xs={12} alignItems="center" direction="row">
-              <HomePageSearchBar 
-                classes={{ root: classes.searchBar }} 
+              <HomePageSearchBar
+                classes={{ root: classes.searchBar }}
                 InputProps={{ classes: { notchedOutline: classes.searchBarOutline } }}
                 placeholder="Search" />
             </Grid>

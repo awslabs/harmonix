@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Grid } from '@material-ui/core';
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { EntityAboutCard, EntityLinksCard } from '@backstage/plugin-catalog';
 import {
   EntityCatalogGraphCard

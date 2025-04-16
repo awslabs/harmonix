@@ -2,9 +2,9 @@
 
 # The Create App version has a direct correlation with the version of Backstage
 # that is installed. 
-# 0.6.0 will install Backstage 1.37.1
+# 0.6.1 will install Backstage 1.38.0
 # See https://backstage.github.io/upgrade-helper/?yarnPlugin=0 the mapping between create app version and Backstage version
-BACKSTAGE_CREATE_APP_VERSION="0.6.0"
+BACKSTAGE_CREATE_APP_VERSION="0.6.1"
 
 # The Harmonix Backstage plugins can be installed in 1 of 2 ways. Firstly, the latest
 # published NPM packages can be used. Alternatively, the plugins can be installed

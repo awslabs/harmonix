@@ -18,7 +18,7 @@ import {
   EntityTagPicker,
   UserListPicker,
 } from '@backstage/plugin-catalog-react';
-import React from 'react';
+
 import { AdvancedEntityTypePicker } from './AdvancedEntityTypePicker';
 import { columnFactories } from './awsColumns';
 
@@ -112,7 +112,7 @@ export function AppCatalogPage(props: AppCatalogPageProps) {
       columnFactories.createMetadataDescriptionColumn(),
       columnFactories.createTagsColumn(),
     ];
-    columns=awsAppsColumns
+    columns = awsAppsColumns
     allowedKinds = ['Component'];
     initiallySelectedFilter = 'all';
 

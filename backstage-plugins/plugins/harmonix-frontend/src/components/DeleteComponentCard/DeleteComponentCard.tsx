@@ -10,7 +10,7 @@ import { Button, CardContent, Grid, LinearProgress } from "@material-ui/core";
 import { Alert, AlertTitle, Typography } from "@mui/material";
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { OPAApi, opaApiRef } from '../../api';
 import { APP_SUBTYPE } from "../../helpers/constants";
@@ -36,7 +36,7 @@ const DeleteAppPanel = ({
     setDeleteResultMessage("");
   };
 
-  const deleteRepo = (repoInfo:IRepositoryInfo) => {
+  const deleteRepo = (repoInfo: IRepositoryInfo) => {
     api.deleteRepository({
       repoInfo,
       gitAdminSecret: getGitCredentailsSecret(repoInfo)
@@ -147,8 +147,7 @@ const DeleteAppPanel = ({
       providerName: env.providerData.name
     };
 
-    if (awsComponent.componentState===ComponentStateType.CLOUDFORMATION)
-    {
+    if (awsComponent.componentState === ComponentStateType.CLOUDFORMATION) {
       let stackName = ""
       if (awsComponent.componentType === AWSComponentType.AWSResource) {
         const resourceEnv = env as AWSResourceDeploymentEnvironment
@@ -163,11 +162,10 @@ const DeleteAppPanel = ({
         await deleteK8sApp(awsComponent.currentEnvironment as AWSEKSAppDeploymentEnvironment);
       }
 
-      const results = api.deleteStack({componentName:awsComponent.componentName, stackName, backendParamsOverrides });
+      const results = api.deleteStack({ componentName: awsComponent.componentName, stackName, backendParamsOverrides });
       return results;
     }
-    else if (awsComponent.componentState === ComponentStateType.TERRAFORM_CLOUD)
-    {
+    else if (awsComponent.componentState === ComponentStateType.TERRAFORM_CLOUD) {
       // Use the workspace directy to invoke delete if provisioning happens in TF Cloud 
       // awsComponent.currentEnvironment.providerData.terraformWorkspace
 
@@ -181,28 +179,26 @@ const DeleteAppPanel = ({
       const results = api.deleteTFProvider(params);
       return results;
 
-    } else if (awsComponent.componentState === ComponentStateType.TERRAFORM_AWS)
-    {
-        // rely on pipeline to remove the terraform IAC based on bucket and table - can be resloved from the repo. 
-       // awsComponent.currentEnvironment.providerData.terraformStateBucket
-       // awsComponent.currentEnvironment.providerData.terraformStateTable
+    } else if (awsComponent.componentState === ComponentStateType.TERRAFORM_AWS) {
+      // rely on pipeline to remove the terraform IAC based on bucket and table - can be resloved from the repo. 
+      // awsComponent.currentEnvironment.providerData.terraformStateBucket
+      // awsComponent.currentEnvironment.providerData.terraformStateTable
 
-        // For EKS apps, we need to delete the application from the Kubernetes cluster
-        if (APP_SUBTYPE.EKS === appSubtype) {
-          await deleteK8sApp(awsComponent.currentEnvironment as AWSEKSAppDeploymentEnvironment);
-        }
-  
-        const repoInfo = awsComponent.getRepoInfo();
-        const params = {
-          backendParamsOverrides,
-          repoInfo,
-          gitAdminSecret: getGitCredentailsSecret(repoInfo),
-          envName: env.environment.name
-        }
-        const results = api.deleteTFProvider(params);
-        return results;
-    } else
-    {
+      // For EKS apps, we need to delete the application from the Kubernetes cluster
+      if (APP_SUBTYPE.EKS === appSubtype) {
+        await deleteK8sApp(awsComponent.currentEnvironment as AWSEKSAppDeploymentEnvironment);
+      }
+
+      const repoInfo = awsComponent.getRepoInfo();
+      const params = {
+        backendParamsOverrides,
+        repoInfo,
+        gitAdminSecret: getGitCredentailsSecret(repoInfo),
+        envName: env.environment.name
+      }
+      const results = api.deleteTFProvider(params);
+      return results;
+    } else {
       throw Error("Error: Can't delete component, Unsupported State.")
     }
   }

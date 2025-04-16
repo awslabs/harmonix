@@ -1,9 +1,9 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React from 'react';
+
 import { EntitySwitch } from "@backstage/plugin-catalog";
-import { isGithubActionsAvailable,EntityGithubActionsContent } from '@backstage-community/plugin-github-actions';
+import { isGithubActionsAvailable, EntityGithubActionsContent } from '@backstage-community/plugin-github-actions';
 import { isGitlabAvailable, EntityGitlabContent } from '@immobiliarelabs/backstage-plugin-gitlab';
 import { EmptyState } from '@backstage/core-components';
 import { Button } from '@material-ui/core';

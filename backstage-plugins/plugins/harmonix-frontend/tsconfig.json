@@ -3,6 +3,7 @@
   "compilerOptions": {
     "declaration": true,
     "outDir": "dist",
-    "declarationDir": "../dist-types"
+    "declarationDir": "../dist-types",
+    "jsx": "react-jsx"
   },
 }

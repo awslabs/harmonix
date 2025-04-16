@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React from 'react';
+
 import { AsyncAwsAppProvider, useAwsComponentFromContext } from '../../hooks/useAwsApp'
 import { AwsAppPage } from '../AwsAppPage/AwsAppPage'
 import { AwsResourcePage } from '../AwsResourcePage/AwsResourcePage'

@@ -7,7 +7,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { LinearProgress } from '@material-ui/core';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { Button, CardContent, Divider, Grid, IconButton, Typography } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { opaApiRef } from '../../api';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { AWSComponent, AWSECSAppDeploymentEnvironment } from '@aws/plugin-aws-apps-common-for-backstage';

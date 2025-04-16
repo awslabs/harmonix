@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // !! CONTRIBUTE TO OPEN SOURCE -- THIS CODE WILL DRIFT/ROT OTHERWISE
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Box } from '@material-ui/core';
 
 import { alertApiRef, useApi } from '@backstage/core-plugin-api';

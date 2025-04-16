@@ -13,7 +13,7 @@ import { Content, Page, Header } from '@backstage/core-components';
 import { HomePageSearchBar } from '@backstage/plugin-search';
 import { SearchContextProvider } from '@backstage/plugin-search-react';
 import { Grid, makeStyles } from '@material-ui/core';
-import React from 'react';
+
 import { CustomerLogoFullTitleLight } from '../CustomerLogoFullTitleLight';
 import { AWSLogoFull } from '../AWSLogoFull';
 
@@ -59,8 +59,8 @@ export const AWSAppsHomePage = () => {
               <Header title={<WelcomeTitle />} pageTitleOverride="Home" />
             </Grid>
             <Grid container item xs={12} alignItems="center" direction="row">
-              <HomePageSearchBar 
-                classes={{ root: classes.searchBar }} 
+              <HomePageSearchBar
+                classes={{ root: classes.searchBar }}
                 InputProps={{ classes: { notchedOutline: classes.searchBarOutline } }}
                 placeholder="Search" />
             </Grid>

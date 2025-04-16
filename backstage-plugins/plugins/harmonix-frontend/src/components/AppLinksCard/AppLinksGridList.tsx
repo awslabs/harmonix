@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ImageList, ImageListItem } from '@material-ui/core';
-import React from 'react';
+
 import { IconLink } from './IconLink';
 import { ColumnBreakpoints } from '@backstage/plugin-catalog';
 import { useDynamicColumns } from './useDynamicColumns';

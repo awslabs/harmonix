@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React from 'react';
+
 import { EntityAboutCard } from '@backstage/plugin-catalog';
 import { EntityAppLinksCard, EntityAppStateCardCloudFormation, EntityGeneralInfoCard, EntityInfrastructureInfoCard } from '../../plugin';
 import { Grid } from '@material-ui/core';

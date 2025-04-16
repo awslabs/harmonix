@@ -9,7 +9,7 @@ import { Button, CardContent, Grid } from "@material-ui/core";
 import { Alert, AlertTitle, Typography } from "@mui/material";
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { opaApiRef } from '../../api';
 import { sleep } from "../../helpers/util";
@@ -44,7 +44,7 @@ const DeleteProviderPanel = ({
   repoInfo.gitProjectGroup = 'aws-providers';
 
   const deleteRepo = () => {
-   
+
     api.deleteRepository({
       repoInfo,
       gitAdminSecret: getGitCredentailsSecret(repoInfo)
@@ -73,17 +73,17 @@ const DeleteProviderPanel = ({
       catalogApi.removeLocationById(entityLocationRef.id);
     }
     catalogApi.removeEntityByUid(uid);
-}
+  }
 
-const isExistingComponents = () => {
-  let result: boolean = false
-  entity.relations?.forEach(et => {
-    if (et.targetRef.startsWith("awsenvironment")) {
-      result = true;
-    }
-  })
-  return result;
-}
+  const isExistingComponents = () => {
+    let result: boolean = false
+    entity.relations?.forEach(et => {
+      if (et.targetRef.startsWith("awsenvironment")) {
+        result = true;
+      }
+    })
+    return result;
+  }
 
   const handleClickDelete = () => {
     if (confirm('Are you sure you want to delete this provider?')) {
@@ -94,12 +94,10 @@ const isExistingComponents = () => {
         setSpinning(false);
         return;
       }
-      else
-      {
+      else {
         const iacType = entity.metadata["iacType"]?.toString() || "";
         setSpinning(true);
-        if (iacType === "cloudformation" || iacType ==="cdk")
-        {
+        if (iacType === "cloudformation" || iacType === "cdk") {
           api.deleteStack({ componentName: entity.metadata.name, stackName, backendParamsOverrides }).then(async results => {
 
             console.log(results)
@@ -123,8 +121,7 @@ const isExistingComponents = () => {
             setDisabled(false)
           })
         }
-        else if (iacType === "terraform")
-        {
+        else if (iacType === "terraform") {
           const repoInfo = getRepoInfo(entity);
           const params = {
             backendParamsOverrides,
@@ -150,13 +147,12 @@ const isExistingComponents = () => {
             setDeleteResultMessage(error.toString())
             setDisabled(false)
           });
-          
-        } else 
-        {
+
+        } else {
           throw new Error("Can't delete Unknown IAC type");
         }
       }
-    
+
     } else {
       //Are you sure you want to delete this provider? == no
       // Do nothing!

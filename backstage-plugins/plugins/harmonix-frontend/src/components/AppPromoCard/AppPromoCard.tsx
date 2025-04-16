@@ -13,7 +13,7 @@ import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
-import React, { ChangeEvent, useEffect, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { opaApiRef } from '../../api';
 import { ProviderType } from '../../helpers/constants';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
@@ -36,7 +36,7 @@ const AppPromoCard = ({
   const [suggestedIamRoleArn, setSuggestedIamRoleArn] = useState("");
 
   const api = useApi(opaApiRef);
-  
+
   function getHighestLevelEnvironment(currentEnvironments: AwsDeploymentEnvironments) {
     let highestLevel = 1;
     Object.keys(currentEnvironments).forEach(env => {
@@ -223,7 +223,7 @@ const AppPromoCard = ({
 
   const submitNewEksEnvironmentHandler = (namespace: string, iamRoleArn: string, roleBehavior: string) => {
     // console.log(`CREATE ENV - namespace=${namespace}  roleBehavior=${roleBehavior} iamRoleArn=${iamRoleArn}`);
-    createNewEnvironment({["NAMESPACE"]: namespace, ["APP_ADMIN_ROLE_ARN"]: iamRoleArn, ["K8S_IAM_ROLE_BINDING_TYPE"]: roleBehavior});
+    createNewEnvironment({ ["NAMESPACE"]: namespace, ["APP_ADMIN_ROLE_ARN"]: iamRoleArn, ["K8S_IAM_ROLE_BINDING_TYPE"]: roleBehavior });
   };
 
   const createNewEnvironment = (extraParameters?: { [key: string]: string }) => {
@@ -234,12 +234,12 @@ const AppPromoCard = ({
     let repoInfo = awsComponent.getRepoInfo();
     repoInfo.gitJobID = 'create-subsequent-environment-ci-config';
     getEnvProviders().then(envProviders => {
-    
+
       const promoBody = {
         envName: selectedItem,
         envRequiresManualApproval: envProviders.providers[0].envRequiresManualApproval,
         repoInfo,
-        gitAdminSecret:getGitCredentailsSecret(repoInfo),
+        gitAdminSecret: getGitCredentailsSecret(repoInfo),
         providersData: envProviders.providers
       };
 

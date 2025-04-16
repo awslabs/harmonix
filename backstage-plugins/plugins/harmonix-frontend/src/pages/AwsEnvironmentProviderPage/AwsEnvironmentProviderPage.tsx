@@ -1,7 +1,7 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import React, { ReactNode } from 'react';
+import { ReactNode } from 'react';
 import { EntitySwitch } from '@backstage/plugin-catalog';
 import { AwsECSEnvironmentProviderPage } from '../AwsECSEnvironmentProviderPage/AwsECSEnvironmentProviderPage';
 import { AwsServerlessEnvironmentProviderPage } from '../AwsServerlessEnvironmentProviderPage/AwsServerlessEnvironmentProviderPage';

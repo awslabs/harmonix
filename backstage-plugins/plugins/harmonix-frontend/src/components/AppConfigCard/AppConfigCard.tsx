@@ -5,7 +5,7 @@ import { useApi } from '@backstage/core-plugin-api';
 import { IconButton, LinearProgress, Tooltip } from '@material-ui/core';
 import { Button, CardContent, Grid, TextField, Typography } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { opaApiRef } from '../../api';
 import { useAsyncAwsApp } from '../../hooks/useAwsApp';
 import { ContainerDetailsType } from '../../types';

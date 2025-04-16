@@ -9,7 +9,7 @@ import { Button, CardContent, Grid } from "@material-ui/core";
 import { Alert, AlertTitle, Typography } from "@mui/material";
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import { OPAApi, opaApiRef } from '../../api';
 import { sleep } from "../../helpers/util";
@@ -31,7 +31,7 @@ const DeleteEnvironmentPanel = ({
   const [disabled, setDisabled] = useState(false);
   let repoInfo = getRepoInfo(entity);
   repoInfo.gitProjectGroup = 'aws-environments';
-  
+
   const deleteRepo = () => {
     api.deleteRepository({
       repoInfo,

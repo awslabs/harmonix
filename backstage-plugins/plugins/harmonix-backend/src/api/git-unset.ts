@@ -1,6 +1,6 @@
 import { GitProviders } from "@aws/plugin-aws-apps-common-for-backstage";
 import { IGitAPIResult, ICommitChange, IRepositoryInfo, ISCMBackendAPI } from "@aws/plugin-aws-apps-common-for-backstage/src/types/SCMBackendAPI";
-import { LoggerService } from "@backstage/backend-plugin-api/*";
+import { LoggerService } from "@backstage/backend-plugin-api/";
 
 export class GitUnset implements ISCMBackendAPI {
    private _gitProvider: GitProviders;

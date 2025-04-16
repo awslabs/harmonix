@@ -7,7 +7,7 @@ import { UserEntity } from '@backstage/catalog-model';
 import { getAWScreds } from '@aws/plugin-aws-apps-backend-for-backstage';
 import { EnvironmentProvider, EnvironmentProviderConnection } from '../types';
 import { SecretsManagerClient, CreateSecretCommandInput, CreateSecretCommand, PutSecretValueCommand, PutSecretValueCommandInput } from '@aws-sdk/client-secrets-manager';
-import { LoggerService } from '@backstage/backend-plugin-api/*';
+import { LoggerService } from '@backstage/backend-plugin-api';
 
 export type EnvProviderConnectMap = { [key: string]: EnvironmentProviderConnection; }
 

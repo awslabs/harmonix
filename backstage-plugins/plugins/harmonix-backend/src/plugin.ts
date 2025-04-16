@@ -16,7 +16,7 @@ import { readOpaAppAuditPermission } from '@aws/plugin-aws-apps-common-for-backs
  * @public
  */
 export const harmonixPlugin = createBackendPlugin({
-  pluginId: 'harmonix',
+  pluginId: 'harmonix-backend',
   register(env) {
     env.registerInit({
       deps: {

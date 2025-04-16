@@ -23,7 +23,7 @@
   },
   "backstage": {
     "role": "backend-plugin",
-    "pluginId": "aws-apps-backend",
+    "pluginId": "harmonix-backend",
     "pluginPackages": [
       "@aws/plugin-aws-apps-backend-for-backstage"
     ]

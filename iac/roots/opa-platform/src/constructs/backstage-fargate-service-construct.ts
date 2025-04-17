@@ -150,8 +150,8 @@ export class BackstageFargateServiceConstruct extends Construct {
     const envVars = {
       POSTGRES_HOST: props.dbCluster.clusterEndpoint.hostname,
       POSTGRES_PORT: `${props.dbCluster.clusterEndpoint.port}`,
-      BACKSTAGE_TITLE: "OPA",
-      BACKSTAGE_ORGNAME: "OPA",
+      BACKSTAGE_TITLE: "Harmonix on AWS",
+      BACKSTAGE_ORGNAME: "Harmonix",
       PROTOCOL: "https",
       BACKSTAGE_HOSTNAME: `${props.hostedZone?.rootDnsName}`,
       GITLAB_HOSTNAME: `${props.gitlabHostname}`,

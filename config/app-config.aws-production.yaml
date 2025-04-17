@@ -1,5 +1,5 @@
 app:
-  title: AWS ${BACKSTAGE_TITLE}
+  title: ${BACKSTAGE_TITLE}
   # Should be the same as backend.baseUrl when using the `app-backend` plugin.
   baseUrl: ${PROTOCOL}://${BACKSTAGE_HOSTNAME}
   logo: https://companieslogo.com/img/orig/AMZN_BIG-accd00da.png

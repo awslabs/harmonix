@@ -197,7 +197,7 @@ export class GitlabRunnerConstruct extends Construct {
       vpc: props.network.vpc,
       vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_WITH_EGRESS },
       allowAllOutbound: true,
-      healthCheck: autoscaling.HealthCheck.ec2(),
+      healthChecks: autoscaling.HealthChecks.ec2(),
       minCapacity: 1,
       maxCapacity: 1,
       launchTemplate,

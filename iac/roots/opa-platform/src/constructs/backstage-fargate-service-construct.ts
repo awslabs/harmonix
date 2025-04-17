@@ -133,7 +133,7 @@ export class BackstageFargateServiceConstruct extends Construct {
 
     const cluster = new ecs.Cluster(this, "backstage-solution-cluster", {
       vpc: props.network.vpc,
-      containerInsights: true,
+      containerInsightsV2: ecs.ContainerInsights.ENABLED,
     });
 
     let albFargateService: ecsPatterns.ApplicationLoadBalancedFargateService;

@@ -1,15 +1,16 @@
 import { DeleteSecretCommandOutput, GetSecretValueCommandOutput } from "@aws-sdk/client-secrets-manager";
 import { GetParameterCommandOutput } from "@aws-sdk/client-ssm";
-import { AppPromoParams, AWSEnvironmentProviderRecord, BindResourceParams, IGitAPIResult, IRepositoryInfo, ISCMBackendAPI } from "@aws/plugin-aws-apps-common-for-backstage";
+import { AppPromoParams, AWSEnvironmentProviderRecord, BindResourceParams, IGitAPIResult, IRepositoryInfo } from "@aws/plugin-aws-apps-common-for-backstage";
+import { IGitService } from "./IGitService";
 
 export interface IAppsPlatformService {
 
     readonly awsRegion: string;
     readonly platformRegion: string;
     readonly awsAccount: string;
-    readonly gitProviderService: ISCMBackendAPI;
+    readonly gitProviderService: IGitService;
 
-    setGitProviderService(provider: ISCMBackendAPI): void;
+    setGitProviderService(provider: IGitService): void;
     setAwsRegion(region: string): void;
     setPlatformRegion(region: string): void;
     setAwsAccount(account: string): void;

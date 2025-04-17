@@ -185,6 +185,7 @@ export class GitLabAPI implements ISCMBackendAPI {
             branch: change.branch,
             commit_message: change.commitMessage,
             actions: change.actions,
+            owner: repo.owner
           };
       
           const url = `https://${repo.gitHost}/api/v4/projects/${gitProjectId}/repository/commits`;

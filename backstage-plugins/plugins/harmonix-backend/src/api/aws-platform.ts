@@ -30,6 +30,8 @@ import YAML from 'yaml';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { IAppsPlatformService } from '../services/definition/IAppsPlatformService';
 import { GitUnset } from './git-unset';
+import { IGitService } from '../services/definition/IGitService';
+import { GitService } from './gitService';
 
 export type GitLabDownloadFileResponse = {
   file_name: string;
@@ -48,7 +50,7 @@ export type GitLabDownloadFileResponse = {
 export class AppsPlatformService implements IAppsPlatformService{
   private _awsRegion: string;
   private _platformRegion: string;
-  private _gitProvider: ISCMBackendAPI;
+  private _gitProvider: IGitService;
   private _awsAccount: string;
 
   public constructor(
@@ -56,13 +58,13 @@ export class AppsPlatformService implements IAppsPlatformService{
     platformRegion?: string,
     awsRegion?: string,
     awsAccount?: string,
-    gitProvider?: ISCMBackendAPI
+    gitProvider?: IGitService
   ) {
 
     this._awsRegion = awsRegion || "UNSETREGION";
     this._awsAccount = awsAccount || "UNSETACCOUNT";
     this._platformRegion = platformRegion || "UNSETREGION";
-    this._gitProvider = gitProvider || new GitUnset(this.logger);
+    this._gitProvider = new GitService(this.logger);
 
     this.logger.info('Instantiating AWS Apps Platform API with:');
     this.logger.info(`platformRegion: ${this._platformRegion}`);
@@ -71,11 +73,11 @@ export class AppsPlatformService implements IAppsPlatformService{
     this.logger.info(`gitProvider: ${this._gitProvider}`);
   }
 
-  public get git(): ISCMBackendAPI {
+  public get git(): IGitService {
     return this._gitProvider;
   }
 
-  public get gitProviderService(): ISCMBackendAPI {
+  public get gitProviderService(): IGitService {
     return this._gitProvider;
   }
 
@@ -91,7 +93,7 @@ export class AppsPlatformService implements IAppsPlatformService{
     return this._awsAccount;
   }
 
-  setGitProviderService(provider: ISCMBackendAPI): void {
+  setGitProviderService(provider: IGitService): void {
     this._gitProvider = provider;
   }
   setAwsRegion(region: string): void {
@@ -201,7 +203,7 @@ export class AppsPlatformService implements IAppsPlatformService{
       ]
     }
 
-    const result = await this.git.commitContent(change, repo, gitToken);
+    const result = await this.git.gitProviderImpl.commitContent(change, repo, gitToken);
 
     if (!result.isSuccuess) {
       console.error(`ERROR: Failed to Destroy ${envName}. Response: ${result}`);
@@ -225,7 +227,7 @@ export class AppsPlatformService implements IAppsPlatformService{
     gitSecretName: string,
   ): Promise<IGitAPIResult> {
     const gitToken = await this.getGitToken(gitSecretName);
-    const result = await this.git.deleteRepository(repo, gitToken);
+    const result = await this.git.gitProviderImpl.deleteRepository(repo, gitToken);
 
     console.log(result);
     return result;
@@ -244,7 +246,7 @@ export class AppsPlatformService implements IAppsPlatformService{
   ): Promise<string> {
     const gitToken = await this.getGitToken(gitSecretName);
 
-    const result = await this.git.getFileContent(filePath,repo,gitToken);
+    const result = await this.git.gitProviderImpl.getFileContent(filePath,repo,gitToken);
   
     const resultBody = await result.value;
     if (!result.isSuccuess) {
@@ -295,7 +297,7 @@ export class AppsPlatformService implements IAppsPlatformService{
       actions
     }
 
-    const result = await this.git.commitContent(change, repo, gitToken);
+    const result = await this.git.gitProviderImpl.commitContent(change, repo, gitToken);
 
 
     const resultBody = result.value;
@@ -324,7 +326,7 @@ export class AppsPlatformService implements IAppsPlatformService{
     gitSecretName: string,
   ): Promise<{ status: string; message?: string }> {
     const gitToken = await this.getGitToken(gitSecretName);
-
+   
     const actions = input.policies.map(p => {
       const policyFile = `.iac/permissions/${input.envName}/${input.providerName}/${p.policyFileName}.json`;
       const policyContent = p.policyContent;
@@ -349,8 +351,8 @@ export class AppsPlatformService implements IAppsPlatformService{
       branch: 'main',
       actions
     }
-
-    const result = await this.git.commitContent(change, repo, gitToken);
+   
+    const result = await this.git.gitProviderImpl.commitContent(change, repo, gitToken);
     const resultBody = result.value;
     if (!result.isSuccuess) {
       console.error(`ERROR: Failed to bind ${input.envName}. Response: ${result}`);
@@ -401,7 +403,7 @@ export class AppsPlatformService implements IAppsPlatformService{
       actions
     }
 
-    const result = await this.git.commitContent(change, repo, gitToken);
+    const result = await this.git.gitProviderImpl.commitContent(change, repo, gitToken);
 
     const resultBody = await result.value.json();
     if (!result.isSuccuess) {
@@ -474,7 +476,7 @@ export class AppsPlatformService implements IAppsPlatformService{
       actions
     }
 
-    const result = await this.git.commitContent(change, repo, gitToken);
+    const result = await this.git.gitProviderImpl.commitContent(change, repo, gitToken);
     console.log(result)
     let resultBody;
 

@@ -4,3 +4,4 @@
 export { AWSSDKService } from './AwsAppsApi';
 export { getAWScreds, type AwsAuthResponse } from './aws-auth';
 export { createAuditRecord } from './aws-audit';
+export {GitService} from './gitService'

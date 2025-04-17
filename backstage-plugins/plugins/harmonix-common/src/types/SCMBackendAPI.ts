@@ -35,6 +35,7 @@ export interface IRepositoryInfo {
     gitJobID?: string;
     projectID?: string;
     description?: string;
+    owner?: string;
     isPrivate: boolean;
     visibility?: GitVisibility;
     gitProvider: GitProviders;

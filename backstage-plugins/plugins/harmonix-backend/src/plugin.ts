@@ -32,10 +32,10 @@ export const harmonixPlugin = createBackendPlugin({
       },
       async init({ logger, userInfo, config, auth, httpAuth, httpRouter, catalogApi, permissionsRegistry, permissions }) {
         const awsSDKService = await createAwsSDKService({logger});
-        const gitProviderService = await createGitProviderService({logger});
+        const gitService = await createGitProviderService({logger});
         const platformService = await createAppsPlatformService({logger});
         platformService.setPlatformRegion(config.getString('backend.platformRegion'));
-        platformService.setGitProviderService(gitProviderService);
+        platformService.setGitProviderService(gitService);
 
         permissionsRegistry.addPermissions([readOpaAppAuditPermission]);
 
@@ -48,7 +48,7 @@ export const harmonixPlugin = createBackendPlugin({
             auth,
             httpAuth,
             awsSDKService,
-            gitProviderService,
+            gitService,
             platformService
           }),
         );

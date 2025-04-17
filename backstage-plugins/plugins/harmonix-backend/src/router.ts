@@ -9,6 +9,7 @@ import { CatalogService } from '@backstage/plugin-catalog-node/';
 import { AwsAuditResponse } from './api/aws-audit';
 import YAML from 'yaml';
 import { AuthorizeResult } from '@backstage/plugin-permission-common';
+import { IGitService } from './services/definition/IGitService';
 
 export interface RouterOptions {
   logger: LoggerService;
@@ -18,12 +19,12 @@ export interface RouterOptions {
   auth: AuthService;
   httpAuth: HttpAuthService;
   awsSDKService: IAWSSDKService;
-  gitProviderService: ISCMBackendAPI;
+  gitService: IGitService;
   platformService: IAppsPlatformService;
 }
 
 export async function createRouter(options: RouterOptions): Promise<express.Router> {
-  const { logger, userInfo, catalogApi, permissions, httpAuth, awsSDKService,gitProviderService,platformService} = options;
+  const { logger, userInfo, catalogApi, permissions, httpAuth, awsSDKService,gitService,platformService} = options;
 
   const router = Router();
   router.use(express.json());
@@ -70,14 +71,16 @@ export async function createRouter(options: RouterOptions): Promise<express.Rout
     if (awsRegion === undefined || awsAccount === undefined) {
       throw new Error('getAwsAppsPlatformApi: awsRegion or awsAccount is undefined');
     }
+ 
     if (repoInfo === undefined) {
       platformService.setAwsAccount(awsAccount);
       platformService.setAwsRegion(awsRegion);
-      gitProviderService.setGitProvider(GitProviders.UNSET);
-      platformService.setGitProviderService(gitProviderService);
+      gitService.setGitProvider(GitProviders.UNSET);
       return platformService;
     }
-    gitProviderService.setGitProvider(repoInfo.gitProvider);
+    platformService.setGitProviderService(gitService);
+    gitService.setGitProvider(repoInfo.gitProvider);
+
     return platformService;
   }
 

@@ -65,6 +65,7 @@ export const getRepoInfo = (entity:Entity) : IRepositoryInfo => {
           gitHost: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/instance']?.toString() : "",
           gitRepoName: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString() : "",
           gitProjectGroup: entity.metadata.annotations ? entity.metadata.annotations['gitlab.com/project-slug']?.toString().split('/')[0] : "",
+          owner: 'Harmonix-CICD',
           isPrivate: true
         }
       case GitProviders.GITHUB:

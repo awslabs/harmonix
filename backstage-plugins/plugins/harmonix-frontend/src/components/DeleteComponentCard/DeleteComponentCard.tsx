@@ -271,7 +271,7 @@ const DeleteAppPanel = ({
           return;
         })
       })
-      if (appIACType === "cdk") {
+      if (appIACType === "cdk" || appIACType === "aws-sam") {
         await sleep(2000);
         // Delete the repo now.
         deleteRepo(repoInfo);
@@ -290,7 +290,7 @@ const DeleteAppPanel = ({
         await sleep(2000);
         setSpinning(false);
         setDisabled(false);
-        setDeleteResultMessage("Once the pipeline finish executing you may click Delete Repository");
+        setDeleteResultMessage("Once the pipeline finishes executing, you may click Delete Repository");
       }
 
     } else {

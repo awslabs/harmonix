@@ -20,6 +20,9 @@ yarn tsc
 # Build the backend, which bundles it all up into the packages/backend/dist folder.
 yarn build:backend
 
+# Login to Amazon's public ECR so that base images can be downloaded
+ aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws
+
 export DOCKER_BUILDKIT=1
 docker build --platform linux/amd64 . -f ${configDir}/aws-production.Dockerfile --tag opa-backstage
 echo "Backstage app build finished"

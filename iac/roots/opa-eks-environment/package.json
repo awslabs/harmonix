@@ -27,7 +27,7 @@
     "typescript": "~5.8.2"
   },
   "dependencies": {
-    "@aws-cdk/lambda-layer-kubectl-v31": "^2.0.3",
+    "@aws-cdk/lambda-layer-kubectl-v32": "^2.1.0",
     "@aws/aws-app-development-common-constructs": "0.3.0",
     "aws-cdk-lib": "~2.187.0",
     "constructs": "^10.4.2"

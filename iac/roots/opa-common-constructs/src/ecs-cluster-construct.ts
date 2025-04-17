@@ -90,7 +90,7 @@ export class EcsClusterConstruct extends Construct {
       vpc: props.vpc,
       clusterName: `${envIdentifier}-cluster`,
       enableFargateCapacityProviders: props.isFargateCluster,
-      containerInsights: true,
+      containerInsightsV2: props.containerInsights ? ecs.ContainerInsights.ENABLED: ecs.ContainerInsights.DISABLED,
     });
 
     // Create an SNS Topic to use for scaling notifications

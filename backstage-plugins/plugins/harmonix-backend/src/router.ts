@@ -2,7 +2,7 @@ import {AuthService, HttpAuthService, LoggerService, PermissionsService, UserInf
 import { NotAllowedError } from '@backstage/errors';
 import express from 'express';
 import Router from 'express-promise-router';
-import { AppPromoParams, BindResourceParams, GitProviders, IRepositoryInfo, ISCMBackendAPI, readOpaAppAuditPermission } from '@aws/plugin-aws-apps-common-for-backstage';
+import { AppPromoParams, BindResourceParams, GitProviders, IRepositoryInfo, readOpaAppAuditPermission } from '@aws/plugin-aws-apps-common-for-backstage';
 import { ApiClientConfig, IAppsPlatformService, IAWSSDKService } from './services/definition';
 import { getAWScreds } from './api';
 import { CatalogService } from '@backstage/plugin-catalog-node/';

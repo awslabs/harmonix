@@ -23,13 +23,11 @@ import {
   GitProviders, 
   ICommitChange, 
   IGitAPIResult, 
-  IRepositoryInfo,
-  ISCMBackendAPI
+  IRepositoryInfo
 } from '@aws/plugin-aws-apps-common-for-backstage';
 import YAML from 'yaml';
 import { LoggerService } from '@backstage/backend-plugin-api';
 import { IAppsPlatformService } from '../services/definition/IAppsPlatformService';
-import { GitUnset } from './git-unset';
 import { IGitService } from '../services/definition/IGitService';
 import { GitService } from './gitService';
 
@@ -64,7 +62,7 @@ export class AppsPlatformService implements IAppsPlatformService{
     this._awsRegion = awsRegion || "UNSETREGION";
     this._awsAccount = awsAccount || "UNSETACCOUNT";
     this._platformRegion = platformRegion || "UNSETREGION";
-    this._gitProvider = new GitService(this.logger);
+    this._gitProvider = gitProvider || new GitService(this.logger);
 
     this.logger.info('Instantiating AWS Apps Platform API with:');
     this.logger.info(`platformRegion: ${this._platformRegion}`);

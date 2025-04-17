@@ -10,10 +10,14 @@ export class GitService implements IGitService{
     private _gitProviderImpl: ISCMBackendAPI;
 
     public constructor(
-        private readonly logger: LoggerService 
+        private readonly logger: LoggerService,
+        gitProvider?: GitProviders,
+        gitProviderImpl?: ISCMBackendAPI 
     )
     {
         this.logger.info('Instantiating GitService');
+        this._gitProvider = gitProvider || GitProviders.UNSET;
+        this._gitProviderImpl = gitProviderImpl || new GitUnset(this.logger);
     }
 
     public get gitProvider(): GitProviders {

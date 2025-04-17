@@ -22,12 +22,12 @@ fi
 if [[ -d "${appDir}/${PURE_BACKSTAGE}" ]]; then
     echo -e "\nExisting ${PURE_BACKSTAGE} found. Deleting it to ensure we have the latest files from create-app ${BACKSTAGE_CREATE_APP_VERSION}..."
     rm -rf ${appDir}/${PURE_BACKSTAGE}
-    echo -e "Done deleting existing ${PURE_BACKSTAGE}."
-
-    echo -e "\nDownloading fresh copy of ${PURE_BACKSTAGE} using create-app ${BACKSTAGE_CREATE_APP_VERSION}...\n"
-    BACKSTAGE_APP_NAME=${PURE_BACKSTAGE} npx -y -q @backstage/create-app@${BACKSTAGE_CREATE_APP_VERSION} --path "${appDir}/${PURE_BACKSTAGE}"
-    echo -e "\n${PURE_BACKSTAGE} was sucessfully installed.\n"
+    echo -e "Done deleting existing ${PURE_BACKSTAGE}."  
 fi
+
+echo -e "\nDownloading fresh copy of ${PURE_BACKSTAGE} using create-app ${BACKSTAGE_CREATE_APP_VERSION}...\n"
+BACKSTAGE_APP_NAME=${PURE_BACKSTAGE} npx -y -q @backstage/create-app@${BACKSTAGE_CREATE_APP_VERSION} --path "${appDir}/${PURE_BACKSTAGE}"
+echo -e "\n${PURE_BACKSTAGE} was sucessfully installed.\n"
 
 echo -e "\nCreating patch file..."
 

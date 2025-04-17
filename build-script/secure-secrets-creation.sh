@@ -105,7 +105,7 @@ fi
 # BEGIN HARNESS SECRET ------------------------------------------------------------------------
 
 if [[ ! -z "$HARNESS_ACCESS_TOKEN" ]]; then
-    export HARNESS_SECRET_NAME="$OPA_PREFIX-admin-harness-secrets"
+    export HARNESS_SECRET_NAME="$APP_NAME-admin-harness-secrets"
 
     if [[ "$1" == "delete" ]]; then
         echo -e "\nDeleting $HARNESS_ACCESS_TOKEN"
@@ -152,7 +152,7 @@ fi
 # BEGIN TERRAFORM CLOUD SECRET ------------------------------------------------------------------------
 
 if [[ ! -z "$TERRAFORM_CLOUD_TOKEN" ]]; then
-    export TERRAFORM_CLOUD_SECRET_NAME="$OPA_PREFIX-admin-terraform-cloud-secrets"
+    export TERRAFORM_CLOUD_SECRET_NAME="$APP_NAME-admin-terraform-cloud-secrets"
 
     if [[ "$1" == "delete" ]]; then
         echo -e "\nDeleting $TERRAFORM_CLOUD_TOKEN"

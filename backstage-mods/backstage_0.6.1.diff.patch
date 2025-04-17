@@ -1,6 +1,6 @@
-diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-38-0-pure/app-config.yaml backstage/app-config.yaml
---- backstage-1-38-0-pure/app-config.yaml	2025-04-16 06:01:45
-+++ backstage/app-config.yaml	2025-04-16 07:58:41
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/app-config.yaml backstage/app-config.yaml
+--- backstage-pure/app-config.yaml	2025-04-17 09:24:09
++++ backstage/app-config.yaml	2025-04-17 09:35:49
 @@ -1,9 +1,11 @@
  app:
 -  title: Scaffolded Backstage App
@@ -199,9 +199,9 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
  
  kubernetes:
    # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
-diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-38-0-pure/packages/app/src/App.tsx backstage/packages/app/src/App.tsx
---- backstage-1-38-0-pure/packages/app/src/App.tsx	2025-04-16 06:01:45
-+++ backstage/packages/app/src/App.tsx	2025-04-16 08:18:53
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/packages/app/src/App.tsx backstage/packages/app/src/App.tsx
+--- backstage-pure/packages/app/src/App.tsx	2025-04-17 09:24:09
++++ backstage/packages/app/src/App.tsx	2025-04-17 09:35:49
 @@ -24,6 +24,8 @@
  import { entityPage } from './components/catalog/EntityPage';
  import { searchPage } from './components/search/SearchPage';
@@ -258,9 +258,9 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
    </FlatRoutes>
  );
  
-diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-38-0-pure/packages/app/src/components/Root/Root.tsx backstage/packages/app/src/components/Root/Root.tsx
---- backstage-1-38-0-pure/packages/app/src/components/Root/Root.tsx	2025-04-16 06:01:45
-+++ backstage/packages/app/src/components/Root/Root.tsx	2025-04-16 08:22:10
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/packages/app/src/components/Root/Root.tsx backstage/packages/app/src/components/Root/Root.tsx
+--- backstage-pure/packages/app/src/components/Root/Root.tsx	2025-04-17 09:24:09
++++ backstage/packages/app/src/components/Root/Root.tsx	2025-04-17 09:35:49
 @@ -22,11 +22,15 @@
    SidebarSpace,
    useSidebarOpenState,
@@ -311,9 +311,9 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
          <MyGroupsSidebarItem
            singularTitle="My Group"
            pluralTitle="My Groups"
-diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-38-0-pure/packages/app/src/components/catalog/EntityPage.tsx backstage/packages/app/src/components/catalog/EntityPage.tsx
---- backstage-1-38-0-pure/packages/app/src/components/catalog/EntityPage.tsx	2025-04-16 06:01:45
-+++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2025-04-16 08:33:01
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/packages/app/src/components/catalog/EntityPage.tsx backstage/packages/app/src/components/catalog/EntityPage.tsx
+--- backstage-pure/packages/app/src/components/catalog/EntityPage.tsx	2025-04-17 09:24:09
++++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2025-04-17 09:35:49
 @@ -26,6 +26,7 @@
    isOrphan,
    hasRelationWarnings,
@@ -419,9 +419,9 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
      <EntitySwitch.Case if={isKind('api')} children={apiPage} />
      <EntitySwitch.Case if={isKind('group')} children={groupPage} />
      <EntitySwitch.Case if={isKind('user')} children={userPage} />
-diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn backstage-1-38-0-pure/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
---- backstage-1-38-0-pure/packages/backend/src/index.ts	2025-04-16 06:01:45
-+++ backstage/packages/backend/src/index.ts	2025-04-16 08:37:49
+diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
+--- backstage-pure/packages/backend/src/index.ts	2025-04-17 09:24:09
++++ backstage/packages/backend/src/index.ts	2025-04-17 09:35:49
 @@ -7,6 +7,10 @@
   */
  

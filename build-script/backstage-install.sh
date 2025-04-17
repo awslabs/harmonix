@@ -1,11 +1,5 @@
 #!/usr/bin/env bash
 
-# The Create App version has a direct correlation with the version of Backstage
-# that is installed. 
-# 0.6.1 will install Backstage 1.38.0
-# See https://backstage.github.io/upgrade-helper/?yarnPlugin=0 the mapping between create app version and Backstage version
-BACKSTAGE_CREATE_APP_VERSION="0.6.1"
-
 # The Harmonix Backstage plugins can be installed in 1 of 2 ways. Firstly, the latest
 # published NPM packages can be used. Alternatively, the plugins can be installed
 # based upon the source code provided in the 'backstage-plugins' directory.
@@ -16,14 +10,16 @@ BACKSTAGE_CREATE_APP_VERSION="0.6.1"
 # Set installMode to "from-source" to build/install Harmonix plugins from source
 # or set installMode to "npm" to install the latest published Harmonix NPM packages.
 installMode="from-source"
-NC='\033[0m' # No Color
-RED='\033[1;31m'
 
 biScriptDir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-harmonixHomeDir=$biScriptDir/..
-cd $harmonixHomeDir
-harmonixHomeDir=$(pwd)
-backstageDir=$harmonixHomeDir/backstage
+
+# Set BACKSTAGE_CREATE_APP_VERSION variable
+source $biScriptDir/helpers.sh
+
+harmonixHomeDir="$biScriptDir/.."
+cd "$harmonixHomeDir"
+harmonixHomeDir="$(pwd)"
+backstageDir="$harmonixHomeDir/backstage"
 
 echo "" #intentional blank line
 
@@ -102,6 +98,9 @@ yarn --cwd packages/app add \
 cd -
 
 if [[ "$FRESH_HARMONIX_BACKSTAGE_DOWNLOADED" == "y" ]]; then
+
+    echo -e "\n${CYAN}Applying Harmonix patch changes to backstage...\n${NC}"
+
     # Copy/overwrite modified Backstage files for Harmonix.
     # Note that these modifications were based on modifying Backstage 1.38.0 files.  
     # Later versions of Backstage may modify the base versions of these files and the overwrite action may wipe out intended Backstage changes.
@@ -110,6 +109,8 @@ if [[ "$FRESH_HARMONIX_BACKSTAGE_DOWNLOADED" == "y" ]]; then
     # patch -d$(basename ${backstageDir}) -p1 < $harmonixHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch
     git apply --directory=$(basename $backstageDir) --verbose --whitespace=nowarn $harmonixHomeDir/backstage-mods/backstage_${BACKSTAGE_CREATE_APP_VERSION}.diff.patch || \
         (echo "${RED}Error applying Harmonix diff patch to Backstage. This error can be ignored if the patch was already successfully applied previously. If not, the patch will need to be applied manually before proceeding.${NC}")
+    
+    echo "" # add a line break to the output
 else
     echo "Skipping applying Harmonix backstage patch file since the backstage directory already existed when this script was run."
 fi

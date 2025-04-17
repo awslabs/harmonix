@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Set the version of Backstage that Harmonix will use.
+# The Create App version has a direct correlation with the version of Backstage that is installed. 
+# 0.6.1 will install Backstage 1.38.X, where the "X" can change as Backstage releases bug fixes.
+# See https://backstage.github.io/upgrade-helper/?yarnPlugin=0 for the mapping between create app version and Backstage version
+BACKSTAGE_CREATE_APP_VERSION="0.6.1"
 
 # Define helper functions for pretty output
 NC='\033[0m' # No Color

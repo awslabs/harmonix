@@ -36,7 +36,6 @@ start_local () {
 	docker compose -p "local-harmonix" -f $appRootDir/config/docker-compose.yml up --build --detach
 	echo "Starting the backstage app"
 	set -a && source $appRootDir/config/.env && set +a && yarn --cwd $backstageDir start
-	# yarn --cwd $backstageDir dev
 	echo "Local dev startup completed"
 }
 
@@ -44,10 +43,9 @@ start_local_debug () {  ## Start the backstage app for local development with de
 	check_harmonix_system_role_login
 
 	echo "Starting a local PostgreSQL container"
-	docker compose -f $appRootDir/config/docker-compose.yml up --build --detach
+	docker compose -p "local-harmonix" -f $appRootDir/config/docker-compose.yml up --build --detach
 	echo "Starting the backstage app with debug"
-	set -a && source $appRootDir/config/.env && set +a && yarn --cwd $backstageDir dev-debug
-	$backstageDir/node_modules/.bin/concurrently "yarn --cwd $backstageDir start app" "yarn --cwd $backstageDir start backend --inspect"
+	set -a && source $appRootDir/config/.env && set +a && yarn --cwd $backstageDir start --inspect
 	echo "Local dev startup completed"
 }
 

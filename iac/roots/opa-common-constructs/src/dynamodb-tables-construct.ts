@@ -38,7 +38,9 @@ export class DynamoDBConstruct extends Construct {
       encryptionKey: props.kmsKey,
       encryption: dynamodb.TableEncryption.CUSTOMER_MANAGED,
       removalPolicy: cdk.RemovalPolicy.DESTROY, // TODO: Change for PROD
-      pointInTimeRecovery: true,
+      pointInTimeRecoverySpecification: {
+        pointInTimeRecoveryEnabled: true,
+      }
     });
 
     this.table.addGlobalSecondaryIndex({

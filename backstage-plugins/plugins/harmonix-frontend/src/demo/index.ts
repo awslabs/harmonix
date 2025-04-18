@@ -16,3 +16,4 @@ export { OPAHomePage } from './OPAHomePage/OPAHomePage';
 export { customerTheme } from './theme/customer-theme';
 export { awsTheme } from './theme/aws-theme';
 export { opaTheme } from './theme/opa-theme';
+export {HarmonixHomePage} from './HarmonixHomePage/HarmonixHomePage'

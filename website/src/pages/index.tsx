@@ -28,7 +28,7 @@ function AnnouncementBanner() {
       <Container maxWidth="lg">
         <Typography variant="subtitle1" component="span" sx={{ fontWeight: "medium" }}>
           <span style={{ color: "#ff9900", marginRight: "8px" }}>📢</span>
-          OPA on AWS is now "Harmonix on AWS"
+          Version 0.4.0 released! April 2025
           <span style={{ color: "#ff9900", marginLeft: "8px" }}>📢</span>
         </Typography>
       </Container>
@@ -45,7 +45,7 @@ function HomepageHeader() {
 
       <Box
         sx={{
-          background: "linear-gradient(135deg, #0D317F 0%, #154199 50%, #1E63CC 100%)",
+          backgroundColor: " #0D317F",
           padding: "60px 0 80px",
           position: "relative",
           overflow: "hidden",
@@ -55,7 +55,9 @@ function HomepageHeader() {
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12}>
               <Box className={styles.heroContent}>
-                <Typography
+                <div className="hero hero--primary bgimg logoWrapper">
+               </div>
+                {/* <Typography
                   variant="h1"
                   component="h1"
                   sx={{
@@ -67,7 +69,7 @@ function HomepageHeader() {
                   }}
                 >
                   Harmonix
-                </Typography>
+                </Typography> */}
 
                 <Typography
                   variant="h2"
@@ -106,7 +108,7 @@ function HomepageHeader() {
                   <Button
                     variant="contained"
                     component={Link}
-                    to="/docs/intro"
+                    to="/docs/getting-started/deploy-the-platform"
                     size="large"
                     sx={{
                       backgroundColor: "#ff9900",
@@ -121,7 +123,7 @@ function HomepageHeader() {
                   <Button
                     variant="outlined"
                     component={Link}
-                    to="/docs"
+                    to="/docs/intro"
                     size="large"
                     sx={{
                       borderColor: "white",
@@ -139,32 +141,6 @@ function HomepageHeader() {
             </Grid>
           </Grid>
         </Container>
-
-        {/* Background elements - decorative shapes */}
-        <Box
-          sx={{
-            position: "absolute",
-            top: 0,
-            right: 0,
-            width: "300px",
-            height: "300px",
-            background: "radial-gradient(circle, rgba(30, 99, 204, 0.3) 0%, transparent 70%)",
-            zIndex: 0,
-          }}
-        />
-        
-        {/* Additional decorative element */}
-        <Box
-          sx={{
-            position: "absolute",
-            bottom: -50,
-            left: "10%",
-            width: "200px",
-            height: "200px",
-            background: "radial-gradient(circle, rgba(255, 153, 0, 0.1) 0%, transparent 70%)",
-            zIndex: 0,
-          }}
-        />
       </Box>
     </header>
   );

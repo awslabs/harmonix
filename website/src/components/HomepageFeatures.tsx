@@ -55,28 +55,28 @@ const carouselContent = (
   <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='' >
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🚀 NEW RELEASE 0.3.4 🚀</h4>
-      <p><b>V0.3.4</b></p>
+      <h4>🚀 NEW RELEASE 0.4.0 🚀</h4>
+      <p><b>V0.4.0</b></p>
       <p>Checkout the new release notes <a href="/docs/CHANGELOG" > --&gt; here</a> </p>
     </Carousel.Caption>
   </Carousel.Item>
-  <Carousel.Item>
+  {/* <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🚀 NEW 🚀</h4>
+      <h4>GitHub Integration</h4>
       <p><b>GitHub Source Control Integration</b></p>
       <p>Harmonix on AWS is now integrated with both GitHub & Gitlab Source control <br/>You can even extend it to more git providers. Read more <a href="/docs/integration/git" >--&gt; here</a></p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🚀 NEW 🚀</h4>
+      <h4>Terraform Template</h4>
       <p><b>Terraform ECS Provider Template</b></p>
       <p>A New Terraform template to provision AWS ECS Clusters</p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🚀 NEW 🚀</h4>
+      <h4>GenAI Template</h4>
       <p><b>GenAI provider and RAG app</b></p>
       <p>New GenAI Provider for development of GenAI Applications <br/> A new RAG demo app to get you started quickly <a href="/docs/category/generative-ai">Click here for more details</a></p>
     </Carousel.Caption>
@@ -94,11 +94,7 @@ const carouselContent = (
       <p><b>AWS Control Tower & AFT Integration</b></p>
       <p>Step by Step <a href="/docs/integration/control-tower-and-aft" >Documentation</a> how to integrate Harmonix on AWS <br/> with AWS Control Tower and AFT (Account Factory for Terraform)</p>
     </Carousel.Caption>
-  </Carousel.Item>
-  
-
-
-
+  </Carousel.Item> */}
     </Carousel>
   </div>
 )

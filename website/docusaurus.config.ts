@@ -112,7 +112,7 @@ const config: Config = {
     },
     announcementBar: {
       content:
-      'Harmonix on AWS 0.3.4 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/harmonix">GitHub</a>! ⭐️.  View changes <a target="_blank" rel="noopener noreferrer" href="https://harmonixonaws.io/docs/CHANGELOG">here</a>.',
+      'Harmonix on AWS 0.4.0 is now available.  Check it out and give it a star on <a target="_blank" rel="noopener noreferrer" href="https://github.com/awslabs/harmonix">GitHub</a>! ⭐️.  View changes <a target="_blank" rel="noopener noreferrer" href="https://harmonixonaws.io/docs/CHANGELOG">here</a>.',
       backgroundColor: '#ffffff',
       textColor: '#000000',
       isCloseable: true,

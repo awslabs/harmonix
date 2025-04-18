@@ -1,7 +1,7 @@
 {
   "name": "@aws/plugin-aws-apps-for-backstage",
   "description": "Harmonix on AWS Frontend plugin",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "license": "Apache-2.0",
   "author": {
     "name": "Amazon Web Services",

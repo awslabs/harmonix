@@ -43,3 +43,4 @@ export {
   export * from './pages/AwsSecretsManagerResourcePage/AwsSecretsManagerResourcePage';
   export * from './pages/AwsServerlessAppPage/AwsServerlessAppPage';
   export * from './pages/AwsEnvironmentProviderPage/AwsEnvironmentProviderPage';
+  export * from './demo'

@@ -4,10 +4,10 @@ SPDX-License-Identifier: Apache-2.0
 -->
 # Harmonix on AWS Frontend
 
-This is the frontend UI of the Harmonix on AWS plugin.  An AWS Catalog Page, Harmonix Homepage and several entity cards are contributed to the UI from this plugin.
+This is the frontend UI plugin for the the Harmonix on AWS plugin set.  An AWS Catalog Page, Harmonix Homepage and several entity cards are contributed to the UI from this plugin.
 
-- [Installation](#Installation)
-- [Configuration](#Configuration)
+- [Installation](#installation)
+- [Configuration](#configuration)
   - [EntityPage customization for AWS apps](#entitypage-customization-for-aws-apps)
   - [AWS Software Catalog Page](#aws-software-catalog-page)
 - [Links](#links)
@@ -79,6 +79,9 @@ const cicdContent = (
   <EntitySwitch>
     ...
   // Add this to the switch statement in the cicdContent variable
+    <EntitySwitch.Case if={isGithubActionsAvailable}>
+      <EntityGithubActionsContent />
+    </EntitySwitch.Case>
     <EntitySwitch.Case if={isGitlabAvailable}>
       <EntityGitlabContent />
     </EntitySwitch.Case>

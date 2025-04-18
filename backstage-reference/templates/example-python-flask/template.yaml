@@ -12,6 +12,7 @@ metadata:
     - python
     - flask
     - aws
+    - aws-app
     - ecs
 spec:
   owner: group:admins

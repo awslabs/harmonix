@@ -10,6 +10,7 @@ metadata:
     - java
     - springboot
     - aws
+    - aws-app
     - ecs
 spec:
   owner: group:admins

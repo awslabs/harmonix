@@ -12,6 +12,7 @@ metadata:
     - serverless
     - sam
     - aws
+    - aws-app
   links:
     - title: Serverless Application Model (SAM)
       url: https://aws.amazon.com/serverless/sam/

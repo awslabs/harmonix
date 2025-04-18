@@ -12,6 +12,7 @@ metadata:
     - python
     - flask
     - aws
+    - aws-app
     - eks
     - kubernetes
     - kustomize

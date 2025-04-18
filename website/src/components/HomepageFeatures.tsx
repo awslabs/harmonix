@@ -229,7 +229,7 @@ const opaCarousel: FeatureItem[] = [
     Svg: require('@site/static/img/regulations.svg').default,
     noSVG: true,
     minHeight: '300px',
-    customTextStyle: { fontSize: '24px', maxWidth: '100%', margin: 'auto', minHeight: '170px' },
+    customTextStyle: { fontSize: '24px', maxWidth: '100%', margin: 'auto', minHeight: '145px' },
     description: (
       <>
         {carouselContent}

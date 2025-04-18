@@ -3,11 +3,12 @@ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0
 -->
 
-# AWS Apps Common
+# Harmonix on AWS Common
 
-Shared isomorphic code for the aws-apps plugins.
+Shared isomorphic code for Harmonix plugins.
 
-## Links
-
-- [Frontend part of aws-apps](https://www.npmjs.com/package/@aws/plugin-aws-apps-for-backstage)
-- [Backend part of aws-apps](https://www.npmjs.com/package/@aws/plugin-aws-apps-backend-for-backstage)
+## Installation
+Standard npm package installation, add to your `package.json` and run 
+```sh
+npm install \ yarn install
+```

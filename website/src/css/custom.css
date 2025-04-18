@@ -66,6 +66,13 @@
   min-height: 250px;
 }
 
+.carousel-control-prev {
+  display: none;
+}
+.carousel-control-next {
+  display: none;
+}
+
 .logoText1 {
   position: absolute;
   bottom:22%;

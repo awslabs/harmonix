@@ -101,10 +101,10 @@ spec:
   steps:
     - id: opaGetPlatformInfo
       name: Get OPA platform information
-      action: opa:get-platform-metadata
+      action: harmonix:get-platform-metadata
     - id: opaGetAwsEnvProviders
       name: Get AWS Environment Providers
-      action: opa:get-env-providers
+      action: harmonix:get-env-providers
       input:
         environmentRef: ${{ parameters.environment }}
     - id: debugEnvironment
@@ -115,7 +115,7 @@ spec:
     - id: createProviderPropsFiles
       each: ${{ steps['opaGetAwsEnvProviders'].output.envProviders }}
       name: Store environment provider parameters
-      action: roadiehq:utils:fs:write
+      action: harmonix:fs:write
       input:
         path: .awsdeployment/providers/${{ steps['opaGetAwsEnvProviders'].output.envName }}-${{ each.value.envProviderName }}.properties
         #### FOR CONTENT PARAMETER BELOW, HOSTED ROTATION AND CROSS ACCOUNT ROLE ACCESS ####

@@ -1,4 +1,4 @@
-image: node:18
+image: node:22
 variables:
   AWS_ACCOUNT: "${{ values.awsAccountID }}"
   AWS_DEFAULT_REGION: "${{ values.awsRegion }}"

@@ -1,4 +1,4 @@
-# Architecture - OPA on AWS
+# Architecture - Harmonix on AWS
 
 
 ## Architecture Overview

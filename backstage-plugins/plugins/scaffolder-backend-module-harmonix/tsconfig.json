@@ -1,0 +1,13 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "declaration": true,
+    "outDir": "dist",
+    "declarationDir": "../dist-types",
+    "types": [
+      "node",
+      "jest",
+      "fs-extra",
+    ],
+  },
+}

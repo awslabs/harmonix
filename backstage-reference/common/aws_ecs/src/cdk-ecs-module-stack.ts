@@ -155,10 +155,9 @@ export class EcsResourcesStack extends Stack {
     const logGroupName = `/aws/apps/${envName}/${envProviderName}/${appShortName}`;
 
     // Create the task definition for the application container with reasonable defaults
-    const taskDefinition = new ecs.TaskDefinition(this, `${appShortName}-taskDef`, {
-      compatibility: ecs.Compatibility.FARGATE,
-      cpu: "256",
-      memoryMiB: "512",
+    const taskDefinition = new ecs.FargateTaskDefinition(this, `${appShortName}-taskDef`, {
+      cpu: 256,
+      memoryLimitMiB: 512,
     });
 
     // Create a container definition for the application container

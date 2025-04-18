@@ -36,7 +36,7 @@ export class RdsConstruct extends Construct {
 
     this.cluster = new rds.DatabaseCluster(this, `${envIdentifier}db`, {
       engine: rds.DatabaseClusterEngine.auroraPostgres({
-        version: rds.AuroraPostgresEngineVersion.VER_13_9, // Changed to a supported version
+        version: rds.AuroraPostgresEngineVersion.VER_16_6,
       }),
       defaultDatabaseName: `${envIdentifier}db`,
       credentials: rds.Credentials.fromGeneratedSecret("postgres", {

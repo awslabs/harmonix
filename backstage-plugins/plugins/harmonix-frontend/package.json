@@ -1,0 +1,110 @@
+{
+  "name": "@aws/plugin-aws-apps-for-backstage",
+  "description": "Harmonix on AWS Frontend plugin",
+  "version": "0.4.0",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.esm.js",
+    "types": "dist/index.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awslabs/harmonix.git",
+    "directory": "backstage-plugins/plugins/harmonix-frontend"
+  },
+  "bugs": {
+    "url": "https://github.com/awslabs/harmonix/issues"
+  },
+  "backstage": {
+    "role": "frontend-plugin",
+    "pluginId": "harmonix-frontend",
+    "pluginPackages": [
+      "@backstage/plugin-home",
+      "@aws/plugin-aws-apps-for-backstage"
+    ]
+  },
+  "sideEffects": false,
+  "scripts": {
+    "tsc": "tsc",
+    "tsc-config": "tsc --showConfig",
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test --all --watchAll=false",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.782.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.782.0",
+    "@aws-sdk/client-dynamodb": "^3.782.0",
+    "@aws-sdk/client-ecs": "^3.782.0",
+    "@aws-sdk/client-eks": "^3.782.0",
+    "@aws-sdk/client-lambda": "^3.782.0",
+    "@aws-sdk/client-s3": "^3.782.0",
+    "@aws-sdk/client-secrets-manager": "^3.782.0",
+    "@aws-sdk/client-ssm": "^3.782.0",
+    "@aws-sdk/util-arn-parser": "^3.723.0",
+    "@aws/plugin-aws-apps-common-for-backstage": "^0.4.0",
+    "@backstage-community/plugin-github-actions": "^0.9.0",
+    "@backstage/catalog-model": "^1.7.3",
+    "@backstage/core-components": "^0.17.1",
+    "@backstage/core-plugin-api": "^1.10.6",
+    "@backstage/errors": "^1.2.4",
+    "@backstage/plugin-catalog": "^1.28.0",
+    "@backstage/plugin-catalog-graph": "^0.4.17",
+    "@backstage/plugin-catalog-react": "^1.16.0",
+    "@backstage/plugin-home": "^0.8.6",
+    "@backstage/plugin-permission-react": "^0.4.32",
+    "@backstage/plugin-search": "^1.4.24",
+    "@backstage/plugin-techdocs": "^1.12.4",
+    "@backstage/plugin-techdocs-module-addons-contrib": "^1.1.22",
+    "@backstage/theme": "^0.6.5",
+    "@emotion/react": "^11.13.0",
+    "@emotion/styled": "^11.13.0",
+    "@immobiliarelabs/backstage-plugin-gitlab": "^6.11.0",
+    "@kubernetes/client-node": "^0.21.0",
+    "@material-ui/core": "^4.12.2",
+    "@material-ui/icons": "^4.9.1",
+    "@material-ui/lab": "^4.0.0-alpha.61",
+    "@mui/icons-material": "^5.16.6",
+    "@mui/material": "^5.16.6",
+    "@mui/system": "^5.16.6",
+    "file-saver": "^2.0.5",
+    "react-use": "^17.2.4"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "@backstage/cli": "^0.32.0",
+    "@backstage/core-app-api": "^1.16.1",
+    "@backstage/dev-utils": "^1.1.9",
+    "@backstage/test-utils": "^1.7.7",
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/jest-dom": "^6.0.0",
+    "@testing-library/react": "^16.0.0",
+    "@testing-library/user-event": "^14.0.0",
+    "@types/file-saver": "^2.0.5",
+    "@types/node": "*",
+    "@types/react": "^18.3.3",
+    "cross-fetch": "^4.0.0",
+    "msw": "^1.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router": "^6.26.0",
+    "react-router-dom": "^6.26.0",
+    "typescript": "~5.8.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

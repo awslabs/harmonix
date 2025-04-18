@@ -1,0 +1,89 @@
+{
+  "name": "@aws/plugin-aws-apps-backend-for-backstage",
+  "version": "0.4.0",
+  "license": "Apache-2.0",
+  "author": {
+    "name": "Amazon Web Services",
+    "url": "https://aws.amazon.com"
+  },
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "publishConfig": {
+    "access": "public",
+    "main": "dist/index.cjs.js",
+    "types": "dist/index.d.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/awslabs/harmonix.git",
+    "directory": "backstage-plugins/plugins/harmonix-backend"
+  },
+  "bugs": {
+    "url": "https://github.com/awslabs/harmonix-backend/issues"
+  },
+  "backstage": {
+    "role": "backend-plugin",
+    "pluginId": "harmonix-backend",
+    "pluginPackages": [
+      "@aws/plugin-aws-apps-backend-for-backstage"
+    ]
+  },
+  "scripts": {
+    "tsc": "tsc",
+    "tsc-config": "tsc --showConfig",
+    "start": "backstage-cli package start",
+    "build": "backstage-cli package build",
+    "lint": "backstage-cli package lint",
+    "test": "backstage-cli package test--all --watchAll=false",
+    "clean": "backstage-cli package clean",
+    "prepack": "backstage-cli package prepack",
+    "postpack": "backstage-cli package postpack"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudformation": "^3.777.0",
+    "@aws-sdk/client-cloudwatch-logs": "^3.777.0",
+    "@aws-sdk/client-dynamodb": "^3.777.0",
+    "@aws-sdk/client-ecs": "^3.777.0",
+    "@aws-sdk/client-eks": "^3.777.0",
+    "@aws-sdk/client-lambda": "^3.777.0",
+    "@aws-sdk/client-resource-groups": "^3.777.0",
+    "@aws-sdk/client-s3": "^3.777.0",
+    "@aws-sdk/client-secrets-manager": "^3.777.0",
+    "@aws-sdk/client-ssm": "^3.777.0",
+    "@aws-sdk/client-sts": "^3.777.0",
+    "@aws-sdk/credential-provider-node": "^3.777.0",
+    "@aws-sdk/types": "^3.775.0",
+    "@aws-sdk/util-arn-parser": "^3.723.0",
+    "@aws/plugin-aws-apps-common-for-backstage": "^0.4.0",
+    "@backstage/backend-common": "^0.25.0",
+    "@backstage/backend-defaults": "^0.9.0",
+    "@backstage/backend-plugin-api": "^1.3.0",
+    "@backstage/catalog-client": "^1.9.1",
+    "@backstage/config": "^1.3.2",
+    "@backstage/errors": "^1.2.7",
+    "@backstage/plugin-catalog-node": "^1.16.3",
+    "@octokit/rest": ">=20.0.1",
+    "express": "^4.17.1",
+    "express-promise-router": "^4.1.0",
+    "node-fetch": "^2.6.7",
+    "octokit": "^3.1.2",
+    "octokit-commit-multiple-files": "^5.0.2",
+    "yaml": "^2.7.1",
+    "yn": "^4.0.0"
+  },
+  "devDependencies": {
+    "@aws/plugin-aws-apps-common-for-backstage": "^0.4.0",
+    "@backstage/backend-test-utils": "^1.4.0",
+    "@backstage/cli": "^0.32.0",
+    "@backstage/plugin-auth-backend": "^0.24.4",
+    "@backstage/plugin-auth-backend-module-guest-provider": "^0.2.6",
+    "@types/express": "^4.17.6",
+    "@types/supertest": "^2.0.12",
+    "msw": "^1.0.0",
+    "supertest": "^6.2.4",
+    "typescript": "~5.8.0"
+  },
+  "files": [
+    "dist"
+  ]
+}

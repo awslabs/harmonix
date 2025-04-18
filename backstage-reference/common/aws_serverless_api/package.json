@@ -10,14 +10,14 @@
     "cdk": "cdk"
   },
   "devDependencies": {
-    "@types/node": "22.2.0",
-    "aws-cdk": "2.171.1",
+    "@types/node": "22.14.0",
+    "aws-cdk": "2.1007.0",
     "ts-node": "^10.9.2",
-    "typescript": "~5.5.4"
+    "typescript": "~5.8.2"
   },
   "dependencies": {
-    "@aws-sdk/util-arn-parser": "^3.568.0",
-    "aws-cdk-lib": "2.171.1",
-    "constructs": "^10.3.0"
+    "@aws-sdk/util-arn-parser": "^3.723.0",
+    "aws-cdk-lib": "2.187.0",
+    "constructs": "^10.4.2"
   }
 }

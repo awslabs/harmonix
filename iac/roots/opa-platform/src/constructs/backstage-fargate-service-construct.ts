@@ -133,7 +133,7 @@ export class BackstageFargateServiceConstruct extends Construct {
 
     const cluster = new ecs.Cluster(this, "backstage-solution-cluster", {
       vpc: props.network.vpc,
-      containerInsights: true,
+      containerInsightsV2: ecs.ContainerInsights.ENABLED,
     });
 
     let albFargateService: ecsPatterns.ApplicationLoadBalancedFargateService;
@@ -150,8 +150,8 @@ export class BackstageFargateServiceConstruct extends Construct {
     const envVars = {
       POSTGRES_HOST: props.dbCluster.clusterEndpoint.hostname,
       POSTGRES_PORT: `${props.dbCluster.clusterEndpoint.port}`,
-      BACKSTAGE_TITLE: "OPA",
-      BACKSTAGE_ORGNAME: "OPA",
+      BACKSTAGE_TITLE: "Harmonix on AWS",
+      BACKSTAGE_ORGNAME: "Harmonix",
       PROTOCOL: "https",
       BACKSTAGE_HOSTNAME: `${props.hostedZone?.rootDnsName}`,
       GITLAB_HOSTNAME: `${props.gitlabHostname}`,

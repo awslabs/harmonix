@@ -57,6 +57,7 @@ temp-*
 
 # ignore dist typescript distribution
 dist
+**/*.tsbuildinfo
 
 # Files created by gitlab-runner
 builds
@@ -127,7 +128,6 @@ coverage
 !.vscode/launch.json
 !.vscode/tasks.json
 .vsls.json
-git-temp
 
 # logs
 logs
@@ -141,3 +141,10 @@ lerna-debug.log*
 !environment/.environment-shared.json
 
 /backstage
+/backstage*-pure
+git-temp
+
+# Ignore TypeScript typings EXCEPT for config.d.ts, which are used by Backstage to enable plugin configurations
+# See https://backstage.io/docs/conf/defining/
+**/*.d.ts
+!**/*/config.d.ts

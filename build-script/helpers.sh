@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+# Set the version of Backstage that Harmonix will use.
+# The Create App version has a direct correlation with the version of Backstage that is installed. 
+# 0.6.1 will install Backstage 1.38.X, where the "X" can change as Backstage releases bug fixes.
+# See https://backstage.github.io/upgrade-helper/?yarnPlugin=0 for the mapping between create app version and Backstage version
+BACKSTAGE_CREATE_APP_VERSION="0.6.1"
 
 # Define helper functions for pretty output
 NC='\033[0m' # No Color
@@ -105,13 +110,15 @@ aws_region () {
 confirm_aws_account() {
     cliAccountId=$(aws sts get-caller-identity --query Account --output text)
     echo ""
+    AWS_ACCOUNT_ID=$(echo "$AWS_ACCOUNT_ID" | tr -d '"') # strip surrounding double quotes if needed
 
     if [[ -z "$AWS_ACCOUNT_ID" ]]; then
         echo "WARNING, AWS_ACCOUNT_ID is not set - cannot validate that you are logged into the right AWS account."
     elif [[ "$AWS_ACCOUNT_ID" != "$cliAccountId" ]]; then
-        echo "ERROR: You are currently logged into account \"$cliAccountId\", but this script "
-        echo "is trying to deploy to account \"$AWS_ACCOUNT_ID\"."
-        echo "Update your AWS CLI profile or set the AWS_PROFILE environment variable to fix this."
+        echo -e "${RED}ERROR: You are currently logged into account \"$cliAccountId\", but the Harmonix AWS account "
+        echo -e "is set to \"$AWS_ACCOUNT_ID\". These values must match for this script to function properly."
+        echo -e "\nTo fix this, either update your AWS_ACCOUNT_ID setting in config/.env or update your AWS CLI"
+        echo -e "profile or set the AWS_PROFILE environment variable.\n${NC}"
         exit 1
     fi
 }

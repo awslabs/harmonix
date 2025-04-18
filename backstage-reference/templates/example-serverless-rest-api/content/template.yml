@@ -135,7 +135,7 @@ Resources:
     Properties:
       CodeUri: sports-equipment/
       Handler: lambda-get-equipment.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Architectures:
         - x86_64
       Policies:
@@ -170,7 +170,7 @@ Resources:
     Properties:
       CodeUri: sports-equipment/
       Handler: lambda-persist-data.handler
-      Runtime: nodejs18.x
+      Runtime: nodejs22.x
       Architectures:
         - x86_64
       Policies:

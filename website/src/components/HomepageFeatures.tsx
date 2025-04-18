@@ -1,4 +1,4 @@
-import React from 'react';
+
 import clsx from 'clsx';
 import styles from './HomepageFeatures.module.css';
 import { Feature, FeatureItem } from './HomepageFeature';
@@ -12,27 +12,27 @@ type FeatureGroup = {
 const opaMainVideoContent = (
   <div className='opa-video-item'>
   <h4>The Platformers - Harmonix on AWS</h4>
-  <iframe width="400" height="225" src="https://www.youtube.com/embed/h9HwnkkmQPA/1.jpg?" title="What is OPA on AWS + Demo" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/h9HwnkkmQPA/1.jpg?" title="What is OPA on AWS + Demo" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
 </div> 
 )
 
 const opaSecondVideoContent = (
   <div className='opa-video-item'>
   <h4>Harmonix on AWS at PlatformCon 2024</h4>
-  <iframe width="400" height="225" src="https://www.youtube.com/embed/cjovvIWdgRU/1.jpg" title="Unlocking Platform Engineer Efficiency: Automation Strategies with Backstage" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/cjovvIWdgRU/1.jpg" title="Unlocking Platform Engineer Efficiency: Automation Strategies with Backstage" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
 </div>
 )
 
 const opaThirdVideoContent = (
   <div className='opa-video-item'>
     <h4>Containers from the couch</h4>
-    <iframe width="400" height="225" src="https://www.youtube.com/embed/EN6mlTX71Ts/1.jpg?" title="OPA on AWS" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+    <iframe width="400" height="225" src="https://www.youtube.com/embed/EN6mlTX71Ts/1.jpg?" title="OPA on AWS" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
   </div>
 )
 const opaForthVideoContent = (
   <div className='opa-video-item'>
   <h4>Harmonix on AWS at BackstageCon 2023</h4>
-  <iframe width="400" height="225" src="https://www.youtube.com/embed/40B6YmmhOvI/2.jpg?start=670" title="Let’s Go Backstage: End to End IDP Tips &amp; Tricks for Platform Engineers - Oshrat Nir &amp; Guy Menahem" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/40B6YmmhOvI/2.jpg?start=670" title="Let’s Go Backstage: End to End IDP Tips &amp; Tricks for Platform Engineers - Oshrat Nir &amp; Guy Menahem" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
 </div>
 )
 
@@ -40,43 +40,43 @@ const opaFifthVideoContent = (
   <div className='opa-video-item'>
   <h4>Harmonix on AWS Tech Playlist</h4>
   {/* <iframe width="400" height="250" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe> */}
-  <iframe width="400" height="225" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/videoseries?si=1ajMAQG975guA5ha&amp;list=PLhr1KZpdzukcf5e7vYOVkpw4h-rzy7Pn3"  title="OPA on AWS Playlist" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
 </div>
 )
 const opaSixthVideoContent = (
   <div className='opa-video-item'>
   <h4>Container days Conference 2024 Demo</h4>
-  <iframe width="400" height="225" src="https://www.youtube.com/embed/Sg0X4RPJbvQ/2.jpg?start=1451" title="Building modern Architectures and Developer Acceleration" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/Sg0X4RPJbvQ/2.jpg?start=1451" title="Building modern Architectures and Developer Acceleration" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
 </div>
 )
 
 const carouselContent = (
   <div className='carouselTitle'>
-  <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='' >
+  <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='' controls={false} >
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🚀 NEW RELEASE 0.3.4 🚀</h4>
-      <p><b>V0.3.4</b></p>
-      <p>Checkout the new release notes <a href="/docs/CHANGELOG" >--> here</a> </p>
+      <h4>🚀 NEW RELEASE 0.4.0 🚀</h4>
+      <p><b>V0.4.0</b></p>
+      <p>Checkout the new release notes <a href="/docs/CHANGELOG" > --&gt; here</a> </p>
     </Carousel.Caption>
   </Carousel.Item>
-  <Carousel.Item>
+  {/* <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🚀 NEW 🚀</h4>
+      <h4>GitHub Integration</h4>
       <p><b>GitHub Source Control Integration</b></p>
-      <p>Harmonix on AWS is now integrated with both GitHub & Gitlab Source control <br/>You can even extend it to more git providers. Read more <a href="/docs/integration/git" >-->here</a></p>
+      <p>Harmonix on AWS is now integrated with both GitHub & Gitlab Source control <br/>You can even extend it to more git providers. Read more <a href="/docs/integration/git" >--&gt; here</a></p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🚀 NEW 🚀</h4>
+      <h4>Terraform Template</h4>
       <p><b>Terraform ECS Provider Template</b></p>
       <p>A New Terraform template to provision AWS ECS Clusters</p>
     </Carousel.Caption>
   </Carousel.Item>
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
-      <h4>🚀 NEW 🚀</h4>
+      <h4>GenAI Template</h4>
       <p><b>GenAI provider and RAG app</b></p>
       <p>New GenAI Provider for development of GenAI Applications <br/> A new RAG demo app to get you started quickly <a href="/docs/category/generative-ai">Click here for more details</a></p>
     </Carousel.Caption>
@@ -94,39 +94,36 @@ const carouselContent = (
       <p><b>AWS Control Tower & AFT Integration</b></p>
       <p>Step by Step <a href="/docs/integration/control-tower-and-aft" >Documentation</a> how to integrate Harmonix on AWS <br/> with AWS Control Tower and AFT (Account Factory for Terraform)</p>
     </Carousel.Caption>
-  </Carousel.Item>
-  
-
-
-</Carousel>
-</div>
+  </Carousel.Item> */}
+    </Carousel>
+  </div>
 )
 
 const EnterpriseFeatureList: FeatureItem[] = [
   {
     title: 'Single Pane of Glass',
-    customTextStyle:{minHeight:'23rem'},
+    customTextStyle: { minHeight: '23rem' },
     Svg: require('@site/static/img/dashboard.svg').default,
     description: (
       <>
-       Provision and monitor all environments, resources, and applications in one place
+        Provision and monitor all environments, resources, and applications in one place
       </>
     ),
   },
   {
     title: 'Enterprise Ready',
-    customTextStyle:{minHeight:'23rem'},
+    customTextStyle: { minHeight: '23rem' },
     Svg: require('@site/static/img/global_enterprise.svg').default,
     description: (
       <>
-       Built with common enterprise patterns: self-managed provisioning, compliant, SCM for IAC and policy statements, and automated operations via pipelines
-       </>
+        Built with common enterprise patterns: self-managed provisioning, compliant, SCM for IAC and policy statements, and automated operations via pipelines
+      </>
     ),
   },
   {
     // title: 'Pleasurable Developer Experience',
     title: 'Empower Your Developers',
-    customTextStyle:{minHeight:'23rem'},
+    customTextStyle: { minHeight: '23rem' },
     Svg: require('@site/static/img/cloud_developer.svg').default,
     description: (
       <>
@@ -136,106 +133,106 @@ const EnterpriseFeatureList: FeatureItem[] = [
   },
 ];
 
-const opaDescription : FeatureItem[] = [
+const opaDescription: FeatureItem[] = [
   {
-    title: 'OPA on AWS',
+    title: 'Harmonix on AWS',
     Svg: require('@site/static/img/regulations.svg').default,
-    noSVG:true,
-    minHeight:'300px',
-    customTextStyle:{fontSize:'24px', textAlign:'left', maxWidth:'100%', margin:'auto', minHeight:'275px'},
+    noSVG: true,
+    minHeight: '300px',
+    customTextStyle: { fontSize: '24px', textAlign: 'left', maxWidth: '100%', margin: 'auto', minHeight: '275px' },
     description: (
       <div className="opaDescription">
-       <b>Harmonix on AWS </b> (Previously known as OPA on AWS) is an open source reference implementation that ties together AWS services into an enterprise-ready offering. By abstracting AWS services, Harmonix on AWS allows application developers to focus on what they do best – write application logic! <br/> <br/> Platform engineering teams can promote best practices at-scale, while providing a productive and pleasurable experience for non-cloud developers  <br/> <br/> Harmonix on AWS reduces the time to build your customized developer portal by up to 80%
+        <b>Harmonix on AWS </b> (Previously known as OPA on AWS) is an open source reference implementation that ties together AWS services into an enterprise-ready offering. By abstracting AWS services, Harmonix on AWS allows application developers to focus on what they do best – write application logic! <br /> <br /> Platform engineering teams can promote best practices at-scale, while providing a productive and pleasurable experience for non-cloud developers  <br /> <br /> Harmonix on AWS reduces the time to build your customized developer portal by up to 80%
       </div>
     ),
   },
 ]
 
-const opaMainVideo : FeatureItem[] = [
+const opaMainVideo: FeatureItem[] = [
   {
     title: 'video1',
     Svg: require('@site/static/img/regulations.svg').default,
-    noSVG:true,
-    minHeight:'300px',
+    noSVG: true,
+    minHeight: '300px',
     // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
     description: (
       <>
-       {opaMainVideoContent}
+        {opaMainVideoContent}
       </>
     ),
   },
   {
     title: 'video2',
     Svg: require('@site/static/img/regulations.svg').default,
-    noSVG:true,
-    minHeight:'300px',
+    noSVG: true,
+    minHeight: '300px',
     // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
     description: (
       <>
-       {opaSecondVideoContent}
+        {opaSecondVideoContent}
       </>
     ),
   },
   {
     title: 'video3',
     Svg: require('@site/static/img/regulations.svg').default,
-    noSVG:true,
-    minHeight:'300px',
+    noSVG: true,
+    minHeight: '300px',
     // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
     description: (
       <>
-       {opaThirdVideoContent}
+        {opaThirdVideoContent}
       </>
     ),
   },
   {
     title: 'video4',
     Svg: require('@site/static/img/regulations.svg').default,
-    noSVG:true,
-    minHeight:'300px',
+    noSVG: true,
+    minHeight: '300px',
     // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
     description: (
       <>
-       {opaForthVideoContent}
+        {opaForthVideoContent}
       </>
     ),
   },
   {
     title: 'video5',
     Svg: require('@site/static/img/regulations.svg').default,
-    noSVG:true,
-    minHeight:'300px',
+    noSVG: true,
+    minHeight: '300px',
     // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
     description: (
       <>
-       {opaFifthVideoContent}
+        {opaFifthVideoContent}
       </>
     ),
   },
   {
     title: 'video6',
     Svg: require('@site/static/img/regulations.svg').default,
-    noSVG:true,
-    minHeight:'300px',
+    noSVG: true,
+    minHeight: '300px',
     // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
     description: (
       <>
-       {opaSixthVideoContent}
+        {opaSixthVideoContent}
       </>
     ),
   },
 ]
 
-const opaCarousel : FeatureItem[] = [
+const opaCarousel: FeatureItem[] = [
   {
     title: 'Updates',
     Svg: require('@site/static/img/regulations.svg').default,
-    noSVG:true,
-    minHeight:'300px',
-    customTextStyle:{fontSize:'24px', maxWidth:'100%', margin:'auto',minHeight:'170px'},
+    noSVG: true,
+    minHeight: '300px',
+    customTextStyle: { fontSize: '24px', maxWidth: '100%', margin: 'auto', minHeight: '145px' },
     description: (
       <>
-       {carouselContent}
+        {carouselContent}
       </>
     ),
   },
@@ -245,7 +242,7 @@ const opaCarousel : FeatureItem[] = [
 const SpeedFeatureList: FeatureItem[] = [
   {
     title: 'Templated Environments',
-    customTextStyle:{minHeight:'23rem'},
+    customTextStyle: { minHeight: '23rem' },
     Svg: require('@site/static/img/regulations.svg').default,
     description: (
       <>
@@ -255,7 +252,7 @@ const SpeedFeatureList: FeatureItem[] = [
   },
   {
     title: 'Cloud Acceleration',
-    customTextStyle:{minHeight:'23rem'},
+    customTextStyle: { minHeight: '23rem' },
     Svg: require('@site/static/img/person_go_fast.svg').default,
     // Svg: require('@site/static/img/cloud_accelerate.svg').default,
     description: (
@@ -267,7 +264,7 @@ const SpeedFeatureList: FeatureItem[] = [
   {
     // title: 'Powered by Backstage.io',
     title: 'Pluggable Architecture',
-    customTextStyle:{minHeight:'23rem'},
+    customTextStyle: { minHeight: '23rem' },
     Svg: require('@site/static/img/multi-feature.svg').default,
     description: (
       <>
@@ -281,7 +278,7 @@ const SpeedFeatureList: FeatureItem[] = [
 const ScaleFeatureList: FeatureItem[] = [
   {
     title: 'Increase Productivity, Reduce Costs',
-    customTextStyle:{minHeight:'23rem'},
+    customTextStyle: { minHeight: '23rem' },
     Svg: require('@site/static/img/time_savings.svg').default,
     description: (
       <>
@@ -291,22 +288,22 @@ const ScaleFeatureList: FeatureItem[] = [
   },
   {
     title: 'Focus on What Matters',
-    customTextStyle:{minHeight:'23rem'},
+    customTextStyle: { minHeight: '23rem' },
     Svg: require('@site/static/img/write_code.svg').default,
     description: (
       <>
-       Build applications easy, fast, and at scale while maintaining your security standards and guardrails
+        Build applications easy, fast, and at scale while maintaining your security standards and guardrails
       </>
     ),
   },
   {
     title: 'Scale Development',
-    customTextStyle:{minHeight:'23rem'},
+    customTextStyle: { minHeight: '23rem' },
     Svg: require('@site/static/img/scale.svg').default,
     description: (
       <>
-       Build hundreds of apps on hundreds of environments for hundreds of teams - on AWS cloud
-       </>
+        Build hundreds of apps on hundreds of environments for hundreds of teams - on AWS cloud
+      </>
     ),
   },
 ];
@@ -317,7 +314,7 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/time_savings.svg').default,
     description: (
       <>
-       Provision and monitor all environments, resources, and applications in one place.
+        Provision and monitor all environments, resources, and applications in one place.
       </>
     ),
   },
@@ -326,7 +323,7 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/write_code.svg').default,
     description: (
       <>
-       Build applications easy, fast, and at scale while maintaining your security standards and guardrails.
+        Build applications easy, fast, and at scale while maintaining your security standards and guardrails.
       </>
     ),
   },
@@ -381,8 +378,8 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/time_savings.svg').default,
     description: (
       <>
-       Built with common enterprise patterns: self-managed provisioning, compliant, SCM for IAC and policy statements, and automated operations via pipelines      
-       </>
+        Built with common enterprise patterns: self-managed provisioning, compliant, SCM for IAC and policy statements, and automated operations via pipelines
+      </>
     ),
   },
   {
@@ -390,20 +387,20 @@ const FeatureList: FeatureItem[] = [
     Svg: require('@site/static/img/time_savings.svg').default,
     description: (
       <>
-       Build hundreds of apps on hundreds of environments for hundreds of teams - on AWS cloud
-       </>
+        Build hundreds of apps on hundreds of environments for hundreds of teams - on AWS cloud
+      </>
     ),
   },
 ];
 
-const opaImageList : FeatureItem [] = [
+const opaImageList: FeatureItem[] = [
   {
     title: '',
     Svg: require('@site/static/img/dashboard.svg').default,
     noSVG: true,
     description: (
       <>
-       <span className="imageSubtitle">AWS Software catalog in a click of a button </span> <img width={'100%'} src="img/opa/opa-screenshot11.png"/>
+        <span className="imageSubtitle">AWS Software catalog in a click of a button </span> <img width={'100%'} src="img/opa/opa-screenshot11.png" />
       </>
     ),
   },
@@ -413,7 +410,7 @@ const opaImageList : FeatureItem [] = [
     noSVG: true,
     description: (
       <>
-        <span className="imageSubtitle">Scale the use of AWS Services using templates</span> <img width={'100%'} src="img/opa/opa-screenshot22.png"/>
+        <span className="imageSubtitle">Scale the use of AWS Services using templates</span> <img width={'100%'} src="img/opa/opa-screenshot22.png" />
       </>
     ),
   },
@@ -424,7 +421,7 @@ const opaImageList : FeatureItem [] = [
     noSVG: true,
     description: (
       <>
-      <span className="imageSubtitle">Manage your applications using a single interface </span> <img width={'100%'} src="img/opa/opa-screenshot33.png"/>
+        <span className="imageSubtitle">Manage your applications using a single interface </span> <img width={'100%'} src="img/opa/opa-screenshot33.png" />
       </>
     ),
   },
@@ -443,7 +440,7 @@ const FeatureRowList: FeatureGroup[] = [
     direction: "ltr",
     FeatureItems: opaDescription,
   },
-  
+
 
   {
     direction: "ltr",

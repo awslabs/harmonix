@@ -18,6 +18,22 @@ This command will spin up container images for a local PostgreSQL database and l
 
 NOTE: You need to have run `make install` at least once successfully before the `make start-local` command can be run.
 
+To enable debugging, you can use this command:
+
+`make start-local-debug`
+
+### Running locally using the right AWS IAM role
+
+When you run Backstage locally, it will use your shell's current AWS CLI credentials to make calls to AWS. We highly recommend that you assume the `arn:aws:iam::${AWS_ACCOUNT_ID}:role/backstage-master-role` role (known as the "Harmonix system role") before starting Backstage locally. If you don't do this, you may experience problems since Backstage could be running with more or less AWS permissions than it is designed to have for Harmonix.
+
+To make it easier to run Backstage locally, there is an alternative Make target that will assume the Harmonix sytem role before starting Backtage locally. It can be run like so:
+
+`make start-local-with-role`
+
+Use this variant if you want to start Backstage in debug mode:
+
+`make start-local-debug-with-role`
+
 ## How to modify Harmonix plugins
 
 If you want to modify any Harmonix plugins and see the effects of your changes locally, you'll need to do the following:

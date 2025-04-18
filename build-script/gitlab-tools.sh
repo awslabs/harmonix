@@ -13,6 +13,11 @@ source ${configDir}/.env
 
 GITLAB_TOKEN=$SECRET_GITLAB_CONFIG_PROP_apiToken
 
+if [[ -z "$GITLAB_TOKEN" ]]; then 
+  echo "Please set the API token before proceeding"
+  exit 1
+fi
+
 # Try to create a new project if one doesn't exist (will fail through)
 curl -H "Content-Type:application/json" "https://$GITLAB_HOSTNAME/api/v4/projects?private_token=$GITLAB_TOKEN" -d "{ \"name\": \"backstage-reference\" ,  \"visibility\": \"internal\" }"
 
@@ -36,11 +41,18 @@ if [ -f "$appDir/git-config-temp" ]; then
 fi
 
 # copy files to temp git repo
-rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' --exclude='**/.git' $appDir/backstage-reference/ $appDir/git-temp/backstage-reference
+rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' --filter="protect .git/" --filter="exclude .git/" --exclude='**/.git' $appDir/backstage-reference/ $appDir/git-temp/backstage-reference
 
 rsync -a --delete --exclude='**/node_modules' --exclude='**/cdk.out' $appDir/iac/roots/{opa-common-constructs,opa-ecs-environment,opa-ecs-ec2-environment,opa-eks-environment,opa-serverless-environment,opa-gen-ai-environment} $appDir/git-temp/backstage-reference/environments
 \cp $appDir/iac/roots/package.json $appDir/git-temp/backstage-reference/environments
 
+# copy tsconfig.json into each environment since CDK deployments require it when using TypeScript > 5.8
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-common-constructs
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-ecs-environment
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-ecs-ec2-environment
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-eks-environment
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-serverless-environment
+\cp $appDir/iac/roots/tsconfig.json $appDir/git-temp/backstage-reference/environments/opa-gen-ai-environment
 
 cd $appDir/git-temp/backstage-reference;
 

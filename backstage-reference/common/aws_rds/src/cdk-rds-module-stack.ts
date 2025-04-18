@@ -68,7 +68,7 @@ export class CdkRdsModuleStack extends Stack {
 
     // finally, lets configure and create our database!
     const rdsConfig: rds.DatabaseInstanceProps = {
-      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_16_2 }),
+      engine: rds.DatabaseInstanceEngine.postgres({ version: rds.PostgresEngineVersion.VER_16_6 }),
       instanceType: ec2.InstanceType.of(ec2.InstanceClass.M6I, ec2.InstanceSize.LARGE),
 
       vpc: this.vpc,

@@ -1,5 +1,5 @@
 app:
-  title: AWS ${BACKSTAGE_TITLE}
+  title: ${BACKSTAGE_TITLE}
   # Should be the same as backend.baseUrl when using the `app-backend` plugin.
   baseUrl: ${PROTOCOL}://${BACKSTAGE_HOSTNAME}
   logo: https://companieslogo.com/img/orig/AMZN_BIG-accd00da.png
@@ -9,11 +9,6 @@ organization:
   name: ${CUSTOMER_NAME}
 
 backend:
-  externalAccess:
-    - type: static
-      options:
-        token: ${AUTOMATION_KEY}
-        subject: automation-system
   platformRegion: ${AWS_REGION}
   # Note that the baseUrl should be the URL that the browser and other clients
   # should use when communicating with the backend, i.e. it needs to be
@@ -27,9 +22,15 @@ backend:
     port: 8080
 
   auth:
-    keys:
-      - secret: ${BACKSTAGE_SECRET}
-
+    externalAccess:
+      - type: static
+        options:
+          token: ${AUTOMATION_KEY}
+          subject: automation-system
+        # Restrictions are optional; see below
+        accessRestrictions:
+          - plugin: scaffolder
+          - plugin: catalog
   csp:
     connect-src: ["'self'", "http:", "https:"]
     img-src: ["'self'", "https://companieslogo.com"]
@@ -69,6 +70,11 @@ auth:
         # authServerId: ${AUTH_OKTA_AUTH_SERVER_ID}
         # idp: ${AUTH_OKTA_IDP}
         # additionalScopes: ${AUTH_OKTA_ADDITIONAL_SCOPES}
+        signIn:
+          resolvers:
+            - resolver: emailMatchingUserEntityProfileEmail
+            - resolver: emailLocalPartMatchingUserEntityName
+            - resolver: emailMatchingUserEntityAnnotation
 
 integrations:
   gitlab:
@@ -116,8 +122,13 @@ catalog:
     okta:
       - orgUrl: ${OKTA_ORG_URL}
         token: ${OKTA_API_TOKEN}
-        frequency: { minutes: 30 }
-        timeout: { minutes: 3 }
+        schedule:
+          frequency:
+              minutes: 5
+          timeout:
+            minutes: 3
+          initialDelay:
+            minutes: 1
         # userFilter: profile.department eq "engineering"
         # groupFilter: profile.name eq "Everyone"
     gitlab:

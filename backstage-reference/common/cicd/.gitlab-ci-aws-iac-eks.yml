@@ -111,7 +111,8 @@
     - git checkout $CI_COMMIT_BRANCH
     # Make sure that unmerged commits from previous failed executions of the pipeline are cleared out
     - git reset --hard origin/$CI_COMMIT_BRANCH
-    - git pull
+    - git branch --set-upstream-to=origin/$CI_COMMIT_BRANCH $CI_COMMIT_BRANCH
+    - git pull origin $CI_COMMIT_BRANCH
     - export LATEST_CATALOG_INFO="$(cat $CI_PROJECT_DIR/.backstage/catalog-info.yaml)"
     - git checkout $CI_COMMIT_SHA # put our files back to where they were when the pipeline started
     - echo "$LATEST_CATALOG_INFO" > $CI_PROJECT_DIR/.backstage/catalog-info.yaml

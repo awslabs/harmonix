@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunk_aws_harmonix_on_aws_website=self.webpackChunk_aws_harmonix_on_aws_website||[]).push([[2024],{82024:(e,s,a)=>{a.d(s,{createArchitectureServices:()=>_.S});var _=a(98815);a(73579)}}]);

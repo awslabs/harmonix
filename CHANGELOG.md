@@ -6,7 +6,7 @@
 * Upgraded Infrastructure as Code dependency versions
 * Updated Serverless application template Node runtime from 18 to 22
 * Upgrade EKS Kubernetes cluster version from 1.31 to 1.32
-* Upgraded PostgreSQL version for RDS resource to VER_16_6
+* Upgraded PostgreSQL version for the RDS resource type and the platform installation to VER_16_6
 * Installation of 3rd party plugins is now done using the new backend system for Backstage. The versions of 3rd party plugins have been updated to the lateest.
 * Added `mise.toml` file to make it easier to build Harmonix using tested tool versions. See the [mise website](https://mise.jdx.dev/getting-started.html) for installation instructions
 * Running Backstage locally is easier than ever. See [our documentation on running locally](https://harmonixonaws.io/docs/techdocs/customizations#running-locally) for more details.
@@ -27,7 +27,7 @@
   *  `aws-apps-common` -> `harmonix-common`
   *  `catalog-backend-module-aws-apps-entities-processor` -> `catalog-backend-module-harmonix`
   *  `scaffolder-backend-module-aws-apps` -> `scaffolder-backend-module-harmonix`
-* Front end home page customizaions and theming that used to be located in the `@aws/plugin-aws-apps-demo-for-backstage` package have been moved into `harmonix-frontend`.
+* Front end home page customizations and theming that used to be located in the `@aws/plugin-aws-apps-demo-for-backstage` package have been moved into `harmonix-frontend`.
 
 ## 0.3.4 - 2024-08-23
 * Upgraded Harmonix on AWS to the latest Backstage version and new backend system. 1.29.0

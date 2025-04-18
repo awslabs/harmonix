@@ -118,22 +118,26 @@ export function getEnvProvidersAction(options: { catalogClient: CatalogApi }) {
         return;
       }
 
-      // Fail early if there is no user entity
+      // If there is no user, then look for a context initiator to create a user entity
+      // This can occur when using automation keys
       if (ctx.user?.entity === undefined) {
+        ctx.logger.debug(`No user context provided for ${ID} action.  Setting user based on initiator credentials`);
+        const initiatorCredentials = await ctx.getInitiatorCredentials();
+        const principal = initiatorCredentials.principal;
+        ctx.logger.debug(`Initiator credentials principal: ${JSON.stringify(principal)}`);
+        // convert the unknown type 'principal'
+        const typedPrincipal: { type: string, subject: string } = principal as any;
+
         // Verify the automationKey value.  If it matches, set an automation user in the context
-        if (ctx.secrets?.automationKey === process.env.AUTOMATION_KEY) {
-          console.log("Automation key provided to use automation user");
-          ctx.user = {
-            entity: {
-              apiVersion: 'backstage.io/v1alpha1',
-              kind: 'User',
-              metadata: { name: 'automation' },
-              spec: { profile: { displayName: "Automation User" } }
-            }
+        const automationUserName = typedPrincipal.subject || "Automation User";
+        const automationUserType = typedPrincipal.type || "automation";
+        ctx.user = {
+          entity: {
+            apiVersion: 'backstage.io/v1alpha1',
+            kind: 'User',
+            metadata: { name: automationUserType },
+            spec: { profile: { displayName: automationUserName } }
           }
-        } else {
-          ctx.logger.info(`No user context provided for ${ID} action`);
-          throw new Error(`No user context provided for ${ID} action`);
         }
       }
 

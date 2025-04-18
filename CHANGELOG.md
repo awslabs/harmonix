@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.4.0 (soon to be released)
+## 0.4.0 - 2025-04-18
 * Upgraded Harmonix on AWS to the latest Backstage version (1.38) and new backend system.
 * Upgraded the GitLab Community Edition version to 17.10.3
 * Upgraded Infrastructure as Code dependency versions

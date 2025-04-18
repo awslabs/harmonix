@@ -30,10 +30,10 @@ The following software is required to perform the installation of the platform s
 
 :::note
 The installation instructions documented here were tested using the following versions:
-- node v18.19
-- aws-cdk v2.95
-- yarn 1.22.21
-- python 3.11
+- node v22.14.0
+- aws-cdk v2.177.0
+- yarn 4.4.1
+- python 3.12
 :::
 
 ### Solution Platform prerequisites

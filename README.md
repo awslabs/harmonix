@@ -2,32 +2,19 @@
      alt="Harmonix on AWS"
      style="margin-right: 10px;max-height: 400px; " />
 
-:star: **Harmonix on AWS v0.3.4 now available!** :star:
-* Upgraded Harmonix on AWS to the latest Backstage version and new backend system. 1.29.0
-* New custom entity processor plugin - compatible with the new backend backstage system. details here
-* Updated Gitlab version 17.2.2
-* Support for Github and Multi-Git provider
-* New template examples - including Terraform ECS cluster
-* New SecretsManager shared resource template
-* New entity Schema updates - gitProvider, componentState, component spec subType details here
-* General package version updates
+:star: **Harmonix on AWS v0.4.0 now available!** :star:
+* Upgraded Harmonix on AWS to the latest Backstage version (1.38) and new backend system.
+* Upgraded the GitLab Community Edition version to 17.10.3
+* Upgraded Infrastructure as Code dependency versions
+* Updated Serverless application template Node runtime from 18 to 22
+* Upgrade EKS Kubernetes cluster version from 1.31 to 1.32
+* Upgraded PostgreSQL version for the RDS resource type and the platform installation to VER_16_6
+* Installation of 3rd party plugins is now done using the new backend system for Backstage. The versions of 3rd party plugins have been updated to the lateest.
 * Bug fixes
-
-
-:star: **Harmonix on AWS v0.3.3** :star:
-* S3 Bucket as a shared resource
-* Reuse existing VPC when creating providers
-* Amazon ECS provider with EC2 clusters for tailored workloads
-* Amazon EKS provider
-* Import existing Amazon EKS clusters
-* Amazon EKS Application for K8s Kustomize pattern
-* Amazon EKS Application for K8s Helm pattern
-* CI/CD patterns for K8s applications
-* Updated Backstage platform to v1.21
-* Filter relevant environments for new apps
+* Additional changes can be viewed on the [RELEASE NOTES](https://github.com/awslabs/harmonix/releases/tag/v0.4.0)
 
 Refer to the [CHANGELOG](https://harmonixonaws.io/docs/CHANGELOG) for a complete list of new features and capabilities.
-# Harmonix on AWS (Previously known as OPA on AWS)
+# Harmonix on AWS
 
 Harmonix Provides a new developer experience to simplify the use and consumption of AWS services while minimizing required expertise in cloud infrastructure technologies.  
 Built on the [Backstage open platform](https://backstage.io), this solution makes the AWS cloud more accessible to application developers allowing them to focus on building application logic and delivering business value.

@@ -6,7 +6,7 @@ metadata:
   title: Node.js Terraform Web App
   description: >-
     Create a starter Node.js web application running on
-    an Express server. with terraform
+    an Express server using Terraform for IaC.
     This is demonstration only.
   tags:
     - nodejs

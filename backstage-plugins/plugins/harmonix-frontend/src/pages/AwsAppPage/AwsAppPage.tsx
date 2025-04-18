@@ -1,12 +1,11 @@
 // Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 // SPDX-License-Identifier: Apache-2.0
 
-import { GenericAWSEnvironment, readOpaAppAuditPermission } from '@aws/plugin-aws-apps-common-for-backstage';
+import { GenericAWSEnvironment } from '@aws/plugin-aws-apps-common-for-backstage';
 import { Entity } from '@backstage/catalog-model';
 import { EmptyState } from '@backstage/core-components';
 import { EntityLayout, EntitySwitch } from '@backstage/plugin-catalog';
 import { isGithubActionsAvailable } from '@backstage-community/plugin-github-actions';
-import { RequirePermission, usePermission } from '@backstage/plugin-permission-react';
 import { isGitlabAvailable } from '@immobiliarelabs/backstage-plugin-gitlab';
 import { Grid, LinearProgress } from '@material-ui/core';
 import { ReactNode } from 'react';
@@ -46,9 +45,6 @@ export const isLogsAvailable = (_entity: Entity): boolean => {
 export function AwsAppPage(_props: AwsAppPageProps) {
   const awsAppLoadingStatus = useAsyncAwsApp();
 
-  const { loading: loadingPermission, allowed: canReadAudit } = usePermission({
-    permission: readOpaAppAuditPermission, resourceRef: ""
-  });
 
   const awsAppLogsContent = (
     <Grid container spacing={3} alignItems="stretch">
@@ -96,13 +92,10 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         <EntityLayout.Route path="/management" title="Management">
           {managementContent}
         </EntityLayout.Route>
-        {!loadingPermission && canReadAudit && (
-          <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>} resourceRef=''>
-              {auditContent}
-            </RequirePermission>
-          </EntityLayout.Route>
-        )}
+        <EntityLayout.Route path="/audit" title="Audit">
+            {auditContent}
+        </EntityLayout.Route>
+        
       </EntityLayout>
     </>
   );
@@ -123,13 +116,9 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         <EntityLayout.Route path="/management" title="Management">
           {managementContent}
         </EntityLayout.Route>
-        {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>} resourceRef=''>
-              {auditContent}
-            </RequirePermission>
+            {auditContent}
           </EntityLayout.Route>
-        )}
       </EntityLayout>
     </>
   );
@@ -150,13 +139,9 @@ export function AwsAppPage(_props: AwsAppPageProps) {
         <EntityLayout.Route path="/management" title="Management">
           {managementContent}
         </EntityLayout.Route>
-        {!loadingPermission && canReadAudit && (
           <EntityLayout.Route path="/audit" title="Audit">
-            <RequirePermission permission={readOpaAppAuditPermission} errorPage={<></>} resourceRef=''>
               {auditContent}
-            </RequirePermission>
           </EntityLayout.Route>
-        )}
       </EntityLayout>
     </>
   );

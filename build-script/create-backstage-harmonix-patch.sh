@@ -26,7 +26,7 @@ if [[ -d "${appDir}/${PURE_BACKSTAGE}" ]]; then
 fi
 
 echo -e "\nDownloading fresh copy of ${PURE_BACKSTAGE} using create-app ${BACKSTAGE_CREATE_APP_VERSION}...\n"
-BACKSTAGE_APP_NAME=${PURE_BACKSTAGE} npx -y -q @backstage/create-app@${BACKSTAGE_CREATE_APP_VERSION} --path "${appDir}/${PURE_BACKSTAGE}"
+BACKSTAGE_APP_NAME=${PURE_BACKSTAGE} npx -y -q @backstage/create-app@${BACKSTAGE_CREATE_APP_VERSION} --path "${appDir}/${PURE_BACKSTAGE}" --skip-install
 echo -e "\n${PURE_BACKSTAGE} was sucessfully installed.\n"
 
 echo -e "\nCreating patch file..."

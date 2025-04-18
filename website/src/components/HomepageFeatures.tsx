@@ -52,7 +52,7 @@ const opaSixthVideoContent = (
 
 const carouselContent = (
   <div className='carouselTitle'>
-  <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='' >
+  <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='' controls={false} >
   <Carousel.Item>
     <Carousel.Caption style={{minHeight:'120px'}}>
       <h4>🚀 NEW RELEASE 0.4.0 🚀</h4>

@@ -36,19 +36,19 @@ Add the code shown below to `EntityPage.tsx`
 [imports ...]
 
 // Add an import for the UI components from the frontend plugin
-+import {
-+  AwsEnvironmentPage,
-+  AwsEnvironmentProviderPage,
-+  AwsComponentPage,
-+} from '@aws/plugin-aws-apps-for-backstage';
-+
-+import { isGitlabAvailable, EntityGitlabContent } from '@immobiliarelabs/backstage-plugin-gitlab';
-+
-+import {
-+  EntityGithubActionsContent,
-+  isGithubActionsAvailable,
-+} from '@backstage-community/plugin-github-actions';
-+
+import {
+  AwsEnvironmentPage,
+  AwsEnvironmentProviderPage,
+  AwsComponentPage,
+} from '@aws/plugin-aws-apps-for-backstage';
+
+import { isGitlabAvailable, EntityGitlabContent } from '@immobiliarelabs/backstage-plugin-gitlab';
+
+import {
+  EntityGithubActionsContent,
+  isGithubActionsAvailable,
+} from '@backstage-community/plugin-github-actions';
+
 
 [...]
 

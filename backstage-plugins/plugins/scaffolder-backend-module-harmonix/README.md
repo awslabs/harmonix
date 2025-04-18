@@ -3,22 +3,22 @@ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: Apache-2.0 
 -->
 
-# Harmonix on AWS Scaffolder Actions
+# Harmonix on AWS Scaffolder Actions Plugin
 
-`@aws/plugin-scaffolder-backend-aws-apps-for-backstage`
+## Overview
 
-This plugin provides scaffolder actions to create AWS resources and utility actions.
+The Harmonix Scaffolder Actions plugin extends Backstage's scaffolder with custom actions specifically designed for AWS resource creation and management. This plugin enables software templates to provision and configure AWS resources and interact with AWSEnvironment and AWSEnvironmentProvider configurations as part of the scaffolding process.
 
-## Install
+## Installation
 
 ```sh
 # From your Backstage root directory
 yarn add --cwd packages/backend @aws/plugin-scaffolder-backend-aws-apps-for-backstage@0.4.0
 ```
 
-## Configuration New Backend System
+## Configuration / Backend Integration
 
-Register the scaffolder extension module plugin in backstage
+Register the scaffolder extension module in your Backstage backend:
 
 ```diff
 // packages/backend/src/index.ts
@@ -29,14 +29,12 @@ const backend = createBackend();
 [...]
 
 backend.start();
-
-
 ```
-After the scaffolders configuration is updated, you can use the new actions in your Software Templates.
 
-For documentation, first install this plugin into your backstage and then visit this page: [scaffolder actions examples](/create/actions)
-i.e: http://localhost:3000/create/actions
-Filter by "harmonix"
+## Available Actions
 
-## Plugin Dependency
-This backstage backend plugin depends on other Harmonix plugins - in order to compile the code properly, make sure all dependencies are installed and configured properly.
+After installation, you can use several custom actions in your software templates.  
+For complete documentation of all available actions, install this plugin and visit the `/create/actions` 
+endpoint for your Backstage instance (e.g. http://localhost:3000/create/actions).  
+
+You can filter by "harmonix" to see all actions contributed by Harmonix with usage examples.

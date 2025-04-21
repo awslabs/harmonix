@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.4.0 - 2025-04-18
+* Upgraded Harmonix on AWS to the latest Backstage version (1.38) and new backend system.
+* Upgraded the GitLab Community Edition version to 17.10.3
+* Upgraded Infrastructure as Code dependency versions
+* Updated Serverless application template Node runtime from 18 to 22
+* Upgrade EKS Kubernetes cluster version from 1.31 to 1.32
+* Upgraded PostgreSQL version for the RDS resource type and the platform installation to VER_16_6
+* Installation of 3rd party plugins is now done using the new backend system for Backstage. The versions of 3rd party plugins have been updated to the lateest.
+* Added `mise.toml` file to make it easier to build Harmonix using tested tool versions. See the [mise website](https://mise.jdx.dev/getting-started.html) for installation instructions
+* Running Backstage locally is easier than ever. See [our documentation on running locally](https://harmonixonaws.io/docs/techdocs/customizations#running-locally) for more details.
+* All Harmonix front end pages are now exported so that they can be referenced and extended
+  * See [PR](https://github.com/awslabs/harmonix/pull/146)
+* Harmonix installation should be run using [Yarn 4](https://yarnpkg.com/) since [ Backstage has moved to using Yarn 4](https://backstage.io/docs/tutorials/yarn-migration/)
+* Added configurations and Make targets for compiling and testing Harmonix plugins
+* Updated scaffolding actions
+  * Add support for [dry runs](https://backstage.io/docs/features/software-templates/dry-run-testing/)
+  * Use new `createTemplateAction` function format now that the old one is deprecated in the latest Backstage scaffolder plugin.
+    * See [backstage scaffolder changelog](https://github.com/backstage/backstage/blob/master/plugins/scaffolder-node/CHANGELOG.md) for details, specifically for version `0.8.0`.
+  * Scaffolding action names have changed, and the software templates have been updated to use the new names
+    * Summary: change "opa:" to "harmonix:". For example, the `opa:get-component-info` scaffolder action is now called `harmonix:get-component-info`
+* Software templates no longer utilize `@roadiehq/scaffolder-backend-module-utils`
+* Harmonix plugin names have not changed, but the directory names under `backstage-plugins/plugins` that hold the source code of the plugins have changed:
+  *  `aws-apps` -> `harmomix-frontend`
+  *  `aws-apps-backend` -> `harmonix-backend`
+  *  `aws-apps-common` -> `harmonix-common`
+  *  `catalog-backend-module-aws-apps-entities-processor` -> `catalog-backend-module-harmonix`
+  *  `scaffolder-backend-module-aws-apps` -> `scaffolder-backend-module-harmonix`
+* Front end home page customizations and theming that used to be located in the `@aws/plugin-aws-apps-demo-for-backstage` package have been moved into `harmonix-frontend`.
+
 ## 0.3.4 - 2024-08-23
 * Upgraded Harmonix on AWS to the latest Backstage version and new backend system. 1.29.0
 * New custom entity processor plugin - compatible with the new backend backstage system. <a href="docs/techdocs/plugins"> details here </a>

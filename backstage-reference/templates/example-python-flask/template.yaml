@@ -3,7 +3,7 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: example-python-flask-template
-  title: Python Flask starter application
+  title: ECS - Python Flask starter application
   description: >-
     Create a 'Hello World' Python application
     utilizing the Flask web app framework, 

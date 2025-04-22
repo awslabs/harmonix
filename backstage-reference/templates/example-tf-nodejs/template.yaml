@@ -3,16 +3,17 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: example-nodejs-tf-template
-  title: Node.js Terraform Web App
+  title: ECS - Node.js Terraform Web App
   description: >-
     Create a starter Node.js web application running on
     an Express server using Terraform for IaC.
-    This is demonstration only.
+    This is for demonstration only.
   tags:
     - nodejs
     - aws
     - aws-app
     - terraform
+    - ecs
 spec:
   owner: group:admins
   type: website

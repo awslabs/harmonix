@@ -267,8 +267,8 @@ spec:
             allowedOwners:
               - aws-environment-providers
   steps:
-    - id: opaGetPlatformInfo
-      name: Get OPA platform information
+    - id: harmonixGetPlatformInfo
+      name: Get Harmonix platform information
       action: harmonix:get-platform-metadata
 
     - id: resolvePlatformVariables
@@ -295,7 +295,7 @@ spec:
           environmentRole: ${{ parameters.environmentRole }}
           platformRole: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
           pipelineRole: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
-          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          platformRegion: ${{ steps['harmonixGetPlatformInfo'].output.platformRegion }}
           prefix: ${{ parameters.prefix }}
           cidr: ${{ parameters.cidr }}
           vpcId: ${{parameters.vpcId|default('', true)}}

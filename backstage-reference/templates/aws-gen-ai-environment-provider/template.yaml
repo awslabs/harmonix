@@ -165,8 +165,8 @@ spec:
             allowedOwners:
               - aws-environment-providers
   steps:
-    - id: opaGetPlatformInfo
-      name: Get OPA platform information
+    - id: harmonixGetPlatformInfo
+      name: Get Harmonix platform information
       action: harmonix:get-platform-metadata
       
     - id: resolvePlatformVariables
@@ -187,7 +187,7 @@ spec:
           description: ${{ parameters.env_description }}
           owner: ${{ parameters.owner }}
           envType: gen-ai-serverless
-          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          platformRegion: ${{ steps['harmonixGetPlatformInfo'].output.platformRegion }}
           awsRegion: ${{ parameters.awsRegion }}
           awsAccount: ${{ parameters.awsAccountID }}
           environmentRole: ${{ parameters.environmentRole }}

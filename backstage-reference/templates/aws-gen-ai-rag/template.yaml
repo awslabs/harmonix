@@ -78,8 +78,8 @@ spec:
   # These steps are executed in the scaffolder backend, using data that we gathered
   # via the parameters above.
   steps:
-    - id: opaGetPlatformInfo
-      name: Get OPA platform information
+    - id: harmonixGetPlatformInfo
+      name: Get Harmonix platform information
       action: harmonix:get-platform-metadata
       
     - id: getComponentInfo
@@ -146,7 +146,7 @@ spec:
           description: ${{ parameters.description }}
           destination: ${{ parameters.repoUrl | parseRepoUrl }}
           owner: ${{ parameters.owner }}
-          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          platformRegion: ${{ steps['harmonixGetPlatformInfo'].output.platformRegion }}
           awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
           awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
           aws_environment_short_name: ${{ steps['opaGetAwsEnvProviders'].output.envShortName }}

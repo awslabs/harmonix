@@ -169,8 +169,8 @@ spec:
 
   steps:
     # fetch account/region information about where OPA/Backstage is running
-    - id: opaGetPlatformInfo
-      name: Get OPA platform information
+    - id: harmonixGetPlatformInfo
+      name: Get Harmonix platform information
       action: harmonix:get-platform-metadata
 
     # fetch SSM Parameter Store parameter values for platform role and pipeline role
@@ -202,8 +202,8 @@ spec:
           environmentRole: ${{ parameters.environmentRole }}
           platformRole: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
           pipelineRole: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
-          platformAccount: ${{ steps['opaGetPlatformInfo'].output.platformAccount }}
-          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          platformAccount: ${{ steps['harmonixGetPlatformInfo'].output.platformAccount }}
+          platformRegion: ${{ steps['harmonixGetPlatformInfo'].output.platformRegion }}
           prefix: ${{parameters.prefix}}
           cidr: ${{parameters.cidr}}
           vpcid: ${{parameters.vpc_id}}

@@ -114,8 +114,8 @@ spec:
   # via the parameters above.
   steps:
     # Each step executes an action, in this case one templates files into the working directory.
-    - id: opaGetPlatformInfo
-      name: Get OPA platform information
+    - id: harmonixGetPlatformInfo
+      name: Get Harmonix platform information
       action: harmonix:get-platform-metadata
       
     - id: opaGetAwsEnvProviders
@@ -182,7 +182,7 @@ spec:
           description: ${{ parameters.description }}
           owner: ${{ parameters.owner }}
           destination: ${{ parameters.repoUrl | parseRepoUrl }}
-          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          platformRegion: ${{ steps['harmonixGetPlatformInfo'].output.platformRegion }}
           awsEnvironment: ${{ parameters.environment }}
           awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
           awsSecretRepoArn: ${{ steps['createSecretManager'].output.awsSecretArn }}

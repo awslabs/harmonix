@@ -99,8 +99,8 @@ spec:
             allowedOwners:
               - aws-resources
   steps:
-    - id: opaGetPlatformInfo
-      name: Get OPA platform information
+    - id: harmonixGetPlatformInfo
+      name: Get Harmonix platform information
       action: harmonix:get-platform-metadata
     - id: opaGetAwsEnvProviders
       name: Get AWS Environment Providers
@@ -157,7 +157,7 @@ spec:
           title: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
           owner: ${{ parameters.owner }}
-          platformRegion: ${{ steps['opaGetPlatformInfo'].output.platformRegion }}
+          platformRegion: ${{ steps['harmonixGetPlatformInfo'].output.platformRegion }}
           awsEnvironment: ${{ steps['opaGetAwsEnvProviders'].output.envRef }}
           awsEnvironmentName: ${{ steps['opaGetAwsEnvProviders'].output.envName }}
           awsEnvironmentProviderName: ${{ steps['opaGetAwsEnvProviders'].output.envProviders[0].envProviderName }}

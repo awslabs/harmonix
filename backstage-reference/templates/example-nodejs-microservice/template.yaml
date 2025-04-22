@@ -3,7 +3,7 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: example-nodejs-microservice-template
-  title: Node.js Microservice
+  title: ECS - Node.js Microservice
   description: >-
     Create a starter Node.js microservice application running on
     an Express server.
@@ -12,6 +12,7 @@ metadata:
     - nodejs
     - aws
     - aws-app
+    - ecs
 spec:
   owner: group:admins
   type: service

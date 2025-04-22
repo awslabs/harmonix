@@ -3,7 +3,7 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: example-nodejs2-template
-  title: Node.js Express Web App
+  title: ECS - Node.js Express Web App
   description: >-
     Create a starter Node.js web application running on
     an Express server.
@@ -12,6 +12,7 @@ metadata:
     - nodejs
     - aws
     - aws-app
+    - ecs
 spec:
   owner: group:admins
   type: website

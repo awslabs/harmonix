@@ -148,3 +148,6 @@ git-temp
 # See https://backstage.io/docs/conf/defining/
 **/*.d.ts
 !**/*/config.d.ts
+
+config/demo.env
+config/my.env

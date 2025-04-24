@@ -1,6 +1,6 @@
 diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/app-config.yaml backstage/app-config.yaml
---- backstage-pure/app-config.yaml	2025-04-18 16:04:42
-+++ backstage/app-config.yaml	2025-04-17 16:04:51
+--- backstage-pure/app-config.yaml	2025-04-24 12:43:41
++++ backstage/app-config.yaml	2025-04-24 12:37:16
 @@ -1,9 +1,11 @@
  app:
 -  title: Scaffolded Backstage App
@@ -68,7 +68,7 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
  
  proxy:
    ### Example for how to add a proxy endpoint for the frontend.
-@@ -63,36 +87,73 @@
+@@ -63,36 +87,74 @@
      type: 'local' # Alternatives - 'googleGcs' or 'awsS3'. Read documentation for using alternatives.
  
  auth:
@@ -101,6 +101,7 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
 +  allowedKinds:
 +    - Component
 +    - Resource
++    - AWSEnvironment
 +    - AWSEnvironmentProvider
 +
  catalog:
@@ -152,7 +153,7 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
  
      ## Uncomment these lines to add more example data
      # - type: url
-@@ -106,6 +167,46 @@
+@@ -106,6 +168,46 @@
    # Experimental: Always use the search method in UrlReaderProcessor.
    # New adopters are encouraged to enable it as this behavior will be the default in a future release.
    useUrlReadersSearch: true
@@ -200,8 +201,8 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
  kubernetes:
    # see https://backstage.io/docs/features/kubernetes/configuration for kubernetes configuration options
 diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/packages/app/src/App.tsx backstage/packages/app/src/App.tsx
---- backstage-pure/packages/app/src/App.tsx	2025-04-18 16:04:42
-+++ backstage/packages/app/src/App.tsx	2025-04-18 16:03:14
+--- backstage-pure/packages/app/src/App.tsx	2025-04-24 12:43:42
++++ backstage/packages/app/src/App.tsx	2025-04-22 14:22:57
 @@ -24,6 +24,8 @@
  import { entityPage } from './components/catalog/EntityPage';
  import { searchPage } from './components/search/SearchPage';
@@ -275,8 +276,8 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
  );
  
 diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/packages/app/src/components/Root/Root.tsx backstage/packages/app/src/components/Root/Root.tsx
---- backstage-pure/packages/app/src/components/Root/Root.tsx	2025-04-18 16:04:42
-+++ backstage/packages/app/src/components/Root/Root.tsx	2025-04-18 09:54:31
+--- backstage-pure/packages/app/src/components/Root/Root.tsx	2025-04-24 12:43:42
++++ backstage/packages/app/src/components/Root/Root.tsx	2025-04-22 14:22:57
 @@ -22,11 +22,16 @@
    SidebarSpace,
    useSidebarOpenState,
@@ -332,8 +333,8 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
            singularTitle="My Group"
            pluralTitle="My Groups"
 diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/packages/app/src/components/catalog/EntityPage.tsx backstage/packages/app/src/components/catalog/EntityPage.tsx
---- backstage-pure/packages/app/src/components/catalog/EntityPage.tsx	2025-04-18 16:04:42
-+++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2025-04-17 16:04:51
+--- backstage-pure/packages/app/src/components/catalog/EntityPage.tsx	2025-04-24 12:43:42
++++ backstage/packages/app/src/components/catalog/EntityPage.tsx	2025-04-22 14:22:57
 @@ -26,6 +26,7 @@
    isOrphan,
    hasRelationWarnings,
@@ -440,8 +441,8 @@ diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmoni
      <EntitySwitch.Case if={isKind('group')} children={groupPage} />
      <EntitySwitch.Case if={isKind('user')} children={userPage} />
 diff -Naur --exclude=node_modules --exclude=catalog-info.yaml --exclude=*harmonix* --exclude=package.json --exclude=yarn.lock --exclude=app-config.local.yaml --exclude=app-config.aws-production.yaml --exclude=.git --exclude=dist-types --exclude=.env --exclude=*.d.ts --exclude=dist --exclude=.DS_Store --exclude=.yarn --exclude=tsconfig.json backstage-pure/packages/backend/src/index.ts backstage/packages/backend/src/index.ts
---- backstage-pure/packages/backend/src/index.ts	2025-04-18 16:04:42
-+++ backstage/packages/backend/src/index.ts	2025-04-17 16:04:51
+--- backstage-pure/packages/backend/src/index.ts	2025-04-24 12:43:42
++++ backstage/packages/backend/src/index.ts	2025-04-22 14:22:57
 @@ -7,6 +7,10 @@
   */
  

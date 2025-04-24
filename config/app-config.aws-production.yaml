@@ -93,6 +93,7 @@ gitlab:
   allowedKinds:
     - Component
     - Resource
+    - AWSEnvironment
     - AWSEnvironmentProvider
 
 catalog:

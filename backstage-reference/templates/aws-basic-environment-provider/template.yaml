@@ -144,7 +144,7 @@ spec:
       input:
         url: ./content
         values:
-          name: ${{ parameters.name | lower }}
+          name: ${{ parameters.name | lower | replace(" ", "") }}
           title: ${{ parameters.name }}
           description: ${{ parameters.env_description }}
           owner: ${{ parameters.owner }}
@@ -155,7 +155,7 @@ spec:
           environmentRole: ${{ parameters.environmentRole }}
           platformRole: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
           pipelineRole: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
-          prefix: ${{parameters.prefix}}
+          prefix: ${{ parameters.prefix }}
     - id: fetchBaseIAC
       name: Fetch IAC Base
       action: fetch:plain

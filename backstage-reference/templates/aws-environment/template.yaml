@@ -160,21 +160,21 @@ spec:
       input:
         url: ./content
         values:
-          name: ${{ parameters.name | lower }}
+          name: ${{ parameters.name | lower | replace(" ", "") }}
           title: ${{ parameters.name }}
-          short_name: ${{ parameters.short_name }}
+          short_name: ${{ parameters.short_name | replace(" ", "") }}
           description: ${{ parameters.description }}
-          environment_type: ${{parameters.environment_type}}
+          environment_type: ${{ parameters.environment_type }}
           owner: ${{ parameters.owner }}
-          account_type: ${{parameters.account_type}}
+          account_type: ${{ parameters.account_type }}
           region_type: ${{ parameters.region_type }}
           category: ${{ parameters.category }}
           classification: ${{ parameters.classification }}
           system: ${{ parameters.system }}
-          providers: ${{parameters.providers}}
-          level: ${{parameters.level}}
+          providers: ${{ parameters.providers }}
+          level: ${{ parameters.level }}
           repoUrl: ${{ parameters.repoUrl }}
-          deploymentRequiresApproval: ${{parameters.deploymentRequiresApproval}}
+          deploymentRequiresApproval: ${{ parameters.deploymentRequiresApproval }}
     - id: publish
       name: Publish
       action: publish:gitlab

@@ -206,7 +206,7 @@ spec:
       input:
         url: ./content
         values:
-          name: ${{ parameters.name | lower }}
+          name: ${{ parameters.name | lower | replace(" ", "") }}
           title: ${{ parameters.name }}
           description: ${{ parameters.env_description }}
           owner: ${{ parameters.owner }}

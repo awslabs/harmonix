@@ -134,7 +134,7 @@ spec:
         url: ./content
         values:
           appPort: "8080"
-          component_id: ${{ parameters.component_id | lower }}
+          component_id: ${{ parameters.component_id | lower | replace(" ", "") }}
           title: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
           greetee: "World"

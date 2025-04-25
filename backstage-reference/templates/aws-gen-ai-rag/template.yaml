@@ -141,7 +141,7 @@ spec:
       input:
         url: ./content
         values:
-          component_id: ${{ parameters.component_id }}
+          component_id: ${{ parameters.component_id | replace(" ", "") }}
           title: ${{ parameters.component_id }}
           description: ${{ parameters.description }}
           destination: ${{ parameters.repoUrl | parseRepoUrl }}

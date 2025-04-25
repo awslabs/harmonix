@@ -170,7 +170,7 @@ spec:
       input:
         url: ./content
         values:
-          name: ${{ parameters.name | lower }}
+          name: ${{ parameters.name | lower | replace(" ", "") }}
           title: ${{ parameters.name }}
           description: ${{ parameters.env_description }}
           owner: ${{ parameters.owner }}
@@ -178,13 +178,13 @@ spec:
           awsRegion: ${{ parameters.awsRegion }}
           awsAccount: ${{ parameters.awsAccountID }}
           environmentRole: ${{ parameters.environmentRole }}
-          platformRole: ${{steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
-          pipelineRole: ${{steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
+          platformRole: ${{ steps['resolvePlatformVariables'].output.params['/opa/platform-role'] }}
+          pipelineRole: ${{ steps['resolvePlatformVariables'].output.params['/opa/pipeline-role'] }}
           platformRegion: ${{ steps['harmonixGetPlatformInfo'].output.platformRegion }}
-          prefix: ${{parameters.prefix}}
-          cidr: ${{parameters.cidr}}
-          ec2InstanceType: ${{parameters.ec2InstanceType}}
-          ec2MaxCapacity: ${{parameters.ec2MaxCapacity}}
+          prefix: ${{ parameters.prefix }}
+          cidr: ${{ parameters.cidr }}
+          ec2InstanceType: ${{ parameters.ec2InstanceType }}
+          ec2MaxCapacity: ${{ parameters.ec2MaxCapacity }}
     - id: fetchBaseIAC
       name: Fetch IAC Base
       action: fetch:plain

@@ -189,7 +189,7 @@ spec:
       input:
         url: ./content
         values:
-          name: ${{ parameters.name | lower }}
+          name: ${{ parameters.name | lower | replace(" ", "") }}
           albName: ${{ parameters.albName }}
           title: ${{ parameters.name }}
           description: ${{ parameters.env_description }}

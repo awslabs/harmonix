@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.1 - 2025-05-02
+* prevent whitespace in backstage entity ID during scaffolding
+* Bug Fixes
+  * GitLab plugin not configured to work with AWSEnvironment entity type
+  * AWS Secrets Manager secret template deployment failures
+
 ## 0.4.0 - 2025-04-18
 * Upgraded Harmonix on AWS to the latest Backstage version (1.38) and new backend system.
 * Upgraded the GitLab Community Edition version to 17.10.3

@@ -169,7 +169,7 @@ do
     echo "Setting up new PAT"
     PAT_AUTH_TOKEN=$(echo $RANDOM | shasum | head -c 30)
     echo "PAT_AUTH_TOKEN is $PAT_AUTH_TOKEN"
-    sudo gitlab-rails runner "token = User.find_by_username('$ADMIN_USERNAME').personal_access_tokens.create(scopes: ['create_runner'], name: 'create_runner_pat', expires_at: 10.days.from_now); token.set_token('$PAT_AUTH_TOKEN'); token.save!"
+    sudo gitlab-rails runner "token = User.find_by_username('$ADMIN_USERNAME').personal_access_tokens.create(scopes: ['create_runner'], name: 'create_runner_pat', expires_at: 365.days.from_now); token.set_token('$PAT_AUTH_TOKEN'); token.save!"
     sudo gitlab-rails runner "token = User.find_by_username('$ADMIN_USERNAME').personal_access_tokens.create(scopes: ['read_user', 'read_repository'], name: 'Automation token', expires_at: 365.days.from_now); token.set_token('token-string-here123'); token.save!"
 
     echo "Setting PAT into secret for later retrieval when runners are registered"

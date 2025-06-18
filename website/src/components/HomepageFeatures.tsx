@@ -50,6 +50,13 @@ const opaSixthVideoContent = (
 </div>
 )
 
+const opaSeventhVideoContent = (
+  <div className='opa-video-item'>
+  <h4>Developer Platform as a Migration Accelerator</h4>
+  <iframe width="400" height="225" src="https://www.youtube.com/embed/IMztHMOzMkI/2.jpg?start=1" title="Developer Platform as a Migration Accelerator" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen></iframe>
+</div>
+)
+
 const carouselContent = (
   <div className='carouselTitle'>
   <Carousel data-bs-theme="dark" interval={4200} pause={'hover'} touch={true} title='' controls={false} >
@@ -218,6 +225,18 @@ const opaMainVideo: FeatureItem[] = [
     description: (
       <>
         {opaSixthVideoContent}
+      </>
+    ),
+  },
+  {
+    title: 'video7',
+    Svg: require('@site/static/img/regulations.svg').default,
+    noSVG: true,
+    minHeight: '300px',
+    // customTextStyle:{fontSize:'24px', maxWidth:'70%',minHeight:'170px'},
+    description: (
+      <>
+        {opaSeventhVideoContent}
       </>
     ),
   },

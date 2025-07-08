@@ -104,7 +104,7 @@ export class OPAPlatformStack extends cdk.Stack {
     // Create VPC for hosting backstage
     const network = new NetworkConstruct(this, "Backstage-Network", {
       opaEnv: opaParams,
-      cidrRange: "10.0.0.0/16",
+      cidrRange: getEnvVarValue(process.env.BACKSTAGE_NETWORK_CIDR_RANGE) || "10.0.0.0/16",
       isIsolated: false,
       allowedIPs,
       publicVpcNatGatewayCount: +(getEnvVarValue(process.env.NUM_PUBLIC_NATGW) || 3),

@@ -52,7 +52,7 @@ function HomepageHeader() {
         }}
       >
         <Container maxWidth="lg">
-          <Grid container spacing={4} alignItems="center">
+          <Grid  alignItems="center">
             <Grid item xs={12}>
               <Box className={styles.heroContent}>
                 <div className="hero hero--primary bgimg logoWrapper">

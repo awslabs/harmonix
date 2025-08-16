@@ -234,7 +234,15 @@ if [[ ! -z "$OKTA_SECRET_NAME" ]]; then
             OKTA_IDP=""
         fi
 
-        echo "{\"clientId\": \"$OKTA_CLIENT_ID\", \"clientSecret\": \"$OKTA_CLIENT_SECRET\", \"audience\": \"$OKTA_AUDIENCE\", \"authServerId\": \"$OKTA_AUTH_SERVER_ID\", \"idp\": \"$OKTA_IDP\", \"apiToken\": \"$OKTA_API_TOKEN\"}" > $scriptDir/tempSecretToCreate.json
+        # Remove surrounding quotes from environment variables if present
+        OKTA_CLIENT_ID_CLEAN=$(echo "$OKTA_CLIENT_ID" | sed 's/^"\(.*\)"$/\1/')
+        OKTA_CLIENT_SECRET_CLEAN=$(echo "$OKTA_CLIENT_SECRET" | sed 's/^"\(.*\)"$/\1/')
+        OKTA_AUDIENCE_CLEAN=$(echo "$OKTA_AUDIENCE" | sed 's/^"\(.*\)"$/\1/')
+        OKTA_AUTH_SERVER_ID_CLEAN=$(echo "$OKTA_AUTH_SERVER_ID" | sed 's/^"\(.*\)"$/\1/')
+        OKTA_IDP_CLEAN=$(echo "$OKTA_IDP" | sed 's/^"\(.*\)"$/\1/')
+        OKTA_API_TOKEN_CLEAN=$(echo "$OKTA_API_TOKEN" | sed 's/^"\(.*\)"$/\1/')
+
+        echo "{\"clientId\": \"$OKTA_CLIENT_ID_CLEAN\", \"clientSecret\": \"$OKTA_CLIENT_SECRET_CLEAN\", \"audience\": \"$OKTA_AUDIENCE_CLEAN\", \"authServerId\": \"$OKTA_AUTH_SERVER_ID_CLEAN\", \"idp\": \"$OKTA_IDP_CLEAN\", \"apiToken\": \"$OKTA_API_TOKEN_CLEAN\"}" > $scriptDir/tempSecretToCreate.json
 
         if cmdOutput=$(aws secretsmanager describe-secret --secret-id $OKTA_SECRET_NAME 2> /dev/null); then
             echo "Updating existing secret:"

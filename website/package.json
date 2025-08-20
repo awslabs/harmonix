@@ -29,7 +29,7 @@
     "docusaurus-plugin-image-zoom": "^3.0.1",
     "docusaurus-plugin-remote-content": "^4.0.0",
     "mdx-mermaid": "^2.0.3",
-    "mermaid": "^11.9.0",
+    "mermaid": "^11.10.0",
     "prism-react-renderer": "^2.4.1",
     "react": "^19.1.1",
     "react-bootstrap": "^2.10.10",

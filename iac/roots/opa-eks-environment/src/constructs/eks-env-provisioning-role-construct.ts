@@ -49,14 +49,6 @@ export class EKSProvisioningConstruct extends Construct {
       ],
       maxSessionDuration: cdk.Duration.seconds(43200),
     });
-    // this.IAMRole.grantAssumeRole(new iam.AccountRootPrincipal)
-
-    this.IAMRole.assumeRolePolicy?.addStatements(new iam.PolicyStatement({
-      actions: ['sts:AssumeRole'],
-      principals: [
-        new iam.AccountRootPrincipal,
-        ],
-    }));
 
     // Add Secret and SSM access
     this.IAMRole.addToPolicy(

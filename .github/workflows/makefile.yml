@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ "main" , "initial_content"]
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
